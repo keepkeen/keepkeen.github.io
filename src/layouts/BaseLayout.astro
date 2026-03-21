@@ -1,0 +1,53 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/manrope';
+import '@fontsource/jetbrains-mono';
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { siteConfig } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  pageClass?: string;
+}
+
+const { title, description = siteConfig.description, pageClass = '' } = Astro.props;
+const metaTitle = title ? `${title} | ${siteConfig.name}` : siteConfig.defaultTitle;
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const canonical = new URL(Astro.url.pathname, siteOrigin);
+const iconHref = `${import.meta.env.BASE_URL}favicon.svg`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{metaTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.toString()} />
+    <link rel="icon" type="image/svg+xml" href={iconHref} />
+    <meta name="theme-color" content="#f5efe5" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={metaTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={metaTitle} />
+    <meta name="twitter:description" content={description} />
+  </head>
+
+  <body class={pageClass}>
+    <div class="page-shell">
+      <SiteHeader />
+      <main class="main-content">
+        <slot />
+      </main>
+      <SiteFooter />
+    </div>
+  </body>
+</html>

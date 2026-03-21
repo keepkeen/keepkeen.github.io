@@ -1,0 +1,32 @@
+---
+import type { Post } from '../utils/content';
+import { formatDate, getPostPath, getReadingTime } from '../utils/content';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="glass-card post-card">
+  <div class="meta-row">
+    <span>{formatDate(post.data.date)}</span>
+    <span>{getReadingTime(post.body)} min read</span>
+  </div>
+
+  <div class="post-card-copy">
+    <h3>
+      <a class="text-link" href={getPostPath(post)}>
+        {post.data.title}
+      </a>
+    </h3>
+    <p>{post.data.description}</p>
+  </div>
+
+  <div class="pill-list">
+    {post.data.tags.map((tag) => (
+      <span class="pill">{tag}</span>
+    ))}
+  </div>
+</article>

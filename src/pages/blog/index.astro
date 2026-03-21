@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { sortPosts } from '../../utils/content';
+
+const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+---
+
+<BaseLayout title="Blog" description="Essays, field notes, and technical reflections.">
+  <section class="page-intro reveal">
+    <p class="eyebrow">Archive</p>
+    <h1>Essays, field notes, and technical reflections.</h1>
+    <p class="section-copy">
+      A running archive of AI engineering, software craft, patient thinking, and notes on the
+      long game. The writing is fully Markdown-friendly, with first-class support for formulas and
+      code.
+    </p>
+  </section>
+
+  <section class="section split align-start reveal-delay">
+    <article class="glass-card list-card">
+      <p class="label">Archive Signals</p>
+      <ul class="principle-list">
+        <li>{posts.length} essays published so far.</li>
+        <li>Topics range from AI systems to investing and personal reflection.</li>
+        <li>Posts are written for clarity first, trend-chasing never.</li>
+      </ul>
+    </article>
+
+    <article class="glass-card list-card">
+      <p class="label">Tags</p>
+      <div class="pill-list">
+        {tags.map((tag) => (
+          <span class="pill">{tag}</span>
+        ))}
+      </div>
+    </article>
+  </section>
+
+  <section class="section reveal-slower">
+    <div class="post-grid">
+      {posts.map((post) => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

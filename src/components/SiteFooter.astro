@@ -1,0 +1,24 @@
+---
+import { siteConfig } from '../site.config';
+import { publicSocialLinks } from '../utils/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer container">
+  <div>
+    <p class="footer-title">{siteConfig.name}</p>
+    <p class="footer-copy">
+      Built for essays on intelligence, code, patience, and the shape of a deliberate life.
+    </p>
+  </div>
+
+  <div class="footer-links">
+    {publicSocialLinks.map((item) => (
+      <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer">
+        {item.label}
+      </a>
+    ))}
+    <span>{year}</span>
+  </div>
+</footer>

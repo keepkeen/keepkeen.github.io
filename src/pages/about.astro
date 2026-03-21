@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../site.config';
+import { publicEmail, publicSocialLinks } from '../utils/site';
+
+const mailHref = publicEmail ? `mailto:${publicEmail}` : undefined;
+const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.href;
+---
+
+<BaseLayout title="About" description="About Liuliming, the writing behind this publication.">
+  <section class="page-intro reveal">
+    <p class="eyebrow">About Me</p>
+    <h1>Technical depth, aesthetic restraint, and a long-horizon mindset.</h1>
+    <p class="section-copy">{siteConfig.about.intro}</p>
+  </section>
+
+  <section class="section split align-start reveal-delay">
+    <article class="glass-card list-card">
+      <p class="label">Who I Am</p>
+      {siteConfig.about.body.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+
+      <div class="divider"></div>
+
+      <p class="label">Based In</p>
+      <p>{siteConfig.location}</p>
+    </article>
+
+    <article class="glass-card list-card">
+      <p class="label">Reach Out</p>
+      <p>
+        I enjoy conversations about AI systems, engineering taste, thoughtful products, and the
+        discipline of building things that last.
+      </p>
+      <div class="hero-actions">
+        {mailHref && (
+          <a class="button button-primary" href={mailHref}>
+            Start a conversation
+          </a>
+        )}
+        {githubHref && (
+          <a class="button" href={githubHref} target="_blank" rel="noreferrer">
+            View GitHub
+          </a>
+        )}
+      </div>
+    </article>
+  </section>
+
+  <section class="section reveal-slower">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">Trajectory</p>
+        <h2 class="section-title">A few persistent directions.</h2>
+      </div>
+      <p class="section-copy">
+        The through-line is simple: build carefully, think clearly, and prefer durable work over
+        impressive noise.
+      </p>
+    </div>
+
+    <div class="timeline">
+      {siteConfig.about.journey.map((item) => (
+        <article class="glass-card timeline-item">
+          <span class="topic-index">{item.period}</span>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section split reveal-slower">
+    <article class="glass-card quote-panel">
+      <p class="label">Design Belief</p>
+      <blockquote>
+        The interface should carry taste quietly, so the writing arrives with more force.
+      </blockquote>
+    </article>
+
+    <article class="glass-card list-card">
+      <p class="label">Working Principles</p>
+      <ul class="principle-list">
+        {siteConfig.principles.map((principle) => (
+          <li>{principle}</li>
+        ))}
+      </ul>
+    </article>
+  </section>
+</BaseLayout>
