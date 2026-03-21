@@ -1,8 +1,8 @@
 export const siteConfig = {
   name: 'Liuliming',
   role: 'AI engineer, writer, and patient observer of systems.',
-  siteUrl: 'https://example.github.io',
-  email: 'hello@example.com',
+  siteUrl: 'https://keepkeen.github.io',
+  email: '',
   location: 'Shanghai, China',
   defaultTitle: 'Liuliming | Notes on AI, Code, Markets, and Life',
   description:
@@ -72,11 +72,7 @@ export const siteConfig = {
   socialLinks: [
     {
       label: 'GitHub',
-      href: 'https://github.com/your-name'
-    },
-    {
-      label: 'Email',
-      href: 'mailto:hello@example.com'
+      href: 'https://github.com/keepkeen'
     }
   ]
 };
