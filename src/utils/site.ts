@@ -3,6 +3,10 @@ import { siteConfig } from '../site.config';
 const placeholderPattern = /(example\.com|example\.github\.io|your-name)/i;
 
 export function isPlaceholderValue(value: string) {
+  if (!value) {
+    return true;
+  }
+
   return placeholderPattern.test(value);
 }
 

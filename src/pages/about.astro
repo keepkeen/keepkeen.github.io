@@ -10,29 +10,40 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
 <BaseLayout title="About" description="About Liuliming, the writing behind this publication.">
   <section class="page-intro reveal">
     <p class="eyebrow">About Me</p>
-    <h1>Technical depth, aesthetic restraint, and a long-horizon mindset.</h1>
+    <h1>Building from inside the work, then writing about what lasts.</h1>
     <p class="section-copy">{siteConfig.about.intro}</p>
   </section>
 
-  <section class="section split align-start reveal-delay">
-    <article class="glass-card list-card">
-      <p class="label">Who I Am</p>
+  <section class="about-grid reveal-delay">
+    <article class="glass-card story-panel">
+      <p class="label">Short Bio</p>
       {siteConfig.about.body.map((paragraph) => (
         <p>{paragraph}</p>
       ))}
+    </article>
+
+    <aside class="glass-card desk-panel">
+      <p class="label">Coordinates</p>
+      <div class="fact-grid">
+        {siteConfig.deskFacts.map((fact) => (
+          <div class="fact-item">
+            <span>{fact.label}</span>
+            <strong>{fact.value}</strong>
+          </div>
+        ))}
+      </div>
 
       <div class="divider"></div>
 
-      <p class="label">Based In</p>
-      <p>{siteConfig.location}</p>
-    </article>
+      <p class="label">Right Now</p>
+      <ul class="note-list">
+        {siteConfig.about.now.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
 
-    <article class="glass-card list-card">
-      <p class="label">Reach Out</p>
-      <p>
-        I enjoy conversations about AI systems, engineering taste, thoughtful products, and the
-        discipline of building things that last.
-      </p>
+      {(mailHref || githubHref) && <div class="divider"></div>}
+
       <div class="hero-actions">
         {mailHref && (
           <a class="button button-primary" href={mailHref}>
@@ -45,24 +56,24 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
           </a>
         )}
       </div>
-    </article>
+    </aside>
   </section>
 
   <section class="section reveal-slower">
-    <div class="section-header">
+    <div class="section-header editorial-header">
       <div>
         <p class="eyebrow">Trajectory</p>
         <h2 class="section-title">A few persistent directions.</h2>
       </div>
       <p class="section-copy">
-        The through-line is simple: build carefully, think clearly, and prefer durable work over
-        impressive noise.
+        I tend to return to the same axis: systems, judgment, style, and the slower forms of
+        compounding that only become visible after years.
       </p>
     </div>
 
-    <div class="timeline">
+    <div class="trajectory-list">
       {siteConfig.about.journey.map((item) => (
-        <article class="glass-card timeline-item">
+        <article class="glass-card trajectory-item">
           <span class="topic-index">{item.period}</span>
           <h3>{item.title}</h3>
           <p>{item.description}</p>
@@ -71,21 +82,33 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
     </div>
   </section>
 
-  <section class="section split reveal-slower">
-    <article class="glass-card quote-panel">
-      <p class="label">Design Belief</p>
-      <blockquote>
-        The interface should carry taste quietly, so the writing arrives with more force.
-      </blockquote>
-    </article>
+  <section class="section reveal-slower">
+    <div class="tri-panel">
+      <article class="glass-card note-panel">
+        <p class="label">What I Value</p>
+        <ul class="principle-list">
+          {siteConfig.about.values.map((value) => (
+            <li>{value}</li>
+          ))}
+        </ul>
+      </article>
 
-    <article class="glass-card list-card">
-      <p class="label">Working Principles</p>
-      <ul class="principle-list">
-        {siteConfig.principles.map((principle) => (
-          <li>{principle}</li>
-        ))}
-      </ul>
-    </article>
+      <article class="glass-card quote-panel">
+        <p class="label">Design Belief</p>
+        <blockquote>
+          The interface should carry taste quietly, so the writing arrives with more force.
+        </blockquote>
+      </article>
+
+      <article class="glass-card note-panel">
+        <p class="label">Colophon</p>
+        <p class="colophon-text">{siteConfig.about.colophon}</p>
+        {githubHref && (
+          <a class="text-link" href={githubHref} target="_blank" rel="noreferrer">
+            Visit my GitHub
+          </a>
+        )}
+      </article>
+    </div>
   </section>
 </BaseLayout>

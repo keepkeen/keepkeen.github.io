@@ -1,21 +1,21 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostCard from '../components/PostCard.astro';
 import { siteConfig } from '../site.config';
-import { sortPosts, withBasePath } from '../utils/content';
+import { formatDate, getPostPath, getReadingTime, sortPosts, withBasePath } from '../utils/content';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
 const latestPosts = posts.slice(0, 3);
-const distinctTags = [...new Set(posts.flatMap((post) => post.data.tags))].slice(0, 8);
+const [featuredPost, ...secondaryPosts] = latestPosts;
 ---
 
 <BaseLayout>
-  <section class="hero reveal">
+  <section class="hero home-hero reveal">
     <div class="hero-copy">
       <p class="eyebrow">{siteConfig.hero.eyebrow}</p>
       <h1>{siteConfig.hero.headline}</h1>
-      <p class="hero-lead">{siteConfig.hero.lead}</p>
+      <p class="hero-deck">{siteConfig.hero.lead}</p>
+      <p class="hero-signature">{siteConfig.hero.signature}</p>
 
       <div class="hero-actions">
         <a class="button button-primary" href={withBasePath('/blog/')}>Read the essays</a>
@@ -23,45 +23,47 @@ const distinctTags = [...new Set(posts.flatMap((post) => post.data.tags))].slice
       </div>
     </div>
 
-    <aside class="glass-card hero-panel reveal-delay">
-      <p class="label">Current Compass</p>
-      <ul class="bullet-list">
+    <aside class="glass-card desk-panel reveal-delay">
+      <p class="label">From the Desk</p>
+      <p class="desk-intro">{siteConfig.hero.deck}</p>
+
+      <div class="fact-grid">
+        {siteConfig.deskFacts.map((fact) => (
+          <div class="fact-item">
+            <span>{fact.label}</span>
+            <strong>{fact.value}</strong>
+          </div>
+        ))}
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="label">Current Focus</p>
+      <ul class="note-list">
         {siteConfig.currentFocus.map((item) => (
           <li>{item}</li>
         ))}
       </ul>
-
-      <div class="divider"></div>
-
-      <div class="stat-grid">
-        <div>
-          <span class="stat-value">{posts.length}</span>
-          <span class="stat-label">Published essays</span>
-        </div>
-        <div>
-          <span class="stat-value">{distinctTags.length}</span>
-          <span class="stat-label">Recurring themes</span>
-        </div>
-      </div>
     </aside>
   </section>
 
   <section class="section reveal-delay">
-    <div class="section-header">
+    <div class="section-header editorial-header">
       <div>
-        <p class="eyebrow">What Lives Here</p>
-        <h2 class="section-title">A portfolio of ideas, not noise.</h2>
+        <p class="eyebrow">Writing Map</p>
+        <h2 class="section-title">Four directions, one underlying taste.</h2>
       </div>
       <p class="section-copy">
-        The site is built as a polished writing surface: technical enough for equations and code,
-        restrained enough to let taste and thought carry the experience.
+        The common thread is not topic, but method: reduce noise, increase signal, and keep the
+        thinking calm enough to hold up over time.
       </p>
     </div>
 
-    <div class="topic-grid">
+    <div class="map-grid">
       {siteConfig.topicCards.map((card) => (
-        <article class="glass-card topic-card">
+        <article class="glass-card map-card">
           <span class="topic-index">{card.index}</span>
+          <p class="map-kicker">{card.kicker}</p>
           <h3>{card.title}</h3>
           <p>{card.description}</p>
         </article>
@@ -69,50 +71,95 @@ const distinctTags = [...new Set(posts.flatMap((post) => post.data.tags))].slice
     </div>
   </section>
 
+  {featuredPost && (
+    <section class="section reveal-slower">
+      <div class="section-header editorial-header">
+        <div>
+          <p class="eyebrow">Selected Writing</p>
+          <h2 class="section-title">Recent essays from the notebook.</h2>
+        </div>
+        <p class="section-copy">
+          Some pieces are technical, some reflective, but all are meant to read with the same
+          editorial rhythm.
+        </p>
+      </div>
+
+      <div class="featured-grid">
+        <article class="glass-card featured-primary">
+          <p class="label">Featured Essay</p>
+          <div class="meta-row">
+            <span>{formatDate(featuredPost.data.date)}</span>
+            <span>{getReadingTime(featuredPost.body)} min read</span>
+          </div>
+          <h2>
+            <a class="feature-link" href={getPostPath(featuredPost)}>
+              {featuredPost.data.title}
+            </a>
+          </h2>
+          <p class="featured-excerpt">{featuredPost.data.description}</p>
+          <div class="pill-list">
+            {featuredPost.data.tags.map((tag) => (
+              <span class="pill">{tag}</span>
+            ))}
+          </div>
+        </article>
+
+        <div class="featured-secondary">
+          {secondaryPosts.map((post) => (
+            <article class="glass-card mini-post">
+              <div class="meta-row">
+                <span>{formatDate(post.data.date)}</span>
+                <span>{getReadingTime(post.body)} min read</span>
+              </div>
+              <h3>
+                <a class="feature-link" href={getPostPath(post)}>
+                  {post.data.title}
+                </a>
+              </h3>
+              <p>{post.data.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
   <section class="section reveal-slower">
-    <div class="section-header">
+    <div class="section-header editorial-header">
       <div>
-        <p class="eyebrow">Latest Essays</p>
-        <h2 class="section-title">Recent notes and long-form pieces.</h2>
+        <p class="eyebrow">Field Notes</p>
+        <h2 class="section-title">What this publication is trying to learn.</h2>
       </div>
-      <a class="text-link" href={withBasePath('/blog/')}>Browse the archive</a>
+      <a class="text-link" href={withBasePath('/blog/')}>Browse the full archive</a>
     </div>
 
-    <div class="post-grid">
-      {latestPosts.map((post) => (
-        <PostCard post={post} />
-      ))}
+    <div class="tri-panel">
+      <article class="glass-card note-panel">
+        <p class="label">Current Questions</p>
+        <ol class="question-list">
+          {siteConfig.currentQuestions.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ol>
+      </article>
+
+      <article class="glass-card note-panel">
+        <p class="label">Operating Principles</p>
+        <ul class="principle-list">
+          {siteConfig.principles.map((principle) => (
+            <li>{principle}</li>
+          ))}
+        </ul>
+      </article>
+
+      <article class="glass-card note-panel">
+        <p class="label">Studio Notes</p>
+        <ul class="note-list">
+          {siteConfig.studioNotes.map((note) => (
+            <li>{note}</li>
+          ))}
+        </ul>
+      </article>
     </div>
-  </section>
-
-  <section class="section split reveal-slower">
-    <article class="glass-card quote-panel">
-      <p class="label">Studio Note</p>
-      <blockquote>
-        Beautiful systems are often the ones that remove friction without advertising the fact.
-      </blockquote>
-      <p class="section-copy">
-        This design leans editorial rather than product-like: warm paper tones, expressive type,
-        measured animation, and enough structure to make technical writing feel ceremonial.
-      </p>
-    </article>
-
-    <article class="glass-card list-card">
-      <p class="label">Working Principles</p>
-      <ul class="principle-list">
-        {siteConfig.principles.map((principle) => (
-          <li>{principle}</li>
-        ))}
-      </ul>
-
-      <div class="divider"></div>
-
-      <p class="label">Themes</p>
-      <div class="pill-list">
-        {distinctTags.map((tag) => (
-          <span class="pill">{tag}</span>
-        ))}
-      </div>
-    </article>
   </section>
 </BaseLayout>

@@ -1,48 +1,77 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
-import { sortPosts } from '../../utils/content';
+import { formatDate, getPostPath, getReadingTime, sortPosts } from '../../utils/content';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
 const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+const latestDate = posts.at(0)?.data.date;
 ---
 
 <BaseLayout title="Blog" description="Essays, field notes, and technical reflections.">
   <section class="page-intro reveal">
     <p class="eyebrow">Archive</p>
-    <h1>Essays, field notes, and technical reflections.</h1>
+    <h1>Essays, notebooks, and field notes.</h1>
     <p class="section-copy">
-      A running archive of AI engineering, software craft, patient thinking, and notes on the
-      long game. The writing is fully Markdown-friendly, with first-class support for formulas and
-      code.
+      This archive is meant to be scanned like an index rather than consumed like a feed. Technical
+      notes, longer essays, and slower reflections live in the same catalog.
     </p>
   </section>
 
-  <section class="section split align-start reveal-delay">
-    <article class="glass-card list-card">
+  <section class="archive-layout reveal-delay">
+    <aside class="glass-card archive-aside">
       <p class="label">Archive Signals</p>
-      <ul class="principle-list">
-        <li>{posts.length} essays published so far.</li>
-        <li>Topics range from AI systems to investing and personal reflection.</li>
-        <li>Posts are written for clarity first, trend-chasing never.</li>
-      </ul>
-    </article>
+      <div class="fact-grid">
+        <div class="fact-item">
+          <span>Entries</span>
+          <strong>{posts.length}</strong>
+        </div>
+        <div class="fact-item">
+          <span>Themes</span>
+          <strong>{tags.length}</strong>
+        </div>
+        <div class="fact-item">
+          <span>Latest</span>
+          <strong>{latestDate ? formatDate(latestDate) : 'Soon'}</strong>
+        </div>
+        <div class="fact-item">
+          <span>Format</span>
+          <strong>Essay / note / reflection</strong>
+        </div>
+      </div>
 
-    <article class="glass-card list-card">
+      <div class="divider"></div>
+
       <p class="label">Tags</p>
       <div class="pill-list">
         {tags.map((tag) => (
           <span class="pill">{tag}</span>
         ))}
       </div>
-    </article>
-  </section>
+    </aside>
 
-  <section class="section reveal-slower">
-    <div class="post-grid">
+    <div class="archive-list">
       {posts.map((post) => (
-        <PostCard post={post} />
+        <article class="archive-entry">
+          <div class="archive-meta">
+            <span>{formatDate(post.data.date)}</span>
+            <span>{getReadingTime(post.body)} min read</span>
+          </div>
+
+          <div class="archive-main">
+            <h2>
+              <a class="feature-link" href={getPostPath(post)}>
+                {post.data.title}
+              </a>
+            </h2>
+            <p>{post.data.description}</p>
+            <div class="pill-list">
+              {post.data.tags.map((tag) => (
+                <span class="pill">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </article>
       ))}
     </div>
   </section>

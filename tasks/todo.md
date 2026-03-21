@@ -1,16 +1,14 @@
-# Blog Publish Plan
+# Blog Redesign Plan
 
-- [x] Review the local Git/GitHub CLI state and confirm the blog is still nested inside the parent repo.
-- [x] Turn `/Users/liuliming/code/blog` into an independent git repository for publication.
-- [x] Create the remote GitHub repository and push the blog as its own project.
-- [x] Trigger GitHub Pages deployment and verify the public URL.
+- [x] Review the current homepage, about page, blog archive, and visual system to identify why the design felt generic.
+- [x] Distill stronger aesthetic directions from high-signal personal publication patterns.
+- [x] Rewrite the homepage and about-page information architecture to feel more authored and information-rich.
+- [x] Redesign the visual system to feel more editorial, asymmetrical, and distinctive.
+- [x] Verify the updated site locally with `npm run check` and `npm run build`.
 
 ## Review
 
-- `gh auth status` shows no GitHub login on this machine yet.
-- The blog currently sits inside the parent repository rooted at `/Users/liuliming`.
-- The site itself already passes `npm run build` and `npm run check`.
-- `/Users/liuliming/code/blog` is now its own git repo on branch `main` with an initial commit.
-- Published to `https://github.com/keepkeen/keepkeen.github.io`.
-- Live site verified at `https://keepkeen.github.io/`.
-- GitHub Pages is now configured for `workflow` publishing rather than legacy branch publishing.
+- The old design felt too much like a polished product landing page and not enough like a personal publication with a clear authorial voice.
+- The new direction emphasizes publication rhythm, richer personal signals, asymmetric composition, and quieter but more intentional interaction.
+- Homepage, About, and Blog were all restructured so the site reads more like an editorial notebook than a generic portfolio.
+- Verification passed with `npm run check` and `npm run build`.
