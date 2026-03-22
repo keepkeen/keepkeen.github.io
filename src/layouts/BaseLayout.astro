@@ -1,5 +1,4 @@
 ---
-import '@fontsource-variable/manrope';
 import '@fontsource/jetbrains-mono';
 import 'katex/dist/katex.min.css';
 import '../styles/global.css';
@@ -131,7 +130,7 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
 
           root.dataset.theme = resolved;
           root.style.colorScheme = resolved;
-          themeMeta?.setAttribute('content', resolved === DARK ? '#0d1015' : '#ffffff');
+          themeMeta?.setAttribute('content', resolved === DARK ? '#0a0a0a' : '#ffffff');
 
           if (persist) {
             writePreference(preference);
@@ -267,13 +266,6 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
       } else {
         enhanceArticleUtilities();
       }
-
-      window.__blogTheme?.media?.addEventListener?.('change', () => {
-        if ((document.documentElement.dataset.themeMode || window.__blogTheme?.getStoredMode?.()) === 'system') {
-          window.__blogTheme?.apply?.('system', false);
-          syncThemeButtons();
-        }
-      });
 
       document.addEventListener('astro:page-load', enhanceArticleUtilities);
     </script>

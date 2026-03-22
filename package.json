@@ -14,7 +14,6 @@
     "@astrojs/check": "^0.9.8",
     "@astrojs/mdx": "^5.0.2",
     "@astrojs/sitemap": "^3.7.1",
-    "@fontsource-variable/manrope": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "astro": "^6.0.8",
     "js-yaml": "^4.1.1",

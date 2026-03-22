@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
-import BlogDirectory from '../components/BlogDirectory.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
 import { siteConfig } from '../site.config';
 import { buildSearchDocument } from '../utils/search';
 import { sortPosts, withBasePath } from '../utils/content';
@@ -30,14 +30,21 @@ const latestDocuments = latestPosts.map((post) => buildSearchDocument(post));
     </div>
   </section>
 
-  <BlogDirectory
-    documents={latestDocuments}
-    label="Recent writing"
-    statusText={`${latestPosts.length} latest posts from the publication. Hover a row to preview it.`}
-    secondaryLinkHref={withBasePath('/blog/')}
-    secondaryLinkLabel="Open the full archive"
-    enableSearch={false}
-  />
+  <section class="directory-shell home-directory-shell">
+    <div class="directory-toolbar">
+      <div class="directory-toolbar-copy">
+        <p class="eyebrow">Recent writing</p>
+        <div class="directory-toolbar-meta">
+          <p class="search-note">
+            {latestPosts.length} latest posts from the publication.
+          </p>
+          <a class="text-link directory-toolbar-link" href={withBasePath('/blog/')}>Open the full archive</a>
+        </div>
+      </div>
+    </div>
+
+    <PostList documents={latestDocuments} />
+  </section>
 
   <section class="section editorial-section">
     <div class="section-rail">

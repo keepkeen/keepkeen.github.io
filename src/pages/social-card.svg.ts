@@ -39,7 +39,7 @@ export const GET: APIRoute = () => {
   const lineMarkup = lines
     .map(
       (line, index) =>
-        `<text x="72" y="${302 + index * 48}" fill="#364152" font-family="Manrope, Arial, sans-serif" font-size="34">${escapeXml(line)}</text>`
+        `<text x="72" y="${302 + index * 48}" fill="#364152" font-family="Inter, Arial, sans-serif" font-size="34">${escapeXml(line)}</text>`
     )
     .join('');
 
@@ -47,7 +47,7 @@ export const GET: APIRoute = () => {
   <rect width="1200" height="630" fill="#f7f7f4" />
   <rect x="48" y="48" width="1104" height="534" rx="24" fill="#ffffff" stroke="#d7dce5" stroke-width="2" />
   <text x="72" y="132" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="24">${escapeXml(siteConfig.name.toUpperCase())}</text>
-  <text x="72" y="238" fill="#111827" font-family="Manrope, Arial, sans-serif" font-size="70" font-weight="700">${escapeXml(siteConfig.defaultTitle.split('|')[0].trim())}</text>
+  <text x="72" y="238" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="70" font-weight="700">${escapeXml(siteConfig.defaultTitle.split('|')[0].trim())}</text>
   ${lineMarkup}
   <line x1="72" y1="516" x2="1128" y2="516" stroke="#d7dce5" stroke-width="2" />
   <text x="72" y="562" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="24">Technical writing, notes, and systems thinking.</text>

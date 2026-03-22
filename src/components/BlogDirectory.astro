@@ -1,135 +1,79 @@
 ---
+import PostList from './PostList.astro';
 import type { SearchDocument } from '../utils/search';
 
 interface Props {
   documents: SearchDocument[];
-  label?: string;
-  statusText?: string;
-  emptyText?: string;
-  enableSearch?: boolean;
-  secondaryLinkHref?: string;
-  secondaryLinkLabel?: string;
 }
 
-const {
-  documents,
-  label = 'Archive',
-  statusText,
-  emptyText = 'No posts yet.',
-  enableSearch = true,
-  secondaryLinkHref,
-  secondaryLinkLabel
-} = Astro.props;
+const { documents } = Astro.props;
 const initialDocument = documents[0];
-const initialStatusText =
-  statusText ??
-  `${documents.length} posts ${enableSearch ? 'indexed' : 'listed'}. Hover a row to preview it.`;
+const emptyText = 'No posts yet.';
+const initialStatusText = `${documents.length} posts indexed. Move through the titles to preview them.`;
 const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 ---
 
 <section class="directory-shell" data-directory-shell>
   <div class="directory-toolbar">
     <div class="directory-toolbar-copy">
-      <p class="eyebrow">{label}</p>
+      <p class="eyebrow">Archive</p>
       <div class="directory-toolbar-meta">
         <p class="search-note" data-search-status data-default-status={initialStatusText}>
           {initialStatusText}
         </p>
-        {secondaryLinkHref && secondaryLinkLabel && (
-          <a class="text-link directory-toolbar-link" href={secondaryLinkHref}>
-            {secondaryLinkLabel}
-          </a>
-        )}
       </div>
     </div>
 
-    {enableSearch && (
-      <div class="directory-toolbar-actions">
-        <div class="directory-searchbox">
+    <div class="directory-toolbar-actions">
+      <div class="directory-searchbox">
+        <button
+          class="icon-button search-toggle"
+          type="button"
+          data-search-toggle
+          aria-expanded="false"
+          aria-controls="blog-search-panel"
+          aria-label="Open search"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="m16 16 4.2 4.2"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="1.8"
+            />
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+          </svg>
+          <span class="sr-only">Search posts</span>
+        </button>
+
+        <div id="blog-search-panel" class="search-panel" data-search-panel hidden>
+          <label class="sr-only" for="blog-search">Search posts</label>
+          <input id="blog-search" class="search-input" type="search" autocomplete="off" spellcheck="false" />
           <button
-            class="icon-button search-toggle"
+            class="icon-button search-clear"
             type="button"
-            data-search-toggle
-            aria-expanded="false"
-            aria-controls="blog-search-panel"
-            aria-label="Open search"
+            data-clear-search
+            hidden
+            aria-label="Clear search"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
-                d="m16 16 4.2 4.2"
+                d="m6.5 6.5 11 11m0-11-11 11"
                 fill="none"
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-width="1.8"
               />
-              <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" />
             </svg>
-            <span class="sr-only">Search posts</span>
           </button>
-
-          <div id="blog-search-panel" class="search-panel" data-search-panel hidden>
-            <label class="sr-only" for="blog-search">Search posts</label>
-            <input
-              id="blog-search"
-              class="search-input"
-              type="search"
-              placeholder="Title, tag, English, 中文, 拼音"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button
-              class="icon-button search-clear"
-              type="button"
-              data-clear-search
-              hidden
-              aria-label="Clear search"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="m6.5 6.5 11 11m0-11-11 11"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-width="1.8"
-                />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
-    )}
+    </div>
   </div>
 
   <div class="directory-layout" data-directory-root>
-    <div class="directory-list" data-directory-list>
-      {documents.map((document) => (
-        <article class="directory-item" data-directory-entry data-post-id={document.id} tabindex="0">
-          <div class="entry-main">
-            <div class="entry-copy">
-              <div class="entry-topline">
-                <span>{document.dateLabel}</span>
-                <span>{document.readingTime} min read</span>
-              </div>
-
-              <h3>
-                <a href={document.href}>{document.title}</a>
-              </h3>
-              <p>{document.description}</p>
-            </div>
-
-            <div class="entry-tags" aria-label="Tags">
-              {document.tags.map((tag) => (
-                <span>{tag}</span>
-              ))}
-            </div>
-          </div>
-
-          <div class="entry-inline-preview">
-            <p>{document.excerpt}</p>
-          </div>
-        </article>
-      ))}
-    </div>
+    <PostList documents={documents} interactive={true} showInlinePreview={true} />
 
     <aside
       class:list={['directory-preview', !initialDocument && 'is-empty']}
@@ -158,7 +102,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
           </dl>
 
           <p class="preview-excerpt">{document.excerpt}</p>
-          <a class="text-link" href={document.href}>Open post</a>
         </section>
       ))}
 
@@ -281,6 +224,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const shell = document.querySelector('[data-directory-shell]');
     const root = shell?.querySelector('[data-directory-root]');
     const list = root?.querySelector('[data-directory-list]');
+    const previewShell = shell?.querySelector('[data-directory-preview-shell]');
     const input = /** @type {HTMLInputElement | null} */ (document.getElementById('blog-search'));
     const searchToggle = shell?.querySelector('[data-search-toggle]');
     const searchPanel = shell?.querySelector('[data-search-panel]');
@@ -289,6 +233,12 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const defaultStatus = status?.getAttribute('data-default-status') ?? '';
     const entries = new Map(
       [...(root?.querySelectorAll('[data-directory-entry]') ?? [])].map((element) => [
+        element.getAttribute('data-post-id'),
+        element
+      ])
+    );
+    const links = new Map(
+      [...(root?.querySelectorAll('[data-directory-link]') ?? [])].map((element) => [
         element.getAttribute('data-post-id'),
         element
       ])
@@ -320,6 +270,50 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const documentsById = new Map(indexedDocuments.map((document) => [document.id, document]));
 
     let activeId;
+    let activeAnchor;
+
+    const canUseFloatingPreview = () =>
+      typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (min-width: 1081px)').matches;
+
+    const clearPreviewPosition = () => {
+      if (!previewShell) {
+        return;
+      }
+
+      previewShell.style.removeProperty('left');
+      previewShell.style.removeProperty('top');
+    };
+
+    const positionPreview = (anchor) => {
+      if (!previewShell || !anchor || !canUseFloatingPreview()) {
+        clearPreviewPosition();
+        return;
+      }
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const previewRect = previewShell.getBoundingClientRect();
+      const gap = 20;
+      const viewportPadding = 16;
+      let left = anchorRect.right + gap;
+
+      if (left + previewRect.width > window.innerWidth - viewportPadding) {
+        left = anchorRect.left - gap - previewRect.width;
+      }
+
+      left = Math.max(
+        viewportPadding,
+        Math.min(left, window.innerWidth - previewRect.width - viewportPadding)
+      );
+
+      let top = anchorRect.top - 8;
+      top = Math.max(
+        viewportPadding,
+        Math.min(top, window.innerHeight - previewRect.height - viewportPadding)
+      );
+
+      previewShell.style.left = `${Math.round(left)}px`;
+      previewShell.style.top = `${Math.round(top)}px`;
+    };
 
     const setSearchOpen = (open, options = {}) => {
       if (!shell || !searchPanel || !searchToggle) {
@@ -336,9 +330,10 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       }
     };
 
-    const setActive = (id) => {
+    const setActive = (id, anchor) => {
       const hasActivePreview = Boolean(id && entries.has(id) && previews.has(id));
       activeId = hasActivePreview ? id : undefined;
+      activeAnchor = hasActivePreview ? anchor ?? links.get(id) ?? undefined : undefined;
 
       root?.classList.toggle('has-active-preview', hasActivePreview);
 
@@ -348,6 +343,12 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
       for (const [previewId, preview] of previews) {
         preview.classList.toggle('is-active', hasActivePreview && previewId === id);
+      }
+
+      if (hasActivePreview && activeAnchor) {
+        requestAnimationFrame(() => positionPreview(activeAnchor));
+      } else {
+        clearPreviewPosition();
       }
     };
 
@@ -521,10 +522,9 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
           : `No results for "${query}". Try title, tag, Chinese, pinyin, or a shorter fuzzy query.`;
     };
 
-    for (const [id, entry] of entries) {
-      entry.addEventListener('pointerenter', () => setActive(id ?? undefined));
-      entry.addEventListener('focus', () => setActive(id ?? undefined));
-      entry.addEventListener('click', () => setActive(id ?? undefined));
+    for (const [id, link] of links) {
+      link.addEventListener('pointerenter', () => setActive(id ?? undefined, link));
+      link.addEventListener('focus', () => setActive(id ?? undefined, link));
     }
 
     root?.addEventListener('pointerleave', () => setActive(undefined));
@@ -535,6 +535,28 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         setActive(undefined);
       }
     });
+
+    window.addEventListener(
+      'resize',
+      () => {
+        if (activeAnchor) {
+          positionPreview(activeAnchor);
+        } else {
+          clearPreviewPosition();
+        }
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (activeAnchor) {
+          positionPreview(activeAnchor);
+        }
+      },
+      { passive: true }
+    );
 
     searchToggle?.addEventListener('click', () => {
       const isOpen = shell?.classList.contains('is-search-open');
@@ -553,14 +575,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       setSearchOpen(true, { focus: true });
     });
 
-    input?.addEventListener('input', () => {
-      if (!shell?.classList.contains('is-search-open')) {
-        setSearchOpen(true);
-      }
-
-      updateSearch();
-    });
-
     clearButton?.addEventListener('click', () => {
       if (!input) {
         return;
@@ -570,6 +584,8 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       updateSearch();
       input.focus();
     });
+
+    input?.addEventListener('input', updateSearch);
 
     document.addEventListener('click', (event) => {
       if (!shell?.contains(event.target) && !input?.value.trim()) {

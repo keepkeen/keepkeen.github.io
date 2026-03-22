@@ -31,17 +31,9 @@ const jsonLd = [
       <h1>The archive.</h1>
     </div>
     <div class="editorial-hero-side">
-      <p class="section-copy">
-        This is the full publication index. The front page uses the same list language, while this
-        page opens the full archive and search surface.
-      </p>
+      <p class="section-copy">The full index. Search when needed; otherwise read it like a table of contents.</p>
     </div>
   </section>
 
-  <BlogDirectory
-    documents={documents}
-    label="Archive"
-    statusText={`${documents.length} posts indexed. Hover a row to preview it.`}
-    enableSearch={true}
-  />
+  <BlogDirectory documents={documents} />
 </BaseLayout>

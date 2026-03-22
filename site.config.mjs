@@ -1,20 +1,20 @@
 export const siteConfig = {
   name: 'Liuliming',
-  role: 'AI builder, essayist, and observer of systems that compound.',
+  role: 'AI systems, software taste, and deliberate work.',
   siteUrl: 'https://keepkeen.github.io',
   email: '',
   location: 'Shanghai, China',
-  defaultTitle: 'Liuliming | Clear Systems, Patient Essays, and the Long Game',
+  defaultTitle: 'Liuliming | AI Systems, Software Taste, and the Long Game',
   description:
-    'A personal publication about AI systems, software taste, markets, and the slow disciplines that shape serious work.',
+    'A technical publication about AI systems, software taste, markets, and the disciplines that make serious work durable.',
   hero: {
     eyebrow: 'Liuliming / Keepkeen',
-    headline: 'Clear systems, patient essays, and the long game.',
+    headline: 'AI systems, software taste, and the long game.',
     lead:
-      'I build with AI and write about technology, markets, and the habits that make serious work durable. This site is where technical notebooks meet personal conviction.',
+      'A technical publication about AI systems, product judgment, markets, and the habits that make serious work hold up over time.',
     deck:
-      'More studio than feed, more publication than profile. Essays, field notes, and working principles collected in public.',
-    signature: 'Engineer by trade. Essayist by temperament. Optimistic about durable work.'
+      'Essays, field notes, and working principles from inside the work.',
+    signature: 'Written in public. Kept deliberately small.'
   },
   deskFacts: [
     { label: 'Base', value: 'Shanghai / China' },

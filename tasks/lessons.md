@@ -13,3 +13,5 @@
 - On the blog directory, the post list must dominate. Desktop preview panels should feel secondary and appear on hover/focus, not occupy permanent attention.
 - Search and theme controls should be icon-first and compact. Avoid large default search bars and text-labeled mode toggles when the user has asked for quieter chrome.
 - Do not mistake token-level visual unification for true product unification. If `Home` and `Blog` still use different page roles, interaction models, and component grammar, they will still feel split even with the same colors and spacing.
+- For this project, archive search should stay collapsed behind an icon until explicitly opened, and preview reveal should be triggered by hovering/focusing the title link itself, not the whole row.
+- For this project, "minimal but elegant" must come from typography, spacing, and grayscale discipline rather than decorative UI. Prefer single-column reading flow, strong line-length control, hairline borders, and restrained accents over cards, shadows, and oversized interface chrome.

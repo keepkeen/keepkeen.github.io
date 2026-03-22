@@ -1,0 +1,53 @@
+---
+import type { SearchDocument } from '../utils/search';
+
+interface Props {
+  documents: SearchDocument[];
+  interactive?: boolean;
+  showInlinePreview?: boolean;
+}
+
+const { documents, interactive = false, showInlinePreview = false } = Astro.props;
+---
+
+<div class="directory-list" data-directory-list={interactive ? true : undefined}>
+  {documents.map((document) => (
+    <article
+      class="directory-item"
+      data-directory-entry={interactive ? true : undefined}
+      data-post-id={interactive ? document.id : undefined}
+    >
+      <div class="entry-main">
+        <div class="entry-copy">
+          <div class="entry-topline">
+            <span>{document.dateLabel}</span>
+            <span>{document.readingTime} min read</span>
+          </div>
+
+          <h3>
+            <a
+              href={document.href}
+              data-directory-link={interactive ? true : undefined}
+              data-post-id={interactive ? document.id : undefined}
+            >
+              {document.title}
+            </a>
+          </h3>
+          <p>{document.description}</p>
+        </div>
+
+        <div class="entry-tags" aria-label="Tags">
+          {document.tags.map((tag) => (
+            <span>{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      {showInlinePreview && (
+        <div class="entry-inline-preview">
+          <p>{document.excerpt}</p>
+        </div>
+      )}
+    </article>
+  ))}
+</div>

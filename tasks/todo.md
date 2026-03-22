@@ -30,6 +30,8 @@
 - `Home` 不再保留自己的独立页面语法，而是成为同一出版物系统里的前台封面。
 - `Blog` 的目录语言必须直接渗透到 `Home` 的“最新文章”区，而不是只做样式层相似。
 - 两页要共享相同的核心列表组件、预览逻辑和元信息节奏，差异只能来自作用域不同，而不是组件宇宙不同。
+- 归档搜索必须保持 icon-first：只有点击图标后才展开空白输入框，不默认展示大搜索栏，也不在输入框里放提示语。
+- 预览框只在鼠标移到标题链接或键盘 focus 到标题链接时才展开，不能由整行 hover 触发。
 
 本轮实施清单：
 
@@ -38,6 +40,54 @@
 - [x] 砍掉首页多余的专属结构，保留真正必要的 front page 信息。
 - [x] 重新审查两页在桌面和移动端的组件对齐程度。
 - [x] 再次运行 `npm run check` 和 `npm run build`，并记录 review 结果。
+
+## 2026-03-22 Interaction Tightening Pass
+
+目标：
+
+- 把首页和归档页共享的部分收敛为“文章列表骨架”，而不是继续复用整套 archive 交互。
+- 归档页搜索改成真正的 click-to-open 空输入框。
+- 归档页预览只由标题链接 hover/focus 触发，列表本体保持稳定，不靠整行 hover 放大存在感。
+- 首页继续做 front page，只共享列表语言，不共享 archive 的搜索与 hover-preview 控制层。
+
+本轮实施清单：
+
+- [x] 拆分共享列表组件与 archive 增强组件，移除首页无用的搜索数据和脚本负担。
+- [x] 调整归档搜索交互，确保默认折叠、无 placeholder、点击图标展开、Esc/外部点击关闭。
+- [x] 调整预览触发源，只响应标题链接的 hover/focus。
+- [x] 修正残留的旧主题脚本逻辑，避免线上继续带着废弃状态字段。
+- [x] 运行 `npm run check` 和 `npm run build`，补写 review。
+
+## 2026-03-22 Tail Pass
+
+目标：
+
+- 把 `About` 页也收敛进同一套出版物语法，不再保留旧的 panel/card 页面语气。
+- 继续做本地收尾验证，确认 `About` 的新结构已经进入构建产物。
+- 明确记录当前真正剩下的尾项，只保留无法在这个环境内完成的浏览器实机回归。
+
+本轮实施清单：
+
+- [x] 重写 `About` 页结构，改成与 `Home` / `Blog` 同源的 editorial hero + section rail 语法。
+- [x] 跑通 `npm run check` 和 `npm run build`，确认没有回归。
+- [x] 点检 `dist/about/index.html`，确认新 hero、profile、trajectory、notes 结构已进入产物。
+- [x] 回写 review，并保留最终浏览器 QA 为唯一未清项。
+
+## 2026-03-22 High-Signal Typography Pass
+
+目标：
+
+- 把“极简但优雅”收敛成可执行的排版和间距规则，而不是继续靠组件感和版块感撑页面。
+- 在不违背既有要求的前提下，吸收高端技术博客的高信噪比特征：严格字距、阅读宽度、灰阶层次、无阴影、单栏流式版面、极轻边框。
+- 继续保持纯白浅色背景、紧凑图标化控件、标题 hover 预览和无 placeholder 搜索，不回退到此前被否掉的浮夸样式。
+
+本轮实施清单：
+
+- [x] 把新的审美规则回写到项目约束，明确“排版优先于装饰”。
+- [x] 重构全局 typography、color math、spacing 与 header chrome。
+- [x] 收敛 `Home` / `Blog` / `About` / `Article` 到更稳定的单栏阅读流。
+- [x] 重做目录预览和文章阅读细节，让它们更像精细出版物而不是普通模板。
+- [x] 运行 `npm run check`、`npm run build`，补写 review。
 
 ## Product Direction
 
@@ -197,3 +247,15 @@
 - 2026-03-22 第二轮“收敛修正”已完成：问题不在颜色或字重，而在 `Home` 和 `Blog` 仍然分别扮演“编排页”和“目录工具页”。这一轮已把首页的“最新文章”切换为和 archive 共用的目录组件，包含同一套条目结构、hover/focus 预览、元信息节奏和移动端退化逻辑。
 - 首页已明显瘦身：去掉了原先更像首页专属语法的多段重复 rails，把 front page 收敛成 `hero + recent writing directory + one supporting map section`，与 blog 形成“front page / full archive”的关系，而不是两个各说各话的页面。
 - 这轮再次验证了 `npm run check` 与 `npm run build`，依旧通过；并且点检了 `dist/index.html` 与 `dist/blog/index.html`，确认首页已经出现 `Recent writing` 目录块、`Open the full archive` 链接和与 archive 同源的 preview 容器，blog 也明确说明它是同一套 front page 语言的完整版归档。
+- 2026-03-22 第三轮“交互收紧”已完成：首页和归档页不再共用整套 archive 组件，而是拆成“共享文章列表骨架 + 归档增强层”。首页现在只复用列表语法，不再输出 archive 的搜索 JSON、搜索脚本和 hover-preview 控制逻辑。
+- 新增共享组件 `src/components/PostList.astro`，`BlogDirectory.astro` 现在只负责 archive 专属交互；这让 `Home` 是 front page，`Blog` 是 archive，而不是两个大小不同的同页。
+- 归档搜索现在保持 icon-first：默认折叠、点击按钮才展开、输入框无 placeholder、Esc 和外部点击都会关闭；构建产物中也已确认首页没有 `blog-search-data`、没有 `data-search-toggle`，blog 的 input 也不再带 placeholder。
+- 预览触发已收紧到标题链接本身：构建产物中的 archive 条目已带 `data-directory-link`，不再由整行 hover 激活；同时旧的主题脚本残留 `themeMode/getStoredMode` 也已从 `BaseLayout` 清除。
+- 2026-03-22 尾项收口已继续推进：`About` 页已改成与 `Home` / `Blog` 同源的 editorial hero + section rail 结构，不再保留旧的 panel/card 语法；内容被重组为 `Profile / Trajectory / Notes` 三段，语气和版式都回到同一出版物系统内。
+- 这一轮再次验证了 `npm run check` 与 `npm run build`，结果仍然是通过；并且额外点检了 `dist/about/index.html`，确认新的 `About` hero、`Profile`、`Trajectory`、`Current questions` 和 GitHub 链接都已进入生产产物。
+- 2026-03-22 “高信噪比排版”收口已完成：全局 token 已改成更严格的灰阶系统和单一点缀色，正文与标题改为更克制的系统字体栈、`65ch` 级阅读宽度和更稳定的行距，不再依赖原先偏模板化的字体与组件感。
+- `Home`、`Blog`、`About` 和文章页现在都进一步回到单栏阅读流：hero 与 section rail 不再做强烈双栏分割，文章页目录也不再是侧栏，而是回到正文前的内联目录块，更接近高端技术出版物的阅读节奏。
+- 目录预览这轮已从“固定右栏”改成真正的悬浮预览：只在 hover/focus 标题时出现，并按视口重新定位；同时搜索、主题按钮和边框细节也继续收紧到更安静的 chrome。
+- 旧字体依赖 `@fontsource-variable/manrope` 已移除，社交卡片字体引用也已同步清理，避免新旧审美混用。
+- 本轮再次通过了 `npm run check` 和 `npm run build`；并且点检了 `dist/index.html`、`dist/blog/index.html`、`dist/about/index.html` 与文章产物，确认新的文案、搜索状态、归档预览结构和单栏文章布局已经进入构建结果。
+- 当前仍未清零的只剩最终浏览器像素级 QA：包括真实 hover/focus、主题切换、不同分辨率、Studio 保存与 Notion 导入的实机回归。当前环境里仍只能做到构建产物和 HTML/脚本级验证。
