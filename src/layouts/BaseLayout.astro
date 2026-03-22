@@ -69,7 +69,7 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
     <link rel="canonical" href={canonical.toString()} />
     <link rel="icon" type="image/svg+xml" href={iconHref} />
     <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS`} href={rssHref} />
-    <meta id="theme-color-meta" name="theme-color" content="#f6f6f2" />
+    <meta id="theme-color-meta" name="theme-color" content="#ffffff" />
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={siteConfig.name} />
@@ -94,55 +94,77 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
     ))}
     <script is:inline>
       (() => {
-        const STORAGE_KEY = 'blog-theme-mode';
+        const STORAGE_KEY = 'blog-theme-preference';
         const LIGHT = 'light';
         const DARK = 'dark';
-        const SYSTEM = 'system';
         const media = window.matchMedia('(prefers-color-scheme: dark)');
         const root = document.documentElement;
         const themeMeta = document.getElementById('theme-color-meta');
-        const readStorage = () => {
+        const readPreference = () => {
           try {
-            return window.localStorage.getItem(STORAGE_KEY);
+            const value = window.localStorage.getItem(STORAGE_KEY);
+            return value === LIGHT || value === DARK ? value : null;
           } catch {
             return null;
           }
         };
-        const writeStorage = (value) => {
+        const writePreference = (value) => {
           try {
-            window.localStorage.setItem(STORAGE_KEY, value);
+            if (value) {
+              window.localStorage.setItem(STORAGE_KEY, value);
+            } else {
+              window.localStorage.removeItem(STORAGE_KEY);
+            }
           } catch {
             return;
           }
         };
+        const resolveTheme = (preference) => preference ?? (media.matches ? DARK : LIGHT);
+        const apply = (preference, persist = true) => {
+          const resolved = resolveTheme(preference);
 
-        const getStoredMode = () => {
-          const value = readStorage();
-          return value === LIGHT || value === DARK || value === SYSTEM ? value : SYSTEM;
-        };
+          if (preference) {
+            root.dataset.themePreference = preference;
+          } else {
+            delete root.dataset.themePreference;
+          }
 
-        const resolveTheme = (mode) => (mode === SYSTEM ? (media.matches ? DARK : LIGHT) : mode);
-
-        const apply = (mode, persist = true) => {
-          const resolved = resolveTheme(mode);
-
-          root.dataset.themeMode = mode;
           root.dataset.theme = resolved;
           root.style.colorScheme = resolved;
-          themeMeta?.setAttribute('content', resolved === DARK ? '#111317' : '#f6f6f2');
+          themeMeta?.setAttribute('content', resolved === DARK ? '#0d1015' : '#ffffff');
 
           if (persist) {
-            writeStorage(mode);
+            writePreference(preference);
           }
+
+          window.__blogTheme?.syncButtons?.();
+        };
+
+        const toggle = () => {
+          const currentResolved = root.dataset.theme || resolveTheme(readPreference());
+          apply(currentResolved === DARK ? LIGHT : DARK);
         };
 
         window.__blogTheme = {
           media,
           apply,
-          getStoredMode
+          toggle,
+          getStoredPreference: readPreference,
+          getResolvedTheme: () => root.dataset.theme || resolveTheme(readPreference()),
+          syncButtons: () => {}
         };
 
-        apply(getStoredMode(), false);
+        apply(readPreference(), false);
+
+        const handleMediaChange = () => {
+          if (!readPreference()) {
+            apply(null, false);
+          } else {
+            window.__blogTheme?.syncButtons?.();
+          }
+        };
+
+        media.addEventListener('change', handleMediaChange);
       })();
     </script>
   </head>
@@ -159,29 +181,14 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
     <script is:inline>
       const COPY_LABEL = 'Copy';
       const COPIED_LABEL = 'Copied';
-      const THEME_LABELS = {
-        system: 'Theme: Auto',
-        light: 'Theme: Light',
-        dark: 'Theme: Dark'
-      };
-      const cycleThemeMode = (mode) => {
-        if (mode === 'system') {
-          return 'light';
-        }
-
-        if (mode === 'light') {
-          return 'dark';
-        }
-
-        return 'system';
-      };
       const syncThemeButtons = () => {
-        const mode = document.documentElement.dataset.themeMode || window.__blogTheme?.getStoredMode?.() || 'system';
+        const resolved = document.documentElement.dataset.theme || window.__blogTheme?.getResolvedTheme?.() || 'light';
+        const next = resolved === 'dark' ? 'light' : 'dark';
 
         document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
-          button.dataset.themeMode = mode;
-          button.textContent = THEME_LABELS[mode] ?? THEME_LABELS.system;
-          button.setAttribute('aria-label', `${button.textContent}. Activate to switch theme mode.`);
+          button.dataset.resolvedTheme = resolved;
+          button.setAttribute('aria-label', `Current ${resolved} theme. Activate to switch to ${next}.`);
+          button.setAttribute('title', `Switch to ${next} theme`);
         });
       };
       const bindThemeButtons = () => {
@@ -192,9 +199,7 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
 
           button.dataset.themeBound = 'true';
           button.addEventListener('click', () => {
-            const current = document.documentElement.dataset.themeMode || window.__blogTheme?.getStoredMode?.() || 'system';
-            const next = cycleThemeMode(current);
-            window.__blogTheme?.apply?.(next);
+            window.__blogTheme?.toggle?.();
             syncThemeButtons();
           });
         });
@@ -253,6 +258,7 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
         });
 
         bindThemeButtons();
+        window.__blogTheme.syncButtons = syncThemeButtons;
         syncThemeButtons();
       };
 

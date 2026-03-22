@@ -8,3 +8,7 @@
 - Treat the blog archive as a directory product, not a landing page: prioritize list scanning, strong hierarchy, hover preview, and search over fragmented content blocks.
 - Authoring workflow is part of the product surface: editor UX, Markdown ergonomics, import flows, and publishing steps must be designed together with the public pages.
 - Do not call the redesign complete until light/dark theme sync, mobile/tablet/desktop responsiveness, and article utilities like code/math copy actions have been verified.
+- When unifying a publication UI, treat `Home` and `Blog` as the same product surface: shared layout rhythm, shared list language, shared controls, and no split personality between "editorial landing page" and "directory tool".
+- For this project, default the public background to pure white unless the user explicitly asks otherwise; avoid tinted paper backgrounds, translucent chrome, and decorative surface treatments.
+- On the blog directory, the post list must dominate. Desktop preview panels should feel secondary and appear on hover/focus, not occupy permanent attention.
+- Search and theme controls should be icon-first and compact. Avoid large default search bars and text-labeled mode toggles when the user has asked for quieter chrome.

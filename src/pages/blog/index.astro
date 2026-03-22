@@ -25,13 +25,17 @@ const jsonLd = [
   keywords={['blog', 'technical writing', 'directory', 'search', 'notes']}
   jsonLd={jsonLd}
 >
-  <section class="page-intro">
-    <p class="eyebrow">Blog</p>
-    <h1>Posts directory.</h1>
-    <p class="section-copy">
-      This page is now organized as a directory, not a feed. Search it directly, scan the list,
-      and use the preview panel before opening a post.
-    </p>
+  <section class="editorial-hero">
+    <div class="editorial-hero-main">
+      <p class="eyebrow">Blog</p>
+      <h1>The archive.</h1>
+    </div>
+    <div class="editorial-hero-side">
+      <p class="section-copy">
+        Scan the list first. On desktop, hover a row to reveal a preview; search stays tucked away
+        until you need it.
+      </p>
+    </div>
   </section>
 
   <BlogDirectory documents={documents} />
