@@ -12,3 +12,4 @@
 - For this project, default the public background to pure white unless the user explicitly asks otherwise; avoid tinted paper backgrounds, translucent chrome, and decorative surface treatments.
 - On the blog directory, the post list must dominate. Desktop preview panels should feel secondary and appear on hover/focus, not occupy permanent attention.
 - Search and theme controls should be icon-first and compact. Avoid large default search bars and text-labeled mode toggles when the user has asked for quieter chrome.
+- Do not mistake token-level visual unification for true product unification. If `Home` and `Blog` still use different page roles, interaction models, and component grammar, they will still feel split even with the same colors and spacing.

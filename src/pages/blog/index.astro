@@ -32,11 +32,16 @@ const jsonLd = [
     </div>
     <div class="editorial-hero-side">
       <p class="section-copy">
-        Scan the list first. On desktop, hover a row to reveal a preview; search stays tucked away
-        until you need it.
+        This is the full publication index. The front page uses the same list language, while this
+        page opens the full archive and search surface.
       </p>
     </div>
   </section>
 
-  <BlogDirectory documents={documents} />
+  <BlogDirectory
+    documents={documents}
+    label="Archive"
+    statusText={`${documents.length} posts indexed. Hover a row to preview it.`}
+    enableSearch={true}
+  />
 </BaseLayout>

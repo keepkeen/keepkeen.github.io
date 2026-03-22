@@ -646,6 +646,14 @@ dl {
   gap: 1.25rem;
 }
 
+.directory-toolbar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+}
+
 .directory-toolbar-actions {
   display: flex;
   align-items: center;
@@ -695,6 +703,10 @@ dl {
 .search-note {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+.directory-toolbar-link {
+  flex-shrink: 0;
 }
 
 .directory-layout {
@@ -1217,6 +1229,10 @@ dl {
 
   .directory-toolbar {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .directory-toolbar-meta {
     align-items: flex-start;
   }
 

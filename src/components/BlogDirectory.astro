@@ -3,69 +3,101 @@ import type { SearchDocument } from '../utils/search';
 
 interface Props {
   documents: SearchDocument[];
+  label?: string;
+  statusText?: string;
+  emptyText?: string;
+  enableSearch?: boolean;
+  secondaryLinkHref?: string;
+  secondaryLinkLabel?: string;
 }
 
-const { documents } = Astro.props;
+const {
+  documents,
+  label = 'Archive',
+  statusText,
+  emptyText = 'No posts yet.',
+  enableSearch = true,
+  secondaryLinkHref,
+  secondaryLinkLabel
+} = Astro.props;
 const initialDocument = documents[0];
+const initialStatusText =
+  statusText ??
+  `${documents.length} posts ${enableSearch ? 'indexed' : 'listed'}. Hover a row to preview it.`;
 const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 ---
 
 <section class="directory-shell" data-directory-shell>
   <div class="directory-toolbar">
     <div class="directory-toolbar-copy">
-      <p class="eyebrow">Archive</p>
-      <p class="search-note" data-search-status>
-        {documents.length} posts indexed. Hover a row to preview it.
-      </p>
+      <p class="eyebrow">{label}</p>
+      <div class="directory-toolbar-meta">
+        <p class="search-note" data-search-status data-default-status={initialStatusText}>
+          {initialStatusText}
+        </p>
+        {secondaryLinkHref && secondaryLinkLabel && (
+          <a class="text-link directory-toolbar-link" href={secondaryLinkHref}>
+            {secondaryLinkLabel}
+          </a>
+        )}
+      </div>
     </div>
 
-    <div class="directory-toolbar-actions">
-      <div class="directory-searchbox">
-        <button
-          class="icon-button search-toggle"
-          type="button"
-          data-search-toggle
-          aria-expanded="false"
-          aria-controls="blog-search-panel"
-          aria-label="Open search"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" />
-            <path
-              d="m16 16 4.2 4.2"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-width="1.8"
-            />
-          </svg>
-          <span class="sr-only">Search posts</span>
-        </button>
-
-        <div id="blog-search-panel" class="search-panel" data-search-panel hidden>
-          <label class="sr-only" for="blog-search">Search posts</label>
-          <input
-            id="blog-search"
-            class="search-input"
-            type="search"
-            placeholder="Title, tag, English, 中文, 拼音"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <button class="icon-button search-clear" type="button" data-clear-search hidden aria-label="Clear search">
+    {enableSearch && (
+      <div class="directory-toolbar-actions">
+        <div class="directory-searchbox">
+          <button
+            class="icon-button search-toggle"
+            type="button"
+            data-search-toggle
+            aria-expanded="false"
+            aria-controls="blog-search-panel"
+            aria-label="Open search"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
-                d="m6.5 6.5 11 11m0-11-11 11"
+                d="m16 16 4.2 4.2"
                 fill="none"
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-width="1.8"
               />
+              <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" />
             </svg>
+            <span class="sr-only">Search posts</span>
           </button>
+
+          <div id="blog-search-panel" class="search-panel" data-search-panel hidden>
+            <label class="sr-only" for="blog-search">Search posts</label>
+            <input
+              id="blog-search"
+              class="search-input"
+              type="search"
+              placeholder="Title, tag, English, 中文, 拼音"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button
+              class="icon-button search-clear"
+              type="button"
+              data-clear-search
+              hidden
+              aria-label="Clear search"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m6.5 6.5 11 11m0-11-11 11"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    )}
   </div>
 
   <div class="directory-layout" data-directory-root>
@@ -132,7 +164,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
       {!initialDocument && (
         <section class="preview-card is-active">
-          <p class="preview-excerpt">No posts yet.</p>
+          <p class="preview-excerpt">{emptyText}</p>
         </section>
       )}
     </aside>
@@ -254,6 +286,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const searchPanel = shell?.querySelector('[data-search-panel]');
     const clearButton = shell?.querySelector('[data-clear-search]');
     const status = shell?.querySelector('[data-search-status]');
+    const defaultStatus = status?.getAttribute('data-default-status') ?? '';
     const entries = new Map(
       [...(root?.querySelectorAll('[data-directory-entry]') ?? [])].map((element) => [
         element.getAttribute('data-post-id'),
@@ -463,17 +496,17 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     };
 
     const updateSearch = () => {
-      if (!input || !status) {
+      if (!status) {
         return;
       }
 
-      const query = input.value.trim();
+      const query = input?.value.trim() ?? '';
       clearButton?.toggleAttribute('hidden', query.length === 0);
 
       if (!query) {
         renderList(documents.map((document) => document.id));
         setActive(undefined);
-        status.textContent = `${documents.length} posts indexed. Hover a row to preview it.`;
+        status.textContent = defaultStatus;
         return;
       }
 

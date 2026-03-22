@@ -10,6 +10,7 @@
 - 搜索入口收敛成图标触发，不再占据整行大输入框；展开后再进入检索状态。
 - 主题切换收敛成图标按钮：默认跟随系统，不显示单独的 `Auto` 模式文案；按钮图标始终显示“当前实际主题”，点击一次即切到反向主题并持久化。
 - 全站视觉应从“常见模板式 blog”收敛到“克制、锋利、统一、目录优先”的个人出版物界面。
+- 如果 `Home` 仍然是编排页、`Blog` 仍然是目录工具页，那么即使视觉 token 接近也仍然是割裂的；本轮必须把它们收敛成同一个出版物产品的 front page / archive 关系。
 
 本轮实施清单：
 
@@ -21,6 +22,22 @@
 - [x] 把搜索入口改为图标触发的紧凑搜索，不默认铺开大搜索栏。
 - [x] 逐项重新审核桌面/平板/手机的响应式表现与 hover/触屏退化。
 - [x] 运行 `npm run check` 与 `npm run build`，把结果写回 review。
+
+## 2026-03-22 Convergence Pass
+
+目标：
+
+- `Home` 不再保留自己的独立页面语法，而是成为同一出版物系统里的前台封面。
+- `Blog` 的目录语言必须直接渗透到 `Home` 的“最新文章”区，而不是只做样式层相似。
+- 两页要共享相同的核心列表组件、预览逻辑和元信息节奏，差异只能来自作用域不同，而不是组件宇宙不同。
+
+本轮实施清单：
+
+- [x] 抽出并复用统一的文章目录组件，让 `Home` 和 `Blog` 共用核心列表/预览结构。
+- [x] 重写首页，把“最新文章”区升级成与 archive 同构的 front page block。
+- [x] 砍掉首页多余的专属结构，保留真正必要的 front page 信息。
+- [x] 重新审查两页在桌面和移动端的组件对齐程度。
+- [x] 再次运行 `npm run check` 和 `npm run build`，并记录 review 结果。
 
 ## Product Direction
 
@@ -177,3 +194,6 @@
 - `/blog` 目录页已改成列表主导布局：搜索默认收进图标按钮里，桌面端预览区默认不出现，只在 hover/focus 某条目时浮现；小屏和触屏下则退化成条目内的短摘要，不再依赖常驻侧栏。
 - 目录页的 tags 表现也已从 pill 样式收敛成更轻的文本元信息，减少“一块一块”的碎片感。
 - 这轮重新验证了 `npm run check` 和 `npm run build`，结果分别为 `0 errors / 0 warnings / 0 hints` 和构建通过；同时点检了 `dist/index.html`、`dist/blog/index.html`、`dist/about/index.html`，确认新的首页结构、归档搜索图标、hover 预览容器和主题图标按钮都已进入生产产物。
+- 2026-03-22 第二轮“收敛修正”已完成：问题不在颜色或字重，而在 `Home` 和 `Blog` 仍然分别扮演“编排页”和“目录工具页”。这一轮已把首页的“最新文章”切换为和 archive 共用的目录组件，包含同一套条目结构、hover/focus 预览、元信息节奏和移动端退化逻辑。
+- 首页已明显瘦身：去掉了原先更像首页专属语法的多段重复 rails，把 front page 收敛成 `hero + recent writing directory + one supporting map section`，与 blog 形成“front page / full archive”的关系，而不是两个各说各话的页面。
+- 这轮再次验证了 `npm run check` 与 `npm run build`，依旧通过；并且点检了 `dist/index.html` 与 `dist/blog/index.html`，确认首页已经出现 `Recent writing` 目录块、`Open the full archive` 链接和与 archive 同源的 preview 容器，blog 也明确说明它是同一套 front page 语言的完整版归档。
