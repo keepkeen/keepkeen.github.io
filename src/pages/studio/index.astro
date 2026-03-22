@@ -1,0 +1,1252 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title="Studio"
+  description="A local writing studio for drafting and previewing blog posts."
+  noindex={true}
+  keywords={['markdown editor', 'blog studio', 'notion import', 'writing workflow']}
+>
+  <section class="page-intro">
+    <p class="eyebrow">Studio</p>
+    <h1>Write in the browser, save to Markdown.</h1>
+    <p class="section-copy">
+      This editor is local-first. You can open an existing Markdown file, start a new draft, save
+      directly with the browser file picker in supported browsers, or export a post as Markdown.
+    </p>
+  </section>
+
+  <section class="studio-shell" data-studio-root data-today={today}>
+    <div class="studio-toolbar plain-panel">
+      <div>
+        <p class="panel-label">Status</p>
+        <p class="studio-status" data-studio-status>
+          Ready. Open an existing post or start a new draft.
+        </p>
+      </div>
+
+      <div class="button-row">
+        <button class="button" type="button" data-action="new">New draft</button>
+        <button class="button" type="button" data-action="open-folder">Open posts folder</button>
+        <button class="button" type="button" data-action="open">Open file</button>
+        <button class="button" type="button" data-action="import-notion">Import Notion export</button>
+        <button class="button button-primary" type="button" data-action="save">Save</button>
+        <button class="button" type="button" data-action="save-as">Save as</button>
+        <button class="button" type="button" data-action="export">Export</button>
+      </div>
+
+      <p class="search-note">
+        Direct file open/save works in Chromium-based browsers via the File System Access API.
+        Other browsers can still export the generated Markdown. Drop a Markdown or Notion zip file
+        anywhere in the studio to import it. Use Cmd/Ctrl+S to save.
+      </p>
+    </div>
+
+    <input hidden type="file" accept=".zip,.md,.mdx,text/markdown" data-notion-input />
+
+    <div class="studio-grid">
+      <form class="plain-panel studio-form" data-studio-form>
+        <div class="field-grid">
+          <label class="field">
+            <span>Title</span>
+            <input id="studio-title" name="title" type="text" placeholder="A New Essay" />
+          </label>
+
+          <label class="field">
+            <span>Slug</span>
+            <input id="studio-slug" name="slug" type="text" placeholder="a-new-essay" />
+          </label>
+
+          <label class="field">
+            <span>Date</span>
+            <input id="studio-date" name="date" type="date" value={today} />
+          </label>
+
+          <label class="field">
+            <span>Updated</span>
+            <input id="studio-updated-date" name="updatedDate" type="date" />
+          </label>
+
+          <label class="field">
+            <span>Format</span>
+            <select id="studio-format" name="format">
+              <option value="md">Markdown (.md)</option>
+              <option value="mdx">MDX (.mdx)</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Tags</span>
+            <input
+              id="studio-tags"
+              name="tags"
+              type="text"
+              placeholder="ai, engineering, systems"
+            />
+          </label>
+
+          <label class="field field-full">
+            <span>Description</span>
+            <textarea
+              id="studio-description"
+              name="description"
+              rows="3"
+              placeholder="What the piece is about."
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle-field">
+            <input id="studio-draft" name="draft" type="checkbox" />
+            <span>Draft</span>
+          </label>
+
+          <label class="toggle-field">
+            <input id="studio-featured" name="featured" type="checkbox" />
+            <span>Featured</span>
+          </label>
+        </div>
+
+        <div class="studio-helper-toolbar">
+          <p class="panel-label">Insert markdown</p>
+          <div class="button-row button-row-compact">
+            <button class="button button-compact" type="button" data-insert-snippet="h2">H2</button>
+            <button class="button button-compact" type="button" data-insert-snippet="h3">H3</button>
+            <button class="button button-compact" type="button" data-insert-snippet="link">Link</button>
+            <button class="button button-compact" type="button" data-insert-snippet="code">Code</button>
+            <button class="button button-compact" type="button" data-insert-snippet="quote">Quote</button>
+            <button class="button button-compact" type="button" data-insert-snippet="list">List</button>
+            <button class="button button-compact" type="button" data-insert-snippet="math">Math</button>
+          </div>
+        </div>
+
+        <label class="field field-full">
+          <span>Markdown / MDX</span>
+          <textarea
+            id="studio-body"
+            class="studio-editor"
+            name="body"
+            rows="24"
+            placeholder="Write your post here..."
+          ></textarea>
+        </label>
+      </form>
+
+      <div class="studio-side-stack">
+        <aside class="plain-panel studio-library-panel">
+          <div class="studio-preview-head">
+            <div>
+              <p class="panel-label">Posts folder</p>
+              <p class="studio-preview-filename" data-folder-name>No folder connected</p>
+            </div>
+            <p class="studio-preview-stats" data-post-count>0 files</p>
+          </div>
+
+          <p class="search-note">
+            Connect `src/content/posts` to browse existing articles and save new drafts directly
+            into that folder.
+          </p>
+
+          <label class="field">
+            <span>Filter local posts</span>
+            <input type="search" placeholder="Search by filename" data-post-filter />
+          </label>
+
+          <div class="studio-post-list" data-post-list>
+            <p class="search-note">No local posts folder selected yet.</p>
+          </div>
+        </aside>
+
+        <aside class="plain-panel studio-checklist-panel">
+          <div class="studio-preview-head">
+            <div>
+              <p class="panel-label">Checklist</p>
+              <p class="studio-preview-filename">Pre-publish review</p>
+            </div>
+          </div>
+
+          <p class="search-note" data-checklist-summary>
+            Title, description, dates, tags, and filename safety are checked here while you write.
+          </p>
+
+          <ul class="studio-checklist" data-checklist-list>
+            <li class="studio-checklist-item is-pass">The editor will surface required fields here.</li>
+          </ul>
+        </aside>
+
+        <aside class="plain-panel studio-import-panel">
+          <div class="studio-preview-head">
+            <div>
+              <p class="panel-label">Import report</p>
+              <p class="studio-preview-filename">Notion and Markdown intake</p>
+            </div>
+          </div>
+
+          <p class="search-note" data-import-summary>
+            No Notion import yet. Markdown and `.zip` exports will be analyzed here after import.
+          </p>
+
+          <ul class="studio-checklist" data-import-list>
+            <li class="studio-checklist-item is-pass">
+              Supported route: Notion Markdown export, plain Markdown, or MDX.
+            </li>
+          </ul>
+        </aside>
+
+        <aside class="plain-panel studio-preview-panel">
+          <div class="studio-preview-head">
+            <div>
+              <p class="panel-label">Preview</p>
+              <p class="studio-preview-filename" data-preview-filename>{today}-untitled-post.md</p>
+            </div>
+            <p class="studio-preview-stats" data-preview-stats>0 words</p>
+          </div>
+
+          <div class="studio-preview-meta">
+            <div>
+              <span>Date</span>
+              <strong data-preview-date>{today}</strong>
+            </div>
+            <div>
+              <span>Tags</span>
+              <strong data-preview-tags>none</strong>
+            </div>
+            <div>
+              <span>Mode</span>
+              <strong data-preview-flags>published</strong>
+            </div>
+          </div>
+
+          <article class="prose studio-preview" data-preview-body>
+            <p>Start typing to preview your post.</p>
+          </article>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // @ts-nocheck
+    import { marked } from 'marked';
+    import { dump, load } from 'js-yaml';
+    import JSZip from 'jszip';
+    import renderMathInElement from 'katex/contrib/auto-render';
+
+    const STORAGE_KEY = 'blog-studio-draft-v1';
+    const root = document.querySelector('[data-studio-root]');
+
+    if (root) {
+      const defaultDate = root.dataset.today ?? new Date().toISOString().slice(0, 10);
+      const status = root.querySelector('[data-studio-status]');
+      const notionInput = root.querySelector('[data-notion-input]');
+      const folderName = root.querySelector('[data-folder-name]');
+      const postCount = root.querySelector('[data-post-count]');
+      const postList = root.querySelector('[data-post-list]');
+      const postFilter = root.querySelector('[data-post-filter]');
+      const checklistSummary = root.querySelector('[data-checklist-summary]');
+      const checklistList = root.querySelector('[data-checklist-list]');
+      const importSummary = root.querySelector('[data-import-summary]');
+      const importList = root.querySelector('[data-import-list]');
+      const previewFilename = root.querySelector('[data-preview-filename]');
+      const previewStats = root.querySelector('[data-preview-stats]');
+      const previewDate = root.querySelector('[data-preview-date]');
+      const previewTags = root.querySelector('[data-preview-tags]');
+      const previewFlags = root.querySelector('[data-preview-flags]');
+      const previewBody = root.querySelector('[data-preview-body]');
+
+      const fields = {
+        title: root.querySelector('#studio-title'),
+        slug: root.querySelector('#studio-slug'),
+        date: root.querySelector('#studio-date'),
+        updatedDate: root.querySelector('#studio-updated-date'),
+        format: root.querySelector('#studio-format'),
+        tags: root.querySelector('#studio-tags'),
+        description: root.querySelector('#studio-description'),
+        draft: root.querySelector('#studio-draft'),
+        featured: root.querySelector('#studio-featured'),
+        body: root.querySelector('#studio-body')
+      };
+
+      let currentHandle = null;
+      let postsDirectoryHandle = null;
+      let postsDirectoryEntries = [];
+      let autosaveTimer = null;
+      let importReport = null;
+
+      marked.setOptions({
+        gfm: true,
+        breaks: false
+      });
+
+      const emptyState = () => ({
+        title: '',
+        slug: '',
+        date: defaultDate,
+        updatedDate: '',
+        format: 'md',
+        tags: '',
+        description: '',
+        draft: false,
+        featured: false,
+        body: ''
+      });
+
+      const setStatus = (message) => {
+        if (status) {
+          status.textContent = message;
+        }
+      };
+
+      const slugify = (value) =>
+        value
+          .normalize('NFKD')
+          .replace(/[^\w\s-]/g, '')
+          .trim()
+          .toLowerCase()
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '') || 'untitled-post';
+
+      const normalizeDateInput = (value) => {
+        if (!value) {
+          return '';
+        }
+
+        if (typeof value === 'string') {
+          return value.slice(0, 10);
+        }
+
+        if (value instanceof Date && !Number.isNaN(value.valueOf())) {
+          return value.toISOString().slice(0, 10);
+        }
+
+        return '';
+      };
+
+      const getState = () => ({
+        title: fields.title?.value?.trim() ?? '',
+        slug: fields.slug?.value?.trim() ?? '',
+        date: fields.date?.value ?? defaultDate,
+        updatedDate: fields.updatedDate?.value ?? '',
+        format: fields.format?.value === 'mdx' ? 'mdx' : 'md',
+        tags: fields.tags?.value ?? '',
+        description: fields.description?.value?.trim() ?? '',
+        draft: Boolean(fields.draft?.checked),
+        featured: Boolean(fields.featured?.checked),
+        body: fields.body?.value ?? ''
+      });
+
+      const getTagList = (value) =>
+        value
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+      const plainTextFromMarkdown = (value) =>
+        value
+          .replace(/```[\s\S]*?```/g, ' ')
+          .replace(/`([^`]+)`/g, '$1')
+          .replace(/!\[[^\]]*]\(([^)]+)\)/g, ' ')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+          .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+          .replace(/\$([^$\n]+)\$/g, '$1')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+          .replace(/^\s{0,3}>\s?/gm, '')
+          .replace(/^\s*([-*+]|\d+\.)\s+/gm, '')
+          .replace(/\r/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+      const countWords = (value) =>
+        plainTextFromMarkdown(value)
+          .split(/\s+/)
+          .filter(Boolean).length;
+
+      const getReadTime = (value) => Math.max(1, Math.round(countWords(value) / 220));
+
+      const getSuggestedFilename = (state) => {
+        const slug = state.slug || slugify(state.title);
+        const extension = state.format === 'mdx' ? 'mdx' : 'md';
+        return `${state.date || defaultDate}-${slug}.${extension}`;
+      };
+
+      const getCurrentHandleName = () => currentHandle?.name ?? '';
+
+      const serializeDocument = (state) => {
+        const frontmatter = {
+          title: state.title || 'Untitled Post',
+          description: state.description || 'Draft description.',
+          date: state.date || defaultDate,
+          tags: getTagList(state.tags),
+          featured: state.featured,
+          draft: state.draft
+        };
+
+        if (state.updatedDate) {
+          frontmatter.updatedDate = state.updatedDate;
+        }
+
+        return `---\n${dump(frontmatter, { lineWidth: -1, noRefs: true })}---\n\n${state.body.replace(/\s+$/, '')}\n`;
+      };
+
+      const renderMessageList = (target, items, emptyMessage) => {
+        if (!target) {
+          return;
+        }
+
+        target.innerHTML = '';
+
+        if (items.length === 0) {
+          const item = document.createElement('li');
+          item.className = 'studio-checklist-item is-pass';
+          item.textContent = emptyMessage;
+          target.appendChild(item);
+          return;
+        }
+
+        items.forEach((itemData) => {
+          const item = document.createElement('li');
+          item.className = `studio-checklist-item is-${itemData.kind}`;
+          item.textContent = itemData.text;
+          target.appendChild(item);
+        });
+      };
+
+      const renderImportReport = () => {
+        if (!importSummary || !importList) {
+          return;
+        }
+
+        if (!importReport) {
+          importSummary.textContent =
+            'No Notion import yet. Markdown and `.zip` exports will be analyzed here after import.';
+          renderMessageList(importList, [], 'Supported route: Notion Markdown export, plain Markdown, or MDX.');
+          return;
+        }
+
+        const features = [];
+        const warnings = [];
+
+        if (importReport.headings > 0) features.push(`${importReport.headings} heading block(s) detected.`);
+        if (importReport.lists > 0) features.push(`${importReport.lists} list block(s) detected.`);
+        if (importReport.codeBlocks > 0) features.push(`${importReport.codeBlocks} code block(s) detected.`);
+        if (importReport.quoteBlocks > 0) features.push(`${importReport.quoteBlocks} quote block(s) detected.`);
+        if (importReport.mathBlocks > 0) features.push(`${importReport.mathBlocks} formula block(s) detected.`);
+        if (importReport.images > 0) features.push(`${importReport.images} image reference(s) detected.`);
+        if (importReport.rules > 0) features.push(`${importReport.rules} divider block(s) detected.`);
+        if (features.length === 0) {
+          features.push('Imported content is plain text or paragraphs only.');
+        }
+
+        if (importReport.markdownEntryCount > 1) {
+          warnings.push(
+            `The zip contained ${importReport.markdownEntryCount} Markdown files. The shortest path was selected automatically.`
+          );
+        }
+
+        if (importReport.assetCount > 0) {
+          warnings.push(
+            `${importReport.assetCount} asset file(s) were bundled with the export and may need manual placement.`
+          );
+        }
+
+        if (importReport.relativeAssetRefs.length > 0) {
+          warnings.push(
+            `${importReport.relativeAssetRefs.length} relative asset reference(s) were found. Check image paths before publishing.`
+          );
+        }
+
+        if (importReport.htmlBlocks > 0) {
+          warnings.push(
+            `${importReport.htmlBlocks} raw HTML block(s) were found. Review rendering in the preview pane.`
+          );
+        }
+
+        importSummary.textContent = `Imported ${importReport.sourceName}.`;
+        renderMessageList(
+          importList,
+          [
+            ...features.map((text) => ({ kind: 'pass', text })),
+            ...warnings.map((text) => ({ kind: 'warning', text }))
+          ],
+          'No import analysis available.'
+        );
+      };
+
+      const getChecklist = (state = getState()) => {
+        const errors = [];
+        const warnings = [];
+        const passes = [];
+        const descriptionLength = state.description.trim().length;
+        const wordCount = countWords(state.body);
+        const tags = getTagList(state.tags);
+        const suggestedFilename = getSuggestedFilename(state);
+        const currentHandleName = getCurrentHandleName();
+        const duplicateFilename = postsDirectoryEntries.find(
+          (entry) => entry.name === suggestedFilename && entry.name !== currentHandleName
+        );
+
+        if (state.title) {
+          passes.push('Title is set.');
+        } else {
+          errors.push('Add a title for the post.');
+        }
+
+        if (state.slug) {
+          if (slugify(state.slug) !== state.slug) {
+            warnings.push('Slug should stay lowercase and hyphenated for clean URLs.');
+          } else {
+            passes.push('Slug format is clean.');
+          }
+        } else {
+          errors.push('Add a slug or let the title generate one.');
+        }
+
+        if (state.date) {
+          passes.push('Publish date is set.');
+        } else {
+          errors.push('Add a publish date.');
+        }
+
+        if (state.updatedDate && state.date && state.updatedDate < state.date) {
+          errors.push('Updated date cannot be earlier than the publish date.');
+        }
+
+        if (descriptionLength >= 50 && descriptionLength <= 160) {
+          passes.push('Description length is in a good search-preview range.');
+        } else if (descriptionLength === 0) {
+          errors.push('Add a short description for previews and search.');
+        } else {
+          warnings.push('Keep the description around 50 to 160 characters for previews and search.');
+        }
+
+        if (tags.length > 0) {
+          passes.push('Tags are present for archive filtering.');
+        } else {
+          warnings.push('Add at least one tag so the directory and search stay useful.');
+        }
+
+        if (wordCount >= 80) {
+          passes.push('Body length is enough for a meaningful preview.');
+        } else if (wordCount > 0) {
+          warnings.push('The draft is still very short.');
+        } else {
+          errors.push('Write some body content before publishing.');
+        }
+
+        if (duplicateFilename) {
+          warnings.push(`${suggestedFilename} already exists in the connected folder and will be reused.`);
+        } else if (postsDirectoryHandle) {
+          passes.push('Filename does not conflict with another file in the connected folder.');
+        }
+
+        if (currentHandleName && currentHandleName !== suggestedFilename) {
+          warnings.push(
+            `Current file is ${currentHandleName}, but the draft metadata now points to ${suggestedFilename}. Saving will create or prompt for the new filename.`
+          );
+        }
+
+        return { errors, warnings, passes };
+      };
+
+      const renderChecklist = () => {
+        if (!checklistSummary || !checklistList) {
+          return;
+        }
+
+        const { errors, warnings, passes } = getChecklist();
+
+        if (errors.length > 0) {
+          checklistSummary.textContent = `${errors.length} required item(s) still need attention.`;
+        } else if (warnings.length > 0) {
+          checklistSummary.textContent = `Ready to save, with ${warnings.length} improvement note(s) left.`;
+        } else {
+          checklistSummary.textContent = 'Ready to save and publish.';
+        }
+
+        renderMessageList(
+          checklistList,
+          [
+            ...errors.map((text) => ({ kind: 'error', text })),
+            ...warnings.map((text) => ({ kind: 'warning', text })),
+            ...passes.slice(0, 4).map((text) => ({ kind: 'pass', text }))
+          ],
+          'Checklist will appear here while you write.'
+        );
+      };
+
+      const analyzeImportedContent = ({ body, sourceName, assetCount, markdownEntryCount }) => {
+        const relativeAssetRefs = [...body.matchAll(/!\[[^\]]*]\(([^)]+)\)/g)]
+          .map((match) => match[1])
+          .filter((path) => !/^(https?:|data:|\/)/i.test(path));
+
+        return {
+          sourceName,
+          assetCount,
+          markdownEntryCount,
+          headings: (body.match(/^\s{0,3}#{1,6}\s+/gm) ?? []).length,
+          lists: (body.match(/^\s*(?:[-*+]|\d+\.)\s+/gm) ?? []).length,
+          codeBlocks: (body.match(/```[\s\S]*?```/g) ?? []).length,
+          quoteBlocks: (body.match(/^\s{0,3}>\s+/gm) ?? []).length,
+          mathBlocks: (body.match(/\$\$[\s\S]*?\$\$|\$[^$\n]+\$/g) ?? []).length,
+          images: (body.match(/!\[[^\]]*]\(([^)]+)\)/g) ?? []).length,
+          rules: (body.match(/^\s*---\s*$/gm) ?? []).length,
+          htmlBlocks: (body.match(/<([a-z][\w-]*)(?:\s[^>]*)?>/gi) ?? []).length,
+          relativeAssetRefs
+        };
+      };
+
+      const importNotionDocument = async (file) => {
+        let content = await file.text();
+        let sourceName = file.name;
+        let assetCount = 0;
+        let markdownEntryCount = 1;
+
+        if (/\.zip$/i.test(file.name)) {
+          const zip = await JSZip.loadAsync(await file.arrayBuffer());
+          const markdownEntries = Object.values(zip.files)
+            .filter((entry) => !entry.dir && /\.(md|mdx)$/i.test(entry.name))
+            .sort((left, right) => left.name.length - right.name.length || left.name.localeCompare(right.name));
+
+          if (markdownEntries.length === 0) {
+            throw new Error('No Markdown files found in the Notion zip export.');
+          }
+
+          markdownEntryCount = markdownEntries.length;
+          const entry = markdownEntries[0];
+          sourceName = entry.name;
+          content = await entry.async('string');
+          assetCount = Object.values(zip.files).filter(
+            (item) => !item.dir && !/\.(md|mdx)$/i.test(item.name)
+          ).length;
+        }
+
+        const state = emptyState();
+        const normalized = content.replace(/\r/g, '').trim();
+        const titleMatch = normalized.match(/^#\s+(.+)\n+/);
+        const title = titleMatch?.[1]?.trim() || sourceName.replace(/\.(md|mdx|zip)$/i, '');
+        const body = titleMatch ? normalized.slice(titleMatch[0].length).trim() : normalized;
+        const paragraphs = body
+          .split(/\n{2,}/)
+          .map((paragraph) => paragraph.replace(/^#+\s+/gm, '').trim())
+          .filter(Boolean);
+
+        state.title = title;
+        state.slug = slugify(title);
+        state.description =
+          paragraphs.find((paragraph) => paragraph.length > 40) ??
+          paragraphs[0] ??
+          'Imported from Notion.';
+        state.body = body;
+        state.draft = true;
+        state.format = /\.mdx$/i.test(sourceName) ? 'mdx' : 'md';
+
+        currentHandle = null;
+        applyState(state);
+        importReport = analyzeImportedContent({
+          body,
+          sourceName,
+          assetCount,
+          markdownEntryCount
+        });
+        renderImportReport();
+        setStatus(
+          assetCount > 0
+            ? `Imported ${sourceName} from Notion. ${assetCount} asset file(s) were detected in the export and may need manual handling.`
+            : `Imported ${sourceName} from Notion.`
+        );
+        renderPostList();
+      };
+
+      const loadSerializedDocument = (content, filename = '') => {
+        const match = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+        const state = emptyState();
+
+        if (!match) {
+          const normalized = content.replace(/\r/g, '').trim();
+          const titleMatch = normalized.match(/^#\s+(.+)\n+/);
+          const body = titleMatch ? normalized.slice(titleMatch[0].length).trim() : normalized;
+          const paragraphs = body
+            .split(/\n{2,}/)
+            .map((paragraph) => paragraph.replace(/^#+\s+/gm, '').trim())
+            .filter(Boolean);
+
+          state.title = titleMatch?.[1]?.trim() || filename.replace(/\.(md|mdx)$/i, '');
+          state.slug = filename
+            .replace(/\.(md|mdx)$/i, '')
+            .replace(/^\d{4}-\d{2}-\d{2}-/, '');
+          state.format = filename.endsWith('.mdx') ? 'mdx' : 'md';
+          state.description =
+            paragraphs.find((paragraph) => paragraph.length > 40) ??
+            paragraphs[0] ??
+            'Draft description.';
+          state.body = body;
+          return state;
+        }
+
+        const [, frontmatterSource, bodySource] = match;
+        const frontmatter = load(frontmatterSource) ?? {};
+
+        state.title = typeof frontmatter.title === 'string' ? frontmatter.title : '';
+        state.slug = filename
+          .replace(/\.(md|mdx)$/i, '')
+          .replace(/^\d{4}-\d{2}-\d{2}-/, '');
+        state.date = normalizeDateInput(frontmatter.date) || defaultDate;
+        state.updatedDate = normalizeDateInput(frontmatter.updatedDate);
+        state.format = filename.endsWith('.mdx') ? 'mdx' : 'md';
+        state.tags = Array.isArray(frontmatter.tags) ? frontmatter.tags.join(', ') : '';
+        state.description =
+          typeof frontmatter.description === 'string' ? frontmatter.description : '';
+        state.draft = Boolean(frontmatter.draft);
+        state.featured = Boolean(frontmatter.featured);
+        state.body = bodySource.replace(/^\n+/, '');
+
+        return state;
+      };
+
+      const applyState = (state) => {
+        if (fields.title) fields.title.value = state.title;
+        if (fields.slug) fields.slug.value = state.slug;
+        if (fields.date) fields.date.value = state.date;
+        if (fields.updatedDate) fields.updatedDate.value = state.updatedDate;
+        if (fields.format) fields.format.value = state.format;
+        if (fields.tags) fields.tags.value = state.tags;
+        if (fields.description) fields.description.value = state.description;
+        if (fields.draft) fields.draft.checked = Boolean(state.draft);
+        if (fields.featured) fields.featured.checked = Boolean(state.featured);
+        if (fields.body) fields.body.value = state.body;
+
+        renderPreview();
+      };
+
+      const saveToStorage = () => {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+      };
+
+      const renderPostList = () => {
+        if (!postList) {
+          return;
+        }
+
+        if (folderName) {
+          folderName.textContent = postsDirectoryHandle?.name ?? 'No folder connected';
+        }
+
+        if (postCount) {
+          const filterValue = postFilter?.value?.trim();
+          const visibleCount = postsDirectoryEntries.filter((entry) =>
+            !filterValue || entry.name.toLowerCase().includes(filterValue.toLowerCase())
+          ).length;
+
+          postCount.textContent = filterValue
+            ? `${visibleCount} / ${postsDirectoryEntries.length} files`
+            : `${postsDirectoryEntries.length} files`;
+        }
+
+        if (postsDirectoryEntries.length === 0) {
+          postList.innerHTML = '<p class="search-note">No Markdown posts found in the selected folder.</p>';
+          return;
+        }
+
+        const filterValue = postFilter?.value?.trim().toLowerCase() ?? '';
+        const visibleEntries = postsDirectoryEntries.filter(
+          (entry) => !filterValue || entry.name.toLowerCase().includes(filterValue)
+        );
+
+        postList.innerHTML = '';
+
+        if (visibleEntries.length === 0) {
+          postList.innerHTML = '<p class="search-note">No files match the current filter.</p>';
+          return;
+        }
+
+        visibleEntries.forEach((entry) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `studio-post-button${currentHandle?.name === entry.name ? ' is-active' : ''}`;
+          button.textContent = entry.name;
+          button.addEventListener('click', async () => {
+            const file = await entry.handle.getFile();
+            currentHandle = entry.handle;
+            importReport = null;
+            renderImportReport();
+            applyState(loadSerializedDocument(await file.text(), file.name));
+            setStatus(`Opened ${file.name} from the connected posts folder.`);
+            renderPostList();
+          });
+          postList.appendChild(button);
+        });
+      };
+
+      const loadPostsDirectory = async (directoryHandle) => {
+        postsDirectoryEntries = [];
+
+        for await (const entry of directoryHandle.values()) {
+          if (entry.kind === 'file' && /\.(md|mdx)$/i.test(entry.name)) {
+            postsDirectoryEntries.push({ name: entry.name, handle: entry });
+          }
+        }
+
+        postsDirectoryEntries.sort((left, right) => right.name.localeCompare(left.name));
+        renderPostList();
+      };
+
+      const scheduleAutosave = () => {
+        window.clearTimeout(autosaveTimer);
+        autosaveTimer = window.setTimeout(() => {
+          saveToStorage();
+          setStatus(
+            currentHandle
+              ? 'Autosaved locally. Changes are not written until you save the file.'
+              : 'Autosaved locally.'
+          );
+        }, 300);
+      };
+
+      const renderPreview = () => {
+        const state = getState();
+        const suggestedFilename = getSuggestedFilename(state);
+        const words = countWords(state.body);
+        const readTime = getReadTime(state.body);
+        const flags = [
+          state.draft ? 'draft' : 'published',
+          state.featured ? 'featured' : null,
+          state.format.toUpperCase()
+        ].filter(Boolean);
+
+        if (previewFilename) {
+          previewFilename.textContent = suggestedFilename;
+        }
+
+        if (previewStats) {
+          previewStats.textContent = `${words} words / ${readTime} min read`;
+        }
+
+        if (previewDate) {
+          previewDate.textContent = state.date || defaultDate;
+        }
+
+        if (previewTags) {
+          const tags = getTagList(state.tags);
+          previewTags.textContent = tags.length > 0 ? tags.join(' / ') : 'none';
+        }
+
+        if (previewFlags) {
+          previewFlags.textContent = flags.join(' / ');
+        }
+
+        if (previewBody) {
+          previewBody.innerHTML = state.body.trim()
+            ? marked.parse(state.body)
+            : '<p>Start typing to preview your post.</p>';
+          renderMathInElement(previewBody, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        }
+
+        renderChecklist();
+        scheduleAutosave();
+      };
+
+      const writeFile = async (handle) => {
+        const writable = await handle.createWritable();
+        await writable.write(serializeDocument(getState()));
+        await writable.close();
+      };
+
+      const getSaveStatusSuffix = () => {
+        const { errors, warnings } = getChecklist();
+
+        if (errors.length > 0) {
+          return ` ${errors.length} checklist item(s) still need attention.`;
+        }
+
+        if (warnings.length > 0) {
+          return ` ${warnings.length} improvement note(s) remain.`;
+        }
+
+        return '';
+      };
+
+      const openFile = async () => {
+        if (!window.showOpenFilePicker) {
+          setStatus('Open file is only available in browsers with the File System Access API.');
+          return;
+        }
+
+        const [handle] = await window.showOpenFilePicker({
+          excludeAcceptAllOption: true,
+          multiple: false,
+          types: [
+            {
+              description: 'Markdown and MDX',
+              accept: {
+                'text/markdown': ['.md', '.mdx']
+              }
+            }
+          ]
+        });
+
+        const file = await handle.getFile();
+        currentHandle = handle;
+        importReport = null;
+        renderImportReport();
+        applyState(loadSerializedDocument(await file.text(), file.name));
+        setStatus(`Opened ${file.name}.`);
+        renderPostList();
+      };
+
+      const openPostsFolder = async () => {
+        if (!window.showDirectoryPicker) {
+          setStatus('Connecting a posts folder requires a browser with the File System Access API.');
+          return;
+        }
+
+        postsDirectoryHandle = await window.showDirectoryPicker();
+        await loadPostsDirectory(postsDirectoryHandle);
+        setStatus(`Connected the folder ${postsDirectoryHandle.name}.`);
+      };
+
+      const saveAsFile = async () => {
+        if (!window.showSaveFilePicker) {
+          exportFile();
+          setStatus('Save As is not available in this browser. Exported Markdown instead.');
+          return;
+        }
+
+        currentHandle = await window.showSaveFilePicker({
+          suggestedName: getSuggestedFilename(getState()),
+          types: [
+            {
+              description: 'Markdown and MDX',
+              accept: {
+                'text/markdown': ['.md', '.mdx']
+              }
+            }
+          ]
+        });
+
+        await writeFile(currentHandle);
+        if (postsDirectoryHandle) {
+          await loadPostsDirectory(postsDirectoryHandle);
+        } else {
+          renderPostList();
+        }
+        setStatus(`Saved ${getCurrentHandleName() || getSuggestedFilename(getState())}.${getSaveStatusSuffix()}`);
+      };
+
+      const saveFile = async () => {
+        const suggestedFilename = getSuggestedFilename(getState());
+        const currentHandleName = getCurrentHandleName();
+
+        if (!currentHandle) {
+          if (postsDirectoryHandle) {
+            currentHandle = await postsDirectoryHandle.getFileHandle(suggestedFilename, {
+              create: true
+            });
+            await writeFile(currentHandle);
+            await loadPostsDirectory(postsDirectoryHandle);
+            setStatus(
+              `Saved ${getCurrentHandleName() || suggestedFilename} into ${postsDirectoryHandle.name}.${getSaveStatusSuffix()}`
+            );
+            return;
+          }
+
+          await saveAsFile();
+          return;
+        }
+
+        if (currentHandleName && currentHandleName !== suggestedFilename) {
+          if (postsDirectoryHandle) {
+            currentHandle = await postsDirectoryHandle.getFileHandle(suggestedFilename, {
+              create: true
+            });
+            await writeFile(currentHandle);
+            await loadPostsDirectory(postsDirectoryHandle);
+            setStatus(
+              `Saved as ${getCurrentHandleName() || suggestedFilename} in ${postsDirectoryHandle.name}. The previous file was left untouched.${getSaveStatusSuffix()}`
+            );
+            return;
+          }
+
+          await saveAsFile();
+          return;
+        }
+
+        await writeFile(currentHandle);
+        if (postsDirectoryHandle) {
+          await loadPostsDirectory(postsDirectoryHandle);
+        } else {
+          renderPostList();
+        }
+        setStatus(`Saved ${getCurrentHandleName() || suggestedFilename}.${getSaveStatusSuffix()}`);
+      };
+
+      const exportFile = () => {
+        const state = getState();
+        const blob = new Blob([serializeDocument(state)], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = getSuggestedFilename(state);
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const createNewDraft = () => {
+        currentHandle = null;
+        importReport = null;
+        renderImportReport();
+        applyState(emptyState());
+        setStatus('Started a new draft.');
+        renderPostList();
+      };
+
+      const restoreDraft = () => {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+
+        if (!stored) {
+          applyState(emptyState());
+          return;
+        }
+
+        try {
+          applyState({ ...emptyState(), ...JSON.parse(stored) });
+          setStatus('Restored the last local draft.');
+        } catch {
+          applyState(emptyState());
+        }
+      };
+
+      const insertSnippet = (type) => {
+        const textarea = fields.body;
+
+        if (!textarea) {
+          return;
+        }
+
+        const start = textarea.selectionStart ?? 0;
+        const end = textarea.selectionEnd ?? 0;
+        const selected = textarea.value.slice(start, end);
+        const needsLeadingBreak = start > 0 && textarea.value[start - 1] !== '\n';
+        const needsTrailingBreak = end < textarea.value.length && textarea.value[end] !== '\n';
+        let snippet = '';
+
+        if (type === 'h2') {
+          snippet = `## ${selected || 'Section title'}`;
+        }
+
+        if (type === 'h3') {
+          snippet = `### ${selected || 'Subsection title'}`;
+        }
+
+        if (type === 'link') {
+          snippet = selected
+            ? `[${selected}](https://example.com)`
+            : '[Link text](https://example.com)';
+        }
+
+        if (type === 'code') {
+          snippet = `\`\`\`ts\n${selected || 'const example = true;'}\n\`\`\``;
+        }
+
+        if (type === 'quote') {
+          snippet = (selected || 'Quoted note')
+            .split('\n')
+            .map((line) => `> ${line}`)
+            .join('\n');
+        }
+
+        if (type === 'list') {
+          snippet = (selected || 'First item\nSecond item')
+            .split('\n')
+            .filter(Boolean)
+            .map((line) => `- ${line}`)
+            .join('\n');
+        }
+
+        if (type === 'math') {
+          snippet = `$$\n${selected || 'E = mc^2'}\n$$`;
+        }
+
+        const insertText = `${needsLeadingBreak ? '\n' : ''}${snippet}${needsTrailingBreak ? '\n' : ''}`;
+        textarea.setRangeText(insertText, start, end, 'end');
+        textarea.focus();
+        renderPreview();
+      };
+
+      const importDroppedFile = async (file) => {
+        try {
+          await importNotionDocument(file);
+        } catch (error) {
+          console.error(error);
+          setStatus('The selected Notion export could not be imported.');
+        }
+      };
+
+      root.querySelectorAll('[data-action]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const action = button.getAttribute('data-action');
+
+          try {
+            if (action === 'new') {
+              createNewDraft();
+            }
+
+            if (action === 'open') {
+              await openFile();
+            }
+
+            if (action === 'open-folder') {
+              await openPostsFolder();
+            }
+
+            if (action === 'import-notion') {
+              notionInput?.click();
+            }
+
+            if (action === 'save') {
+              await saveFile();
+            }
+
+            if (action === 'save-as') {
+              await saveAsFile();
+            }
+
+            if (action === 'export') {
+              exportFile();
+              setStatus(`Exported ${getSuggestedFilename(getState())}.`);
+            }
+          } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+              setStatus('File action canceled.');
+              return;
+            }
+
+            console.error(error);
+            setStatus('An unexpected error interrupted the file action.');
+          }
+        });
+      });
+
+      root.querySelectorAll('[data-insert-snippet]').forEach((button) => {
+        button.addEventListener('click', () => {
+          insertSnippet(button.getAttribute('data-insert-snippet'));
+        });
+      });
+
+      Object.values(fields).forEach((field) => {
+        field?.addEventListener('input', () => {
+          if (field === fields.title && !fields.slug?.value.trim()) {
+            fields.slug.value = slugify(fields.title.value);
+          }
+
+          renderPreview();
+        });
+
+        field?.addEventListener('change', renderPreview);
+      });
+
+      postFilter?.addEventListener('input', renderPostList);
+
+      fields.body?.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab') {
+          return;
+        }
+
+        event.preventDefault();
+        const start = fields.body.selectionStart ?? 0;
+        const end = fields.body.selectionEnd ?? 0;
+        fields.body.setRangeText('  ', start, end, 'end');
+        renderPreview();
+      });
+
+      if (window.__blogStudioSaveHandler) {
+        window.removeEventListener('keydown', window.__blogStudioSaveHandler);
+      }
+
+      window.__blogStudioSaveHandler = async (event) => {
+        if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') {
+          return;
+        }
+
+        event.preventDefault();
+
+        try {
+          if (event.shiftKey) {
+            await saveAsFile();
+            return;
+          }
+
+          await saveFile();
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            setStatus('File action canceled.');
+            return;
+          }
+
+          console.error(error);
+          setStatus('An unexpected error interrupted the file action.');
+        }
+      };
+
+      window.addEventListener('keydown', window.__blogStudioSaveHandler);
+
+      root.addEventListener('dragenter', (event) => {
+        if ((event.dataTransfer?.types ?? []).includes('Files')) {
+          event.preventDefault();
+          root.classList.add('is-dragover');
+        }
+      });
+
+      root.addEventListener('dragover', (event) => {
+        if ((event.dataTransfer?.types ?? []).includes('Files')) {
+          event.preventDefault();
+          root.classList.add('is-dragover');
+        }
+      });
+
+      root.addEventListener('dragleave', (event) => {
+        if (event.target === root) {
+          root.classList.remove('is-dragover');
+        }
+      });
+
+      root.addEventListener('drop', async (event) => {
+        const [file] = event.dataTransfer?.files ?? [];
+
+        if (!file) {
+          return;
+        }
+
+        event.preventDefault();
+        root.classList.remove('is-dragover');
+        await importDroppedFile(file);
+      });
+
+      notionInput?.addEventListener('change', async () => {
+        const [file] = notionInput.files ?? [];
+
+        if (!file) {
+          return;
+        }
+
+        await importDroppedFile(file);
+        notionInput.value = '';
+      });
+
+      restoreDraft();
+      renderImportReport();
+      renderChecklist();
+    }
+  </script>
+</BaseLayout>

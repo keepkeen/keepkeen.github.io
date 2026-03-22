@@ -1,78 +1,38 @@
 ---
 import { getCollection } from 'astro:content';
+import BlogDirectory from '../../components/BlogDirectory.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { formatDate, getPostPath, getReadingTime, sortPosts } from '../../utils/content';
+import { siteConfig } from '../../site.config';
+import { sortPosts } from '../../utils/content';
+import { buildSearchDocument } from '../../utils/search';
+import { getBlogCollectionJsonLd, getBreadcrumbJsonLd } from '../../utils/structured-data';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
-const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
-const latestDate = posts.at(0)?.data.date;
+const documents = posts.map((post) => buildSearchDocument(post));
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const jsonLd = [
+  getBlogCollectionJsonLd(siteOrigin, posts),
+  getBreadcrumbJsonLd([
+    { name: 'Home', url: new URL(import.meta.env.BASE_URL, siteOrigin).toString() },
+    { name: 'Blog', url: new URL('blog/', new URL(import.meta.env.BASE_URL, siteOrigin)).toString() }
+  ])
+];
 ---
 
-<BaseLayout title="Blog" description="Essays, field notes, and technical reflections.">
-  <section class="page-intro reveal">
-    <p class="eyebrow">Archive</p>
-    <h1>Essays, notebooks, and field notes.</h1>
+<BaseLayout
+  title="Blog"
+  description="A searchable directory of essays, notes, and technical reflections."
+  keywords={['blog', 'technical writing', 'directory', 'search', 'notes']}
+  jsonLd={jsonLd}
+>
+  <section class="page-intro">
+    <p class="eyebrow">Blog</p>
+    <h1>Posts directory.</h1>
     <p class="section-copy">
-      This archive is meant to be scanned like an index rather than consumed like a feed. Technical
-      notes, longer essays, and slower reflections live in the same catalog.
+      This page is now organized as a directory, not a feed. Search it directly, scan the list,
+      and use the preview panel before opening a post.
     </p>
   </section>
 
-  <section class="archive-layout reveal-delay">
-    <aside class="glass-card archive-aside">
-      <p class="label">Archive Signals</p>
-      <div class="fact-grid">
-        <div class="fact-item">
-          <span>Entries</span>
-          <strong>{posts.length}</strong>
-        </div>
-        <div class="fact-item">
-          <span>Themes</span>
-          <strong>{tags.length}</strong>
-        </div>
-        <div class="fact-item">
-          <span>Latest</span>
-          <strong>{latestDate ? formatDate(latestDate) : 'Soon'}</strong>
-        </div>
-        <div class="fact-item">
-          <span>Format</span>
-          <strong>Essay / note / reflection</strong>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <p class="label">Tags</p>
-      <div class="pill-list">
-        {tags.map((tag) => (
-          <span class="pill">{tag}</span>
-        ))}
-      </div>
-    </aside>
-
-    <div class="archive-list">
-      {posts.map((post) => (
-        <article class="archive-entry">
-          <div class="archive-meta">
-            <span>{formatDate(post.data.date)}</span>
-            <span>{getReadingTime(post.body)} min read</span>
-          </div>
-
-          <div class="archive-main">
-            <h2>
-              <a class="feature-link" href={getPostPath(post)}>
-                {post.data.title}
-              </a>
-            </h2>
-            <p>{post.data.description}</p>
-            <div class="pill-list">
-              {post.data.tags.map((tag) => (
-                <span class="pill">{tag}</span>
-              ))}
-            </div>
-          </div>
-        </article>
-      ))}
-    </div>
-  </section>
+  <BlogDirectory documents={documents} />
 </BaseLayout>

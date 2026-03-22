@@ -2,19 +2,43 @@
 import BaseLayout from './BaseLayout.astro';
 import { formatDate, getPostPath, getReadingTime } from '../utils/content';
 import type { Post } from '../utils/content';
+import { siteConfig } from '../site.config';
+import { getBlogPostingJsonLd, getBreadcrumbJsonLd } from '../utils/structured-data';
 
 interface Props {
   post: Post;
+  headings?: { depth: number; slug: string; text: string }[];
   previous?: Post;
   next?: Post;
 }
 
-const { post, previous, next } = Astro.props;
+const { post, headings = [], previous, next } = Astro.props;
+const tableOfContents = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const postUrl = new URL(getPostPath(post), siteOrigin).toString();
+const jsonLd = [
+  getBlogPostingJsonLd(siteOrigin, post),
+  getBreadcrumbJsonLd([
+    { name: 'Home', url: new URL(import.meta.env.BASE_URL, siteOrigin).toString() },
+    { name: 'Blog', url: new URL('blog/', new URL(import.meta.env.BASE_URL, siteOrigin)).toString() },
+    { name: post.data.title, url: postUrl }
+  ])
+];
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} pageClass="page-article">
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  pageClass="page-article"
+  ogType="article"
+  keywords={post.data.tags}
+  publishedTime={post.data.date}
+  modifiedTime={post.data.updatedDate ?? post.data.date}
+  articleTags={post.data.tags}
+  jsonLd={jsonLd}
+>
   <article class="article-shell">
-    <header class="article-intro reveal">
+    <header class="article-intro">
       <p class="eyebrow">Essay</p>
       <h1>{post.data.title}</h1>
       <p class="article-lead">{post.data.description}</p>
@@ -25,13 +49,30 @@ const { post, previous, next } = Astro.props;
       </div>
     </header>
 
-    <div class="prose reveal-delay">
-      <slot />
+    <div class:list={['article-layout', tableOfContents.length === 0 && 'article-layout-single']}>
+      {tableOfContents.length > 0 && (
+        <aside class="article-sidebar">
+          <nav class="article-toc plain-panel" aria-label="Table of contents">
+            <p class="panel-label">On this page</p>
+            <ol>
+              {tableOfContents.map((heading) => (
+                <li class:list={[heading.depth === 3 && 'is-sub-item']}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </aside>
+      )}
+
+      <div class="prose">
+        <slot />
+      </div>
     </div>
 
-    <nav class="glass-card article-navigation reveal-slower" aria-label="Post navigation">
+    <nav class="article-navigation plain-panel" aria-label="Post navigation">
       <div class="nav-stack">
-        <p class="label">Previous</p>
+        <p class="panel-label">Previous</p>
         {
           previous ? (
             <a class="text-link" href={getPostPath(previous)}>
@@ -44,7 +85,7 @@ const { post, previous, next } = Astro.props;
       </div>
 
       <div class="nav-stack">
-        <p class="label">Next</p>
+        <p class="panel-label">Next</p>
         {
           next ? (
             <a class="text-link" href={getPostPath(next)}>

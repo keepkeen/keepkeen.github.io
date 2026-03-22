@@ -6,160 +6,135 @@ import { formatDate, getPostPath, getReadingTime, sortPosts, withBasePath } from
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
 const latestPosts = posts.slice(0, 3);
-const [featuredPost, ...secondaryPosts] = latestPosts;
 ---
 
 <BaseLayout>
-  <section class="hero home-hero reveal">
-    <div class="hero-copy">
-      <p class="eyebrow">{siteConfig.hero.eyebrow}</p>
-      <h1>{siteConfig.hero.headline}</h1>
-      <p class="hero-deck">{siteConfig.hero.lead}</p>
-      <p class="hero-signature">{siteConfig.hero.signature}</p>
-
-      <div class="hero-actions">
-        <a class="button button-primary" href={withBasePath('/blog/')}>Read the essays</a>
-        <a class="button" href={withBasePath('/about/')}>About me</a>
-      </div>
-    </div>
-
-    <aside class="glass-card desk-panel reveal-delay">
-      <p class="label">From the Desk</p>
-      <p class="desk-intro">{siteConfig.hero.deck}</p>
-
-      <div class="fact-grid">
-        {siteConfig.deskFacts.map((fact) => (
-          <div class="fact-item">
-            <span>{fact.label}</span>
-            <strong>{fact.value}</strong>
-          </div>
-        ))}
-      </div>
-
-      <div class="divider"></div>
-
-      <p class="label">Current Focus</p>
-      <ul class="note-list">
-        {siteConfig.currentFocus.map((item) => (
-          <li>{item}</li>
-        ))}
-      </ul>
-    </aside>
-  </section>
-
-  <section class="section reveal-delay">
-    <div class="section-header editorial-header">
+  <section class="home-intro">
+    <div class="page-intro page-intro-home">
       <div>
-        <p class="eyebrow">Writing Map</p>
-        <h2 class="section-title">Four directions, one underlying taste.</h2>
+        <p class="eyebrow">{siteConfig.hero.eyebrow}</p>
+        <h1>{siteConfig.name}</h1>
       </div>
       <p class="section-copy">
-        The common thread is not topic, but method: reduce noise, increase signal, and keep the
-        thinking calm enough to hold up over time.
+        {siteConfig.hero.lead}
       </p>
     </div>
 
-    <div class="map-grid">
-      {siteConfig.topicCards.map((card) => (
-        <article class="glass-card map-card">
-          <span class="topic-index">{card.index}</span>
-          <p class="map-kicker">{card.kicker}</p>
-          <h3>{card.title}</h3>
-          <p>{card.description}</p>
+    <div class="home-summary-grid">
+      <div class="plain-panel">
+        <p class="panel-label">What this site is</p>
+        <p class="panel-copy">{siteConfig.hero.deck}</p>
+
+        <div class="button-row">
+          <a class="button button-primary" href={withBasePath('/blog/')}>Browse posts</a>
+          <a class="button" href={withBasePath('/about/')}>About</a>
+        </div>
+      </div>
+
+      <div class="plain-panel">
+        <p class="panel-label">Current focus</p>
+        <ul class="plain-list">
+          {siteConfig.currentFocus.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">Recent posts</p>
+        <h2 class="section-title">Start from the latest writing.</h2>
+      </div>
+      <a class="text-link" href={withBasePath('/blog/')}>Open the full directory</a>
+    </div>
+
+    <div class="stack-list">
+      {latestPosts.map((post) => (
+        <article class="list-entry">
+          <div class="entry-topline">
+            <span>{formatDate(post.data.date)}</span>
+            <span>{getReadingTime(post.body)} min read</span>
+          </div>
+
+          <div class="list-entry-main">
+            <div>
+              <h3>
+                <a href={getPostPath(post)}>{post.data.title}</a>
+              </h3>
+              <p>{post.data.description}</p>
+            </div>
+
+            <div class="entry-tags" aria-label="Tags">
+              {post.data.tags.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+          </div>
         </article>
       ))}
     </div>
   </section>
 
-  {featuredPost && (
-    <section class="section reveal-slower">
-      <div class="section-header editorial-header">
+  <section class="section section-grid">
+    <div class="plain-panel">
+      <p class="panel-label">Writing map</p>
+      <div class="topic-list">
+        {siteConfig.topicCards.map((card) => (
+          <article class="topic-item">
+            <div>
+              <p class="topic-kicker">{card.kicker}</p>
+              <h3>{card.title}</h3>
+            </div>
+            <p>{card.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="plain-panel">
+      <div class="section-header section-header-compact">
         <div>
-          <p class="eyebrow">Selected Writing</p>
-          <h2 class="section-title">Recent essays from the notebook.</h2>
-        </div>
-        <p class="section-copy">
-          Some pieces are technical, some reflective, but all are meant to read with the same
-          editorial rhythm.
-        </p>
-      </div>
-
-      <div class="featured-grid">
-        <article class="glass-card featured-primary">
-          <p class="label">Featured Essay</p>
-          <div class="meta-row">
-            <span>{formatDate(featuredPost.data.date)}</span>
-            <span>{getReadingTime(featuredPost.body)} min read</span>
-          </div>
-          <h2>
-            <a class="feature-link" href={getPostPath(featuredPost)}>
-              {featuredPost.data.title}
-            </a>
-          </h2>
-          <p class="featured-excerpt">{featuredPost.data.description}</p>
-          <div class="pill-list">
-            {featuredPost.data.tags.map((tag) => (
-              <span class="pill">{tag}</span>
-            ))}
-          </div>
-        </article>
-
-        <div class="featured-secondary">
-          {secondaryPosts.map((post) => (
-            <article class="glass-card mini-post">
-              <div class="meta-row">
-                <span>{formatDate(post.data.date)}</span>
-                <span>{getReadingTime(post.body)} min read</span>
-              </div>
-              <h3>
-                <a class="feature-link" href={getPostPath(post)}>
-                  {post.data.title}
-                </a>
-              </h3>
-              <p>{post.data.description}</p>
-            </article>
-          ))}
+          <p class="eyebrow">Working notes</p>
+          <h2 class="section-title section-title-compact">A few recurring questions.</h2>
         </div>
       </div>
-    </section>
-  )}
 
-  <section class="section reveal-slower">
-    <div class="section-header editorial-header">
+      <ol class="number-list">
+        {siteConfig.currentQuestions.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
       <div>
-        <p class="eyebrow">Field Notes</p>
-        <h2 class="section-title">What this publication is trying to learn.</h2>
+        <p class="eyebrow">Principles</p>
+        <h2 class="section-title">The constraints behind the writing.</h2>
       </div>
       <a class="text-link" href={withBasePath('/blog/')}>Browse the full archive</a>
     </div>
 
-    <div class="tri-panel">
-      <article class="glass-card note-panel">
-        <p class="label">Current Questions</p>
-        <ol class="question-list">
-          {siteConfig.currentQuestions.map((item) => (
-            <li>{item}</li>
-          ))}
-        </ol>
-      </article>
-
-      <article class="glass-card note-panel">
-        <p class="label">Operating Principles</p>
-        <ul class="principle-list">
+    <div class="simple-grid">
+      <div class="plain-panel">
+        <ul class="plain-list">
           {siteConfig.principles.map((principle) => (
             <li>{principle}</li>
           ))}
         </ul>
-      </article>
+      </div>
 
-      <article class="glass-card note-panel">
-        <p class="label">Studio Notes</p>
-        <ul class="note-list">
+      <div class="plain-panel">
+        <ul class="plain-list">
           {siteConfig.studioNotes.map((note) => (
             <li>{note}</li>
           ))}
         </ul>
-      </article>
+      </div>
     </div>
   </section>
 </BaseLayout>

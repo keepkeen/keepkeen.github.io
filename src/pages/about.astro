@@ -2,28 +2,42 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../site.config';
 import { publicEmail, publicSocialLinks } from '../utils/site';
+import { getAboutPageJsonLd, getBreadcrumbJsonLd } from '../utils/structured-data';
 
 const mailHref = publicEmail ? `mailto:${publicEmail}` : undefined;
 const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.href;
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const jsonLd = [
+  getAboutPageJsonLd(siteOrigin),
+  getBreadcrumbJsonLd([
+    { name: 'Home', url: new URL(import.meta.env.BASE_URL, siteOrigin).toString() },
+    { name: 'About', url: new URL('about/', new URL(import.meta.env.BASE_URL, siteOrigin)).toString() }
+  ])
+];
 ---
 
-<BaseLayout title="About" description="About Liuliming, the writing behind this publication.">
-  <section class="page-intro reveal">
+<BaseLayout
+  title="About"
+  description="About Liuliming, the writing behind this publication."
+  keywords={['about', 'author', 'engineering', 'writing']}
+  jsonLd={jsonLd}
+>
+  <section class="page-intro">
     <p class="eyebrow">About Me</p>
-    <h1>Building from inside the work, then writing about what lasts.</h1>
+    <h1>Building inside the work, then writing about what lasts.</h1>
     <p class="section-copy">{siteConfig.about.intro}</p>
   </section>
 
-  <section class="about-grid reveal-delay">
-    <article class="glass-card story-panel">
-      <p class="label">Short Bio</p>
+  <section class="section-grid">
+    <article class="plain-panel">
+      <p class="panel-label">Short bio</p>
       {siteConfig.about.body.map((paragraph) => (
         <p>{paragraph}</p>
       ))}
     </article>
 
-    <aside class="glass-card desk-panel">
-      <p class="label">Coordinates</p>
+    <aside class="plain-panel">
+      <p class="panel-label">Coordinates</p>
       <div class="fact-grid">
         {siteConfig.deskFacts.map((fact) => (
           <div class="fact-item">
@@ -35,8 +49,8 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
 
       <div class="divider"></div>
 
-      <p class="label">Right Now</p>
-      <ul class="note-list">
+      <p class="panel-label">Right now</p>
+      <ul class="plain-list">
         {siteConfig.about.now.map((item) => (
           <li>{item}</li>
         ))}
@@ -44,7 +58,7 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
 
       {(mailHref || githubHref) && <div class="divider"></div>}
 
-      <div class="hero-actions">
+      <div class="button-row">
         {mailHref && (
           <a class="button button-primary" href={mailHref}>
             Start a conversation
@@ -59,8 +73,8 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
     </aside>
   </section>
 
-  <section class="section reveal-slower">
-    <div class="section-header editorial-header">
+  <section class="section">
+    <div class="section-header">
       <div>
         <p class="eyebrow">Trajectory</p>
         <h2 class="section-title">A few persistent directions.</h2>
@@ -71,44 +85,41 @@ const githubHref = publicSocialLinks.find((item) => item.label === 'GitHub')?.hr
       </p>
     </div>
 
-    <div class="trajectory-list">
+    <div class="stack-list">
       {siteConfig.about.journey.map((item) => (
-        <article class="glass-card trajectory-item">
-          <span class="topic-index">{item.period}</span>
-          <h3>{item.title}</h3>
-          <p>{item.description}</p>
+        <article class="list-entry list-entry-compact">
+          <div class="entry-topline">
+            <span>{item.period}</span>
+          </div>
+          <div class="list-entry-main">
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
+          </div>
         </article>
       ))}
     </div>
   </section>
 
-  <section class="section reveal-slower">
-    <div class="tri-panel">
-      <article class="glass-card note-panel">
-        <p class="label">What I Value</p>
-        <ul class="principle-list">
-          {siteConfig.about.values.map((value) => (
-            <li>{value}</li>
-          ))}
-        </ul>
-      </article>
+  <section class="section section-grid">
+    <article class="plain-panel">
+      <p class="panel-label">What I value</p>
+      <ul class="plain-list">
+        {siteConfig.about.values.map((value) => (
+          <li>{value}</li>
+        ))}
+      </ul>
+    </article>
 
-      <article class="glass-card quote-panel">
-        <p class="label">Design Belief</p>
-        <blockquote>
-          The interface should carry taste quietly, so the writing arrives with more force.
-        </blockquote>
-      </article>
-
-      <article class="glass-card note-panel">
-        <p class="label">Colophon</p>
-        <p class="colophon-text">{siteConfig.about.colophon}</p>
-        {githubHref && (
-          <a class="text-link" href={githubHref} target="_blank" rel="noreferrer">
-            Visit my GitHub
-          </a>
-        )}
-      </article>
-    </div>
+    <article class="plain-panel">
+      <p class="panel-label">Colophon</p>
+      <p class="panel-copy">{siteConfig.about.colophon}</p>
+      {githubHref && (
+        <a class="text-link" href={githubHref} target="_blank" rel="noreferrer">
+          Visit my GitHub
+        </a>
+      )}
+    </article>
   </section>
 </BaseLayout>

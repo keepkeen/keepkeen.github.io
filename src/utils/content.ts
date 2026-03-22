@@ -2,6 +2,10 @@ import type { CollectionEntry } from 'astro:content';
 
 export type Post = CollectionEntry<'posts'>;
 
+const markdownSyntaxPattern =
+  /```[\s\S]*?```|`([^`]+)`|!\[[^\]]*]\(([^)]+)\)|\[(.*?)\]\(([^)]+)\)|[*_~>#-]+/g;
+const mathDelimiterPattern = /\$\$?([^$]+)\$\$?/g;
+
 export function sortPosts(posts: Post[]) {
   return [...posts].sort((left, right) => right.data.date.valueOf() - left.data.date.valueOf());
 }
@@ -15,8 +19,31 @@ export function formatDate(date: Date) {
 }
 
 export function getReadingTime(source?: string) {
-  const words = (source ?? '').trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
+  return Math.max(1, Math.round(countWords(source) / 220));
+}
+
+export function stripMarkdown(source: string) {
+  return source
+    .replace(markdownSyntaxPattern, (_, inlineCode, imageUrl, linkText, linkUrl) => {
+      return inlineCode || linkText || imageUrl || linkUrl || ' ';
+    })
+    .replace(mathDelimiterPattern, '$1')
+    .replace(/\r/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function countWords(source?: string) {
+  const words = stripMarkdown(source ?? '').split(/\s+/).filter(Boolean).length;
+  return words;
+}
+
+export function getPlainExcerpt(source: string, maxLength = 220) {
+  if (source.length <= maxLength) {
+    return source;
+  }
+
+  return `${source.slice(0, maxLength).replace(/\s+\S*$/, '').trim()}...`;
 }
 
 export function getPostSlug(post: Post) {

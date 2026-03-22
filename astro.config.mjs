@@ -18,12 +18,21 @@ const hasConfiguredSiteUrl = siteConfig.siteUrl !== 'https://example.github.io';
 export default defineConfig({
   site: process.env.SITE_URL ?? (hasConfiguredSiteUrl ? siteConfig.siteUrl : inferredSite),
   base: process.env.PUBLIC_BASE_PATH ?? (process.env.GITHUB_ACTIONS ? inferredBase : '/'),
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap({
+      filter: (page) => !page.endsWith('/studio/')
+    })
+  ],
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
-      theme: 'github-light'
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark'
+      },
+      defaultColor: false
     }
   },
   scopedStyleStrategy: 'where'

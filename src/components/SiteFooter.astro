@@ -1,17 +1,19 @@
 ---
 import { siteConfig } from '../site.config';
+import { withBasePath } from '../utils/content';
 import { publicSocialLinks } from '../utils/site';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer container">
-  <div>
+  <div class="footer-meta">
     <p class="footer-title">{siteConfig.name}</p>
     <p class="footer-copy">{siteConfig.about.colophon}</p>
   </div>
 
   <div class="footer-links">
+    <a href={withBasePath('/rss.xml')}>RSS</a>
     {publicSocialLinks.map((item) => (
       <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer">
         {item.label}

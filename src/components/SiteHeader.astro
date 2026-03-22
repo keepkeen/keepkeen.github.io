@@ -13,30 +13,37 @@ function normalize(path: string) {
 }
 
 const currentPath = normalize(Astro.url.pathname);
+const showStudioLink = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_STUDIO === 'true';
 const links = [
   { label: 'Home', href: withBase('/') },
   { label: 'Blog', href: withBase('/blog/') },
-  { label: 'About', href: withBase('/about/') }
+  { label: 'About', href: withBase('/about/') },
+  ...(showStudioLink ? [{ label: 'Studio', href: withBase('/studio/') }] : [])
 ];
 ---
 
-<header class="site-header container reveal">
-  <a class="brand" href={withBase('/')} aria-label={`${siteConfig.name} home`}>
-    <span class="brand-mark">LM</span>
-    <span class="brand-copy">
-      <strong>{siteConfig.name}</strong>
-      <small>{siteConfig.role}</small>
-    </span>
-  </a>
+<header class="site-header container">
+  <div class="brand-block">
+    <a class="brand" href={withBase('/')} aria-label={`${siteConfig.name} home`}>
+      {siteConfig.name}
+    </a>
+    <p class="brand-note">{siteConfig.role}</p>
+  </div>
 
-  <nav class="site-nav" aria-label="Primary">
-    {links.map((link) => (
-      <a
-        class:list={['nav-link', normalize(link.href) === currentPath && 'is-active']}
-        href={link.href}
-      >
-        {link.label}
-      </a>
-    ))}
-  </nav>
+  <div class="site-actions">
+    <nav class="site-nav" aria-label="Primary">
+      {links.map((link) => (
+        <a
+          class:list={['nav-link', normalize(link.href) === currentPath && 'is-active']}
+          href={link.href}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <button class="theme-toggle" type="button" data-theme-toggle data-theme-mode="system">
+      Theme: Auto
+    </button>
+  </div>
 </header>

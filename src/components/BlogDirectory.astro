@@ -1,0 +1,474 @@
+---
+import type { SearchDocument } from '../utils/search';
+
+interface Props {
+  documents: SearchDocument[];
+}
+
+const { documents } = Astro.props;
+const initialDocument = documents[0];
+const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
+---
+
+<section class="directory-shell">
+  <div class="directory-toolbar plain-panel">
+    <div>
+      <p class="eyebrow">Search</p>
+      <h2 class="section-title section-title-compact">Find by title, topic, English, 中文 or 拼音.</h2>
+    </div>
+
+    <div class="search-field">
+      <label class="sr-only" for="blog-search">Search posts</label>
+      <input
+        id="blog-search"
+        class="search-input"
+        type="search"
+        placeholder="Search title, tags, excerpt, English, 中文, 拼音..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" type="button" data-clear-search hidden>Clear</button>
+    </div>
+
+    <p class="search-note" data-search-status>
+      {documents.length} posts indexed. Hover or tap an entry to preview it.
+    </p>
+  </div>
+
+  <div class="directory-layout" data-directory-root>
+    <div class="directory-list" data-directory-list>
+      {documents.map((document, index) => (
+        <article
+          class:list={['directory-item', index === 0 && 'is-active']}
+          data-directory-entry
+          data-post-id={document.id}
+          tabindex="0"
+        >
+          <div class="entry-main">
+            <div class="entry-copy">
+              <div class="entry-topline">
+                <span>{document.dateLabel}</span>
+                <span>{document.readingTime} min read</span>
+              </div>
+
+              <h3>
+                <a href={document.href}>{document.title}</a>
+              </h3>
+              <p>{document.description}</p>
+            </div>
+
+            <div class="entry-tags" aria-label="Tags">
+              {document.tags.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+          </div>
+
+          <div class="entry-inline-preview">
+            <p>{document.excerpt}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <aside class="directory-preview plain-panel" aria-live="polite">
+      {documents.map((document, index) => (
+        <section
+          class:list={['preview-card', index === 0 && 'is-active']}
+          data-directory-preview
+          data-post-id={document.id}
+        >
+          <p class="eyebrow">Preview</p>
+          <h3>{document.title}</h3>
+          <p class="preview-description">{document.description}</p>
+
+          <dl class="preview-metadata">
+            <div>
+              <dt>Date</dt>
+              <dd>{document.dateLabel}</dd>
+            </div>
+            <div>
+              <dt>Read</dt>
+              <dd>{document.readingTime} min</dd>
+            </div>
+            <div>
+              <dt>Tags</dt>
+              <dd>{document.tags.join(' / ')}</dd>
+            </div>
+          </dl>
+
+          <p class="preview-excerpt">{document.excerpt}</p>
+          <a class="text-link" href={document.href}>Open post</a>
+        </section>
+      ))}
+
+      {!initialDocument && (
+        <section class="preview-card is-active">
+          <p class="preview-excerpt">No posts yet.</p>
+        </section>
+      )}
+    </aside>
+  </div>
+</section>
+
+<script is:inline type="application/json" id="blog-search-data" set:html={searchPayload}></script>
+
+<script>
+  // @ts-nocheck
+  const dataElement = document.getElementById('blog-search-data');
+
+  if (dataElement) {
+    const nonWordPattern = /[^\p{L}\p{N}\s-]+/gu;
+    const hanSequencePattern = /[\p{Script=Han}]+/gu;
+    const normalizeSearchText = (value) =>
+      value
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(nonWordPattern, ' ')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const expandSearchQuery = (query) => {
+      const normalized = normalizeSearchText(query);
+      const hanTerms = [];
+
+      for (const sequence of query.match(hanSequencePattern) ?? []) {
+        const chars = Array.from(sequence);
+
+        hanTerms.push(sequence);
+
+        for (let index = 0; index < chars.length; index += 1) {
+          hanTerms.push(chars[index]);
+
+          for (let size = 2; size <= 4 && index + size <= chars.length; size += 1) {
+            hanTerms.push(chars.slice(index, index + size).join(''));
+          }
+        }
+      }
+
+      return [...new Set([...normalized.split(/\s+/), ...hanTerms].filter(Boolean))].join(' ');
+    };
+    const tokenize = (value) => normalizeSearchText(value).split(/\s+/).filter(Boolean);
+    const unique = (items) => [...new Set(items.filter(Boolean))];
+    const getEditDistance = (left, right) => {
+      if (left === right) {
+        return 0;
+      }
+
+      if (!left.length) {
+        return right.length;
+      }
+
+      if (!right.length) {
+        return left.length;
+      }
+
+      const matrix = Array.from({ length: left.length + 1 }, () => new Array(right.length + 1).fill(0));
+
+      for (let index = 0; index <= left.length; index += 1) {
+        matrix[index][0] = index;
+      }
+
+      for (let index = 0; index <= right.length; index += 1) {
+        matrix[0][index] = index;
+      }
+
+      for (let row = 1; row <= left.length; row += 1) {
+        for (let column = 1; column <= right.length; column += 1) {
+          const cost = left[row - 1] === right[column - 1] ? 0 : 1;
+
+          matrix[row][column] = Math.min(
+            matrix[row - 1][column] + 1,
+            matrix[row][column - 1] + 1,
+            matrix[row - 1][column - 1] + cost
+          );
+        }
+      }
+
+      return matrix[left.length][right.length];
+    };
+    const matchesWholeToken = (tokens, term) => tokens.includes(term);
+    const matchesTokenPrefix = (tokens, term) => tokens.some((token) => token.startsWith(term));
+    const matchesNormalizedText = (text, term) => text.includes(term);
+    const getFuzzyMatchScore = (term, tokens) => {
+      if (term.length < 4) {
+        return 0;
+      }
+
+      const threshold = term.length >= 7 ? 2 : 1;
+      let bestDistance = Number.POSITIVE_INFINITY;
+
+      for (const token of tokens) {
+        if (Math.abs(token.length - term.length) > threshold) {
+          continue;
+        }
+
+        const distance = getEditDistance(term, token);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+        }
+      }
+
+      if (bestDistance > threshold) {
+        return 0;
+      }
+
+      return threshold === 1 ? 16 - bestDistance * 6 : 18 - bestDistance * 5;
+    };
+
+    const documents = JSON.parse(dataElement.textContent ?? '[]');
+    const root = document.querySelector('[data-directory-root]');
+    const list = root?.querySelector('[data-directory-list]');
+    const input = /** @type {HTMLInputElement | null} */ (document.getElementById('blog-search'));
+    const clearButton = root?.parentElement?.querySelector('[data-clear-search]');
+    const status = root?.parentElement?.querySelector('[data-search-status]');
+    const entries = new Map(
+      [...(root?.querySelectorAll('[data-directory-entry]') ?? [])].map((element) => [
+        element.getAttribute('data-post-id'),
+        element
+      ])
+    );
+    const previews = new Map(
+      [...(root?.querySelectorAll('[data-directory-preview]') ?? [])].map((element) => [
+        element.getAttribute('data-post-id'),
+        element
+      ])
+    );
+    const indexedDocuments = documents.map((document) => {
+      const normalizedTitle = normalizeSearchText(document.title);
+      const normalizedDescription = normalizeSearchText(document.description);
+      const normalizedTags = normalizeSearchText(document.tagsText);
+      const normalizedSearchTerms = normalizeSearchText(document.searchTerms);
+
+      return {
+        ...document,
+        normalizedTitle,
+        normalizedDescription,
+        normalizedTags,
+        normalizedSearchTerms,
+        titleTokens: unique(tokenize(document.title)),
+        descriptionTokens: unique(tokenize(document.description)),
+        tagTokens: unique(tokenize(document.tagsText)),
+        searchTokens: unique(tokenize(document.searchTerms))
+      };
+    });
+    const documentsById = new Map(indexedDocuments.map((document) => [document.id, document]));
+
+    let activeId = documents[0]?.id;
+
+    const setActive = (id) => {
+      if (!id || !entries.has(id) || !previews.has(id)) {
+        activeId = undefined;
+
+        for (const [, entry] of entries) {
+          entry.classList.remove('is-active');
+        }
+
+        for (const [, preview] of previews) {
+          preview.classList.remove('is-active');
+        }
+
+        return;
+      }
+
+      activeId = id;
+
+      for (const [entryId, entry] of entries) {
+        entry.classList.toggle('is-active', entryId === id);
+      }
+
+      for (const [previewId, preview] of previews) {
+        preview.classList.toggle('is-active', previewId === id);
+      }
+    };
+
+    const renderList = (orderedIds) => {
+      if (!list) {
+        return;
+      }
+
+      const visible = new Set(orderedIds);
+
+      for (const [id, entry] of entries) {
+        if (visible.has(id)) {
+          entry.removeAttribute('hidden');
+        } else {
+          entry.setAttribute('hidden', '');
+        }
+      }
+
+      orderedIds.forEach((id) => {
+        const entry = entries.get(id);
+
+        if (entry) {
+          list.appendChild(entry);
+        }
+      });
+
+      if (!visible.has(activeId)) {
+        setActive(orderedIds[0]);
+      }
+    };
+
+    const scoreDocument = (document, query) => {
+      const normalizedQuery = normalizeSearchText(query);
+      const queryTokens = unique(tokenize(query));
+      const expandedTokens = unique(expandSearchQuery(query).split(/\s+/));
+      const auxiliaryTokens = expandedTokens.filter((token) => !queryTokens.includes(token) && token.length >= 2);
+      let score = 0;
+      let matchedQueryTokens = 0;
+
+      if (document.normalizedTitle === normalizedQuery) score += 280;
+      else if (document.normalizedTitle.startsWith(normalizedQuery)) score += 220;
+      else if (matchesNormalizedText(document.normalizedTitle, normalizedQuery)) score += 140;
+
+      if (document.normalizedTags === normalizedQuery) score += 180;
+      else if (document.normalizedTags.startsWith(normalizedQuery)) score += 130;
+      else if (matchesNormalizedText(document.normalizedTags, normalizedQuery)) score += 90;
+
+      if (matchesNormalizedText(document.normalizedDescription, normalizedQuery)) score += 50;
+      if (matchesNormalizedText(document.normalizedSearchTerms, normalizedQuery)) score += 35;
+
+      queryTokens.forEach((token) => {
+        let tokenMatched = false;
+
+        if (matchesWholeToken(document.titleTokens, token)) {
+          score += 120;
+          tokenMatched = true;
+        } else if (matchesTokenPrefix(document.titleTokens, token)) {
+          score += 88;
+          tokenMatched = true;
+        } else if (matchesNormalizedText(document.normalizedTitle, token)) {
+          score += 54;
+          tokenMatched = true;
+        }
+
+        if (matchesWholeToken(document.tagTokens, token)) {
+          score += 92;
+          tokenMatched = true;
+        } else if (matchesTokenPrefix(document.tagTokens, token)) {
+          score += 70;
+          tokenMatched = true;
+        }
+
+        if (matchesTokenPrefix(document.descriptionTokens, token)) {
+          score += 26;
+          tokenMatched = true;
+        }
+
+        if (matchesWholeToken(document.searchTokens, token)) {
+          score += 24;
+          tokenMatched = true;
+        } else if (matchesTokenPrefix(document.searchTokens, token)) {
+          score += 16;
+          tokenMatched = true;
+        }
+
+        if (!tokenMatched) {
+          const fuzzyScore = Math.max(
+            getFuzzyMatchScore(token, document.titleTokens),
+            getFuzzyMatchScore(token, document.tagTokens),
+            getFuzzyMatchScore(token, document.searchTokens)
+          );
+
+          if (fuzzyScore > 0) {
+            score += fuzzyScore;
+            tokenMatched = true;
+          }
+        }
+
+        if (tokenMatched) {
+          matchedQueryTokens += 1;
+        }
+      });
+
+      auxiliaryTokens.forEach((token) => {
+        if (matchesWholeToken(document.searchTokens, token)) {
+          score += 10;
+        } else if (matchesTokenPrefix(document.searchTokens, token)) {
+          score += 6;
+        }
+      });
+
+      if (matchedQueryTokens === 0 && score < 80) {
+        return null;
+      }
+
+      return {
+        id: document.id,
+        matchedQueryTokens,
+        score
+      };
+    };
+
+    const searchDocuments = (query) => {
+      const ranked = indexedDocuments
+        .map((document) => scoreDocument(document, query))
+        .filter(Boolean)
+        .sort((left, right) => {
+          if (left.matchedQueryTokens !== right.matchedQueryTokens) {
+            return right.matchedQueryTokens - left.matchedQueryTokens;
+          }
+
+          if (left.score !== right.score) {
+            return right.score - left.score;
+          }
+
+          return (
+            Date.parse(documentsById.get(right.id)?.dateISO ?? '1970-01-01T00:00:00.000Z') -
+            Date.parse(documentsById.get(left.id)?.dateISO ?? '1970-01-01T00:00:00.000Z')
+          );
+        });
+
+      const topScore = ranked[0]?.score ?? 0;
+      const cutoff = Math.max(45, topScore * 0.28);
+
+      return ranked.filter((item) => item.score >= cutoff);
+    };
+
+    const updateSearch = () => {
+      if (!input || !status) {
+        return;
+      }
+
+      const query = input.value.trim();
+      clearButton?.toggleAttribute('hidden', query.length === 0);
+
+      if (!query) {
+        renderList(documents.map((document) => document.id));
+        status.textContent = `${documents.length} posts indexed. Hover or tap an entry to preview it.`;
+        return;
+      }
+
+      const results = searchDocuments(query);
+      const orderedIds = results.map((result) => result.id);
+      renderList(orderedIds);
+      setActive(orderedIds[0]);
+
+      status.textContent =
+        orderedIds.length > 0
+          ? `${orderedIds.length} results for "${query}".`
+          : `No results for "${query}". Try title, tag, Chinese, pinyin, or a shorter fuzzy query.`;
+    };
+
+    for (const [id, entry] of entries) {
+      entry.addEventListener('pointerenter', () => setActive(id ?? undefined));
+      entry.addEventListener('focus', () => setActive(id ?? undefined));
+      entry.addEventListener('click', () => setActive(id ?? undefined));
+    }
+
+    input?.addEventListener('input', updateSearch);
+    clearButton?.addEventListener('click', () => {
+      if (!input) {
+        return;
+      }
+
+      input.value = '';
+      updateSearch();
+      input.focus();
+    });
+
+    updateSearch();
+  }
+</script>
