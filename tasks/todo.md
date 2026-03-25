@@ -89,6 +89,22 @@
 - [x] 重做目录预览和文章阅读细节，让它们更像精细出版物而不是普通模板。
 - [x] 运行 `npm run check`、`npm run build`，补写 review。
 
+## 2026-03-22 Studio Gateway Pass
+
+目标：
+
+- 让 Studio 不再只是本地文件工具，而是能通过安全网关直连 Notion API。
+- 禁止把 Notion integration token 暴露到前端或静态产物；所有 Notion 请求必须通过服务端 gateway。
+- 给 Studio 加上网关会话认证，默认锁定远程动作，只有拿到 token 并换取会话后才能导入或推送 Notion 页面。
+- 保持现有本地 Markdown 工作流可用，不因为加了远程能力而破坏本地保存和导入。
+
+本轮实施清单：
+
+- [x] 新增独立 Studio gateway，提供会话认证、Notion 搜索、导入、创建和更新接口。
+- [x] 让 Studio 支持网关锁定、token 自动认证、Notion 页面搜索、API 导入和 API 推送。
+- [x] 增加环境变量、工作流透传和文档，明确 GitHub Pages 与 gateway 的职责边界。
+- [x] 运行 `npm run check`、`npm run build`，并补做最基本的 gateway 语法/会话验证。
+
 ## Product Direction
 
 目标不是继续做“有设计感的个人主页”，而是把它重做成一个朴素、整洁、目录优先、写作优先、可长期维护的技术博客产品。
@@ -258,4 +274,10 @@
 - 目录预览这轮已从“固定右栏”改成真正的悬浮预览：只在 hover/focus 标题时出现，并按视口重新定位；同时搜索、主题按钮和边框细节也继续收紧到更安静的 chrome。
 - 旧字体依赖 `@fontsource-variable/manrope` 已移除，社交卡片字体引用也已同步清理，避免新旧审美混用。
 - 本轮再次通过了 `npm run check` 和 `npm run build`；并且点检了 `dist/index.html`、`dist/blog/index.html`、`dist/about/index.html` 与文章产物，确认新的文案、搜索状态、归档预览结构和单栏文章布局已经进入构建结果。
+- 2026-03-22 Studio gateway 已补齐：新增独立 `gateway/server.mjs`，把 Notion token 留在服务端，通过 `GET/POST/DELETE /api/studio/session` 做会话认证，并提供 Notion 页面搜索、导入、创建和更新接口。
+- Studio 页面现在支持 gateway 锁定和自动认证：如果构建时配置了 `PUBLIC_STUDIO_GATEWAY_URL`，页面会默认锁定远程动作；可通过输入 token 或访问 `/studio/#gateway_token=...` 交换成 HttpOnly 会话 cookie，再解锁 Notion 搜索、API 导入和 API 推送。
+- 现有本地 Markdown 工作流仍保留：连接本地 `src/content/posts`、打开文件、保存、另存、导出和 Notion zip 导入都没有被远程功能替换掉，而是与 gateway 模式并存。
+- GitHub Actions 构建已支持透传 `PUBLIC_STUDIO_GATEWAY_URL` 和 `PUBLIC_SHOW_STUDIO`；根目录新增 `.env.example` 和 README 说明，明确 GitHub Pages 只负责静态站点，真正的 Notion 鉴权和发布动作必须走独立 gateway。
+- 这轮验证包含三层：`node --check gateway/server.mjs` 通过，`npm run check` 通过，`npm run build` 通过；另外还做了本地 gateway smoke test，确认未认证访问 `/api/notion/pages` 会返回 `401`，认证成功后会签发 `HttpOnly` 会话 cookie，而未配置 `NOTION_TOKEN` 时远程接口会明确返回 `503`。
+- 2026-03-25 推送前再次复核通过：`node --check gateway/server.mjs`、`npm run check`、`npm run build` 均再次通过，当前待发布内容与任务记录一致，可直接提交到 `origin/main`。
 - 当前仍未清零的只剩最终浏览器像素级 QA：包括真实 hover/focus、主题切换、不同分辨率、Studio 保存与 Notion 导入的实机回归。当前环境里仍只能做到构建产物和 HTML/脚本级验证。

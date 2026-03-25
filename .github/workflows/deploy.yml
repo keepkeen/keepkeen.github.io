@@ -37,6 +37,9 @@ jobs:
         run: npm ci
 
       - name: Build site
+        env:
+          PUBLIC_SHOW_STUDIO: ${{ vars.PUBLIC_SHOW_STUDIO }}
+          PUBLIC_STUDIO_GATEWAY_URL: ${{ vars.PUBLIC_STUDIO_GATEWAY_URL }}
         run: npm run build
 
       - name: Upload artifact

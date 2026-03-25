@@ -1068,8 +1068,37 @@ dl {
 }
 
 .studio-shell.is-dragover {
-  outline: 2px dashed #2563eb;
+  outline: 2px dashed var(--accent);
   outline-offset: 0.5rem;
+}
+
+.studio-shell {
+  position: relative;
+}
+
+.studio-shell.is-locked .studio-toolbar,
+.studio-shell.is-locked .studio-grid {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.studio-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.studio-gate-panel {
+  width: min(30rem, 100%);
+  display: grid;
+  gap: 1rem;
 }
 
 .studio-grid {
@@ -1165,8 +1194,8 @@ dl {
 }
 
 .studio-post-button.is-active {
-  border-color: #2563eb;
-  background: color-mix(in srgb, #2563eb 8%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
 }
 
 .studio-preview-head {
@@ -1174,6 +1203,10 @@ dl {
   justify-content: space-between;
   gap: 1rem;
   align-items: flex-start;
+}
+
+.studio-preview-head .button {
+  flex-shrink: 0;
 }
 
 .studio-preview-filename,
@@ -1233,6 +1266,11 @@ dl {
 .studio-checklist-item.is-error {
   border-color: color-mix(in srgb, #dc2626 42%, var(--line));
   color: var(--text);
+}
+
+[data-requires-gateway]:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 @media (hover: none), (max-width: 1080px) {
@@ -1368,6 +1406,10 @@ dl {
 
   .studio-editor {
     min-height: 24rem;
+  }
+
+  .studio-gate {
+    padding: 1rem 0.5rem;
   }
 
   .fact-grid,

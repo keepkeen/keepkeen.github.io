@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const today = new Date().toISOString().slice(0, 10);
+const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
 ---
 
 <BaseLayout
@@ -19,7 +20,29 @@ const today = new Date().toISOString().slice(0, 10);
     </p>
   </section>
 
-  <section class="studio-shell" data-studio-root data-today={today}>
+  <section class="studio-shell" data-studio-root data-today={today} data-gateway-url={gatewayUrl}>
+    <div class="studio-gate" data-studio-gate hidden>
+      <div class="plain-panel studio-gate-panel">
+        <p class="panel-label">Studio access</p>
+        <h2 class="section-title-compact">Authenticate to unlock Notion and publish actions.</h2>
+        <p class="search-note" data-gateway-gate-copy>
+          This Studio is configured to use a protected gateway. Enter the gateway token once, or
+          open the page with `#gateway_token=...` to authenticate automatically.
+        </p>
+
+        <label class="field">
+          <span>Gateway token</span>
+          <input type="password" autocomplete="off" data-gateway-token-input />
+        </label>
+
+        <div class="button-row button-row-compact">
+          <button class="button button-primary" type="button" data-action="authenticate-gateway">
+            Unlock Studio
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="studio-toolbar plain-panel">
       <div>
         <p class="panel-label">Status</p>
@@ -33,6 +56,12 @@ const today = new Date().toISOString().slice(0, 10);
         <button class="button" type="button" data-action="open-folder">Open posts folder</button>
         <button class="button" type="button" data-action="open">Open file</button>
         <button class="button" type="button" data-action="import-notion">Import Notion export</button>
+        <button class="button" type="button" data-action="import-notion-api" data-requires-gateway>
+          Import from Notion
+        </button>
+        <button class="button" type="button" data-action="push-notion" data-requires-gateway>
+          Push to Notion
+        </button>
         <button class="button button-primary" type="button" data-action="save">Save</button>
         <button class="button" type="button" data-action="save-as">Save as</button>
         <button class="button" type="button" data-action="export">Export</button>
@@ -137,6 +166,56 @@ const today = new Date().toISOString().slice(0, 10);
       </form>
 
       <div class="studio-side-stack">
+        <aside class="plain-panel studio-gateway-panel">
+          <div class="studio-preview-head">
+            <div>
+              <p class="panel-label">Gateway</p>
+              <p class="studio-preview-filename" data-gateway-status-label>Local-only mode</p>
+            </div>
+            <button class="button button-compact" type="button" data-action="logout-gateway" hidden>
+              Sign out
+            </button>
+          </div>
+
+          <p class="search-note" data-gateway-summary>
+            Set `PUBLIC_STUDIO_GATEWAY_URL` to enable secure Notion access from the editor.
+          </p>
+
+          <div class="divider"></div>
+
+          <p class="panel-label">Notion</p>
+
+          <label class="field">
+            <span>Search pages</span>
+            <input type="search" autocomplete="off" spellcheck="false" data-notion-search-input />
+          </label>
+
+          <div class="button-row button-row-compact">
+            <button class="button button-compact" type="button" data-action="search-notion" data-requires-gateway>
+              Search
+            </button>
+            <button
+              class="button button-compact"
+              type="button"
+              data-action="import-selected-notion"
+              data-requires-gateway
+            >
+              Import selected
+            </button>
+            <button class="button button-compact" type="button" data-action="push-notion" data-requires-gateway>
+              Create / update
+            </button>
+          </div>
+
+          <p class="search-note" data-notion-selection>
+            No Notion page selected. Push will create a new page if the gateway has a configured parent.
+          </p>
+
+          <div class="studio-post-list" data-notion-result-list>
+            <p class="search-note">Authenticate the gateway to browse Notion pages.</p>
+          </div>
+        </aside>
+
         <aside class="plain-panel studio-library-panel">
           <div class="studio-preview-head">
             <div>
@@ -241,8 +320,19 @@ const today = new Date().toISOString().slice(0, 10);
 
     if (root) {
       const defaultDate = root.dataset.today ?? new Date().toISOString().slice(0, 10);
+      const gatewayUrl = root.dataset.gatewayUrl?.trim() ?? '';
       const status = root.querySelector('[data-studio-status]');
+      const studioGate = root.querySelector('[data-studio-gate]');
+      const gatewayGateCopy = root.querySelector('[data-gateway-gate-copy]');
+      const gatewayTokenInput = root.querySelector('[data-gateway-token-input]');
       const notionInput = root.querySelector('[data-notion-input]');
+      const gatewayStatusLabel = root.querySelector('[data-gateway-status-label]');
+      const gatewaySummary = root.querySelector('[data-gateway-summary]');
+      const notionSearchInput = root.querySelector('[data-notion-search-input]');
+      const notionResultList = root.querySelector('[data-notion-result-list]');
+      const notionSelection = root.querySelector('[data-notion-selection]');
+      const gatewayButtons = [...root.querySelectorAll('[data-requires-gateway]')];
+      const logoutButtons = [...root.querySelectorAll('[data-action="logout-gateway"]')];
       const folderName = root.querySelector('[data-folder-name]');
       const postCount = root.querySelector('[data-post-count]');
       const postList = root.querySelector('[data-post-list]');
@@ -276,6 +366,18 @@ const today = new Date().toISOString().slice(0, 10);
       let postsDirectoryEntries = [];
       let autosaveTimer = null;
       let importReport = null;
+      let linkedNotionPage = null;
+      let notionResults = [];
+      let notionSearchTimer = null;
+      let gatewayState = {
+        configured: Boolean(gatewayUrl),
+        authenticated: false,
+        expiresAt: null,
+        notionConfigured: false,
+        parentConfigured: false,
+        parentType: null,
+        parentLabel: null
+      };
 
       marked.setOptions({
         gfm: true,
@@ -292,13 +394,199 @@ const today = new Date().toISOString().slice(0, 10);
         description: '',
         draft: false,
         featured: false,
-        body: ''
+        body: '',
+        notionPageId: '',
+        notionPageUrl: ''
       });
 
       const setStatus = (message) => {
         if (status) {
           status.textContent = message;
         }
+      };
+
+      const setLinkedNotionPage = (page) => {
+        linkedNotionPage = page
+          ? {
+              id: page.id,
+              url: page.url ?? '',
+              title: page.title || getState().title || 'Untitled page'
+            }
+          : null;
+      };
+
+      const getGatewayTokenFromLocation = () => {
+        const url = new URL(window.location.href);
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+
+        return (
+          hashParams.get('gateway_token') ||
+          hashParams.get('studio_token') ||
+          url.searchParams.get('gateway_token') ||
+          url.searchParams.get('studio_token') ||
+          ''
+        ).trim();
+      };
+
+      const clearGatewayTokenFromLocation = () => {
+        const url = new URL(window.location.href);
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        let changed = false;
+
+        ['gateway_token', 'studio_token'].forEach((key) => {
+          if (url.searchParams.has(key)) {
+            url.searchParams.delete(key);
+            changed = true;
+          }
+
+          if (hashParams.has(key)) {
+            hashParams.delete(key);
+            changed = true;
+          }
+        });
+
+        if (!changed) {
+          return;
+        }
+
+        const nextHash = hashParams.toString();
+        const nextUrl = `${url.pathname}${url.search}${nextHash ? `#${nextHash}` : ''}`;
+        window.history.replaceState({}, '', nextUrl);
+      };
+
+      const apiFetch = async (path, options = {}) => {
+        if (!gatewayUrl) {
+          throw new Error('Studio gateway is not configured.');
+        }
+
+        const response = await fetch(new URL(path, gatewayUrl).toString(), {
+          method: options.method ?? 'GET',
+          credentials: 'include',
+          headers: {
+            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            'X-Studio-Client': 'studio',
+            ...(options.headers ?? {})
+          },
+          body: options.body ? JSON.stringify(options.body) : undefined
+        });
+
+        const text = await response.text();
+        const json = text ? JSON.parse(text) : {};
+
+        if (!response.ok) {
+          throw new Error(json?.error ?? 'Gateway request failed.');
+        }
+
+        return json;
+      };
+
+      const renderNotionResults = () => {
+        if (!notionResultList) {
+          return;
+        }
+
+        notionResultList.innerHTML = '';
+
+        if (!gatewayState.configured) {
+          notionResultList.innerHTML =
+            '<p class="search-note">No gateway configured yet. Remote Notion access is disabled.</p>';
+          return;
+        }
+
+        if (!gatewayState.authenticated) {
+          notionResultList.innerHTML =
+            '<p class="search-note">Authenticate the gateway to browse Notion pages.</p>';
+          return;
+        }
+
+        if (!gatewayState.notionConfigured) {
+          notionResultList.innerHTML =
+            '<p class="search-note">The gateway is reachable, but NOTION_TOKEN is not configured on the server.</p>';
+          return;
+        }
+
+        if (notionResults.length === 0) {
+          notionResultList.innerHTML =
+            '<p class="search-note">No Notion results yet. Search by title or paste a page id.</p>';
+          return;
+        }
+
+        notionResults.forEach((page) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `studio-post-button${linkedNotionPage?.id === page.id ? ' is-active' : ''}`;
+          button.textContent = page.title;
+          button.title = page.url ?? page.id;
+          button.addEventListener('click', () => {
+            setLinkedNotionPage(page);
+            renderGatewayState();
+            renderNotionResults();
+          });
+          notionResultList.appendChild(button);
+        });
+      };
+
+      const renderGatewayState = () => {
+        root.classList.toggle('is-locked', gatewayState.configured && !gatewayState.authenticated);
+
+        if (studioGate) {
+          studioGate.hidden = !(gatewayState.configured && !gatewayState.authenticated);
+        }
+
+        gatewayButtons.forEach((button) => {
+          button.disabled = !gatewayState.configured || !gatewayState.authenticated || !gatewayState.notionConfigured;
+        });
+
+        logoutButtons.forEach((button) => {
+          button.hidden = !(gatewayState.configured && gatewayState.authenticated);
+        });
+
+        if (gatewayStatusLabel) {
+          if (!gatewayState.configured) {
+            gatewayStatusLabel.textContent = 'Local-only mode';
+          } else if (gatewayState.authenticated) {
+            gatewayStatusLabel.textContent = gatewayState.parentLabel
+              ? `Authenticated · ${gatewayState.parentLabel}`
+              : 'Authenticated';
+          } else {
+            gatewayStatusLabel.textContent = 'Locked';
+          }
+        }
+
+        if (gatewaySummary) {
+          if (!gatewayState.configured) {
+            gatewaySummary.textContent =
+              'Set PUBLIC_STUDIO_GATEWAY_URL to enable secure Notion access from the editor.';
+          } else if (!gatewayState.authenticated) {
+            gatewaySummary.textContent =
+              'The editor is locked behind the Studio gateway. Authenticate once to unlock remote actions.';
+          } else if (!gatewayState.notionConfigured) {
+            gatewaySummary.textContent =
+              'Gateway auth succeeded, but NOTION_TOKEN is not configured on the server yet.';
+          } else if (!gatewayState.parentConfigured) {
+            gatewaySummary.textContent =
+              'Gateway auth succeeded. Import works, but create/update needs NOTION_PARENT_ID on the gateway.';
+          } else {
+            gatewaySummary.textContent = `Remote Notion access is live. Parent mode: ${
+              gatewayState.parentType ?? 'unknown'
+            }.`;
+          }
+        }
+
+        if (gatewayGateCopy && gatewayState.configured && !gatewayState.authenticated) {
+          gatewayGateCopy.textContent =
+            'This Studio is protected by the gateway. Enter the token once, or open the page with #gateway_token=... to authenticate automatically.';
+        }
+
+        if (notionSelection) {
+          notionSelection.textContent = linkedNotionPage
+            ? `Selected Notion page: ${linkedNotionPage.title || linkedNotionPage.id}`
+            : gatewayState.parentConfigured
+              ? 'No Notion page selected. Push will create a new page under the configured parent.'
+              : 'No Notion page selected. Import works, but create/update needs a configured parent.';
+        }
+
+        renderNotionResults();
       };
 
       const slugify = (value) =>
@@ -336,7 +624,9 @@ const today = new Date().toISOString().slice(0, 10);
         description: fields.description?.value?.trim() ?? '',
         draft: Boolean(fields.draft?.checked),
         featured: Boolean(fields.featured?.checked),
-        body: fields.body?.value ?? ''
+        body: fields.body?.value ?? '',
+        notionPageId: linkedNotionPage?.id ?? '',
+        notionPageUrl: linkedNotionPage?.url ?? ''
       });
 
       const getTagList = (value) =>
@@ -474,6 +764,183 @@ const today = new Date().toISOString().slice(0, 10);
             ...warnings.map((text) => ({ kind: 'warning', text }))
           ],
           'No import analysis available.'
+        );
+      };
+
+      const refreshGatewaySession = async () => {
+        if (!gatewayUrl) {
+          gatewayState = {
+            configured: false,
+            authenticated: false,
+            expiresAt: null,
+            notionConfigured: false,
+            parentConfigured: false,
+            parentType: null,
+            parentLabel: null
+          };
+          renderGatewayState();
+          return gatewayState;
+        }
+
+        try {
+          const session = await apiFetch('/api/studio/session');
+          gatewayState = {
+            configured: true,
+            authenticated: Boolean(session.authenticated),
+            expiresAt: session.expiresAt ?? null,
+            notionConfigured: Boolean(session.notionConfigured),
+            parentConfigured: Boolean(session.parentConfigured),
+            parentType: session.parentType ?? null,
+            parentLabel: session.parentLabel ?? null
+          };
+        } catch (error) {
+          gatewayState = {
+            configured: true,
+            authenticated: false,
+            expiresAt: null,
+            notionConfigured: false,
+            parentConfigured: false,
+            parentType: null,
+            parentLabel: null
+          };
+        }
+
+        renderGatewayState();
+        return gatewayState;
+      };
+
+      const authenticateGateway = async (token) => {
+        if (!gatewayUrl) {
+          setStatus('Studio gateway is not configured for this build.');
+          return;
+        }
+
+        if (!token) {
+          setStatus('Enter the gateway token first.');
+          return;
+        }
+
+        await apiFetch('/api/studio/session', {
+          method: 'POST',
+          body: { token }
+        });
+
+        if (gatewayTokenInput) {
+          gatewayTokenInput.value = '';
+        }
+
+        await refreshGatewaySession();
+        setStatus('Gateway authentication succeeded. Remote Notion actions are now unlocked.');
+      };
+
+      const logoutGateway = async () => {
+        if (!gatewayUrl) {
+          return;
+        }
+
+        await apiFetch('/api/studio/session', {
+          method: 'DELETE'
+        });
+
+        notionResults = [];
+        await refreshGatewaySession();
+        setStatus('Signed out from the Studio gateway.');
+      };
+
+      const searchNotionPages = async () => {
+        if (!gatewayState.authenticated) {
+          setStatus('Authenticate the gateway before searching Notion.');
+          return;
+        }
+
+        const rawQuery = notionSearchInput?.value?.trim() ?? '';
+        const query = rawQuery || linkedNotionPage?.id || getState().title;
+        const params = new URLSearchParams();
+
+        if (query) {
+          params.set('query', query);
+        }
+
+        const response = await apiFetch(`/api/notion/pages${params.toString() ? `?${params}` : ''}`);
+        notionResults = response.results ?? [];
+
+        if (rawQuery && /^[0-9a-f-]{32,}$/i.test(rawQuery) && !notionResults.find((item) => item.id === rawQuery)) {
+          notionResults.unshift({
+            id: rawQuery,
+            title: rawQuery,
+            url: '',
+            lastEditedTime: '',
+            createdTime: '',
+            parentType: null,
+            parentId: null
+          });
+        }
+
+        renderNotionResults();
+        setStatus(query ? `Loaded ${notionResults.length} Notion result(s).` : 'Loaded recent Notion pages.');
+      };
+
+      const importSelectedNotionPage = async () => {
+        if (!gatewayState.authenticated) {
+          setStatus('Authenticate the gateway before importing from Notion.');
+          return;
+        }
+
+        if (!linkedNotionPage?.id) {
+          setStatus('Select a Notion page first.');
+          return;
+        }
+
+        const payload = await apiFetch(`/api/notion/pages/${linkedNotionPage.id}`);
+
+        currentHandle = null;
+        applyState(payload.state ?? emptyState());
+        importReport = analyzeImportedContent({
+          body: payload.state?.body ?? '',
+          sourceName: payload.page?.title ?? linkedNotionPage.id,
+          assetCount: 0,
+          markdownEntryCount: 1
+        });
+        renderImportReport();
+        renderNotionResults();
+        setStatus(`Imported ${payload.page?.title ?? linkedNotionPage.id} from Notion.`);
+      };
+
+      const pushDraftToNotion = async () => {
+        if (!gatewayState.authenticated) {
+          setStatus('Authenticate the gateway before pushing to Notion.');
+          return;
+        }
+
+        if (!gatewayState.notionConfigured) {
+          setStatus('The gateway is authenticated, but NOTION_TOKEN is not configured.');
+          return;
+        }
+
+        const state = getState();
+        const hasLinkedPage = Boolean(linkedNotionPage?.id);
+        const response = hasLinkedPage
+          ? await apiFetch(`/api/notion/pages/${linkedNotionPage.id}`, {
+              method: 'PATCH',
+              body: { state }
+            })
+          : await apiFetch('/api/notion/pages', {
+              method: 'POST',
+              body: { state }
+            });
+
+        const page = response.page ?? response;
+
+        if (page?.id) {
+          setLinkedNotionPage(page);
+        }
+
+        renderGatewayState();
+        renderNotionResults();
+        setStatus(
+          hasLinkedPage
+            ? `Updated ${page?.title ?? linkedNotionPage?.title ?? 'the Notion page'}.`
+            : `Created ${page?.title || state.title || 'a new Notion page'}.`
         );
       };
 
@@ -646,6 +1113,7 @@ const today = new Date().toISOString().slice(0, 10);
         state.format = /\.mdx$/i.test(sourceName) ? 'mdx' : 'md';
 
         currentHandle = null;
+        setLinkedNotionPage(null);
         applyState(state);
         importReport = analyzeImportedContent({
           body,
@@ -720,7 +1188,18 @@ const today = new Date().toISOString().slice(0, 10);
         if (fields.featured) fields.featured.checked = Boolean(state.featured);
         if (fields.body) fields.body.value = state.body;
 
+        setLinkedNotionPage(
+          state.notionPageId
+            ? {
+                id: state.notionPageId,
+                url: state.notionPageUrl ?? '',
+                title: state.title || 'Untitled page'
+              }
+            : null
+        );
+
         renderPreview();
+        renderGatewayState();
       };
 
       const saveToStorage = () => {
@@ -1114,6 +1593,26 @@ const today = new Date().toISOString().slice(0, 10);
               notionInput?.click();
             }
 
+            if (action === 'authenticate-gateway') {
+              await authenticateGateway(gatewayTokenInput?.value?.trim() ?? '');
+            }
+
+            if (action === 'logout-gateway') {
+              await logoutGateway();
+            }
+
+            if (action === 'search-notion') {
+              await searchNotionPages();
+            }
+
+            if (action === 'import-notion-api' || action === 'import-selected-notion') {
+              await importSelectedNotionPage();
+            }
+
+            if (action === 'push-notion') {
+              await pushDraftToNotion();
+            }
+
             if (action === 'save') {
               await saveFile();
             }
@@ -1157,6 +1656,34 @@ const today = new Date().toISOString().slice(0, 10);
       });
 
       postFilter?.addEventListener('input', renderPostList);
+
+      notionSearchInput?.addEventListener('input', () => {
+        window.clearTimeout(notionSearchTimer);
+        notionSearchTimer = window.setTimeout(() => {
+          searchNotionPages().catch((error) => {
+            console.error(error);
+            setStatus(error.message || 'Notion search failed.');
+          });
+        }, 220);
+      });
+
+      notionSearchInput?.addEventListener('keydown', async (event) => {
+        if (event.key !== 'Enter') {
+          return;
+        }
+
+        event.preventDefault();
+        await searchNotionPages();
+      });
+
+      gatewayTokenInput?.addEventListener('keydown', async (event) => {
+        if (event.key !== 'Enter') {
+          return;
+        }
+
+        event.preventDefault();
+        await authenticateGateway(gatewayTokenInput.value.trim());
+      });
 
       fields.body?.addEventListener('keydown', (event) => {
         if (event.key !== 'Tab') {
@@ -1244,9 +1771,34 @@ const today = new Date().toISOString().slice(0, 10);
         notionInput.value = '';
       });
 
+      const initializeGateway = async () => {
+        await refreshGatewaySession();
+
+        if (!gatewayState.configured || gatewayState.authenticated) {
+          return;
+        }
+
+        const tokenFromLocation = getGatewayTokenFromLocation();
+
+        if (!tokenFromLocation) {
+          return;
+        }
+
+        try {
+          await authenticateGateway(tokenFromLocation);
+        } finally {
+          clearGatewayTokenFromLocation();
+        }
+      };
+
       restoreDraft();
       renderImportReport();
       renderChecklist();
+      renderGatewayState();
+      initializeGateway().catch((error) => {
+        console.error(error);
+        setStatus(error.message || 'Studio gateway initialization failed.');
+      });
     }
   </script>
 </BaseLayout>

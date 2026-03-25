@@ -47,6 +47,45 @@ Markdown posts support:
 - LaTeX math via `$$ ... $$`
 - tags and dates for archive sorting
 
+## Studio
+
+`/studio/` is a local-first writing interface for Markdown and MDX drafts.
+
+- `Open posts folder` connects the editor to `src/content/posts` in Chromium-based browsers.
+- `Open file` loads an existing `.md` or `.mdx` file.
+- `Save` writes back to the connected folder or file handle.
+- `Import Notion export` accepts a Notion Markdown zip, plain Markdown, or MDX file.
+
+## Secure Notion Gateway
+
+Secure Notion API access does **not** run on GitHub Pages itself. The public site stays static, while a separate gateway process keeps the Notion token on the server and issues an authenticated Studio session.
+
+1. Copy `.env.example` to `.env` or export the same variables in your host.
+2. Set:
+   - `STUDIO_GATEWAY_TOKEN`
+   - `STUDIO_SESSION_SECRET`
+   - `NOTION_TOKEN`
+   - `NOTION_PARENT_ID`
+   - `NOTION_PARENT_TYPE=page` or `data_source`
+3. Start the gateway locally:
+
+```bash
+npm run studio:gateway
+```
+
+4. Build the site with `PUBLIC_STUDIO_GATEWAY_URL` pointed at that gateway.
+5. Open `/studio/` and authenticate once with the gateway token, or visit it with `#gateway_token=YOUR_TOKEN`.
+
+The gateway exposes:
+
+- `GET/POST/DELETE /api/studio/session` for Studio auth
+- `GET /api/notion/pages` to search pages
+- `GET /api/notion/pages/:id` to import a page as markdown
+- `POST /api/notion/pages` to create a page
+- `PATCH /api/notion/pages/:id` to update a page
+
+If your Notion parent is a data source, optional `NOTION_PROP_*` environment variables let the gateway map Studio fields like title, description, slug, tags, dates, draft, and featured to Notion properties.
+
 ## GitHub Pages
 
 1. Push the repository to GitHub.
@@ -55,3 +94,4 @@ Markdown posts support:
 4. If the repo is `your-name.github.io`, the site deploys at the root. If it is a project repo, the Astro config infers the correct base path automatically in GitHub Actions.
 5. `site.config.mjs` is the single source of truth for the site's public metadata. Astro reads `siteUrl` from there for canonicals and the sitemap, with a GitHub Actions fallback while the placeholder URL is still present.
 6. Update `siteUrl`, social links, email, and personal copy in `site.config.mjs` before going live.
+7. If you want the deployed Studio to talk to the gateway, add a repository variable named `PUBLIC_STUDIO_GATEWAY_URL`. The workflow already forwards it into the Astro build.
