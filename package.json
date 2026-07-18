@@ -21,7 +21,7 @@
     "js-yaml": "^4.1.1",
     "jszip": "^3.10.1",
     "katex": "^0.18.0",
-    "marked": "^17.0.5",
+    "marked": "^18.0.6",
     "pinyin": "^4.0.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
