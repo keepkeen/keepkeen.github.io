@@ -2,7 +2,11 @@ import { siteConfig } from '../site.config';
 import {
   countWords,
   getPlainExcerpt,
+  getPostLang,
   getPostPath,
+  getPostSlug,
+  getTagPath,
+  normalizeHtmlLang,
   stripMarkdown,
   type Post,
   withBasePath
@@ -31,6 +35,10 @@ function getAuthorEntity(siteOrigin: URL) {
 
 export function getDefaultSocialImage(siteOrigin: URL) {
   return toAbsoluteUrl(siteOrigin, withBasePath('/social-card.svg'));
+}
+
+export function getPostSocialImage(siteOrigin: URL, post: Post) {
+  return toAbsoluteUrl(siteOrigin, withBasePath(`/og/${getPostSlug(post)}.svg`));
 }
 
 export function getSiteJsonLd(siteOrigin: URL): JsonLd[] {
@@ -95,7 +103,8 @@ export function getBlogCollectionJsonLd(siteOrigin: URL, posts: Post[]): JsonLd 
         url: toAbsoluteUrl(siteOrigin, getPostPath(post)),
         datePublished: post.data.date.toISOString(),
         dateModified: (post.data.updatedDate ?? post.data.date).toISOString(),
-        keywords: post.data.tags
+        keywords: post.data.tags,
+        inLanguage: normalizeHtmlLang(getPostLang(post))
       }))
     }
   };
@@ -119,6 +128,7 @@ export function getBlogPostingJsonLd(siteOrigin: URL, post: Post): JsonLd {
   const postUrl = toAbsoluteUrl(siteOrigin, getPostPath(post));
   const description = post.data.description || getPlainExcerpt(stripMarkdown(post.body ?? ''), 180);
   const author = getAuthorEntity(siteOrigin);
+  const lang = normalizeHtmlLang(getPostLang(post));
 
   return {
     '@context': 'https://schema.org',
@@ -127,19 +137,41 @@ export function getBlogPostingJsonLd(siteOrigin: URL, post: Post): JsonLd {
     description,
     url: postUrl,
     mainEntityOfPage: postUrl,
-    image: getDefaultSocialImage(siteOrigin),
+    image: getPostSocialImage(siteOrigin, post),
     datePublished: post.data.date.toISOString(),
     dateModified: (post.data.updatedDate ?? post.data.date).toISOString(),
     keywords: post.data.tags,
     articleSection: post.data.tags[0] ?? 'Writing',
     wordCount: countWords(post.body),
-    inLanguage: 'en',
+    inLanguage: lang,
     author,
     publisher: author,
     isPartOf: {
       '@type': 'Blog',
       name: `${siteConfig.name} Blog`,
       url: blogUrl
+    }
+  };
+}
+
+export function getTagCollectionJsonLd(siteOrigin: URL, tag: string, posts: Post[]): JsonLd {
+  const tagUrl = toAbsoluteUrl(siteOrigin, getTagPath(tag));
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `Tag: ${tag}`,
+    url: tagUrl,
+    description: `Posts tagged with ${tag}.`,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: posts.length,
+      itemListElement: posts.map((post, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: toAbsoluteUrl(siteOrigin, getPostPath(post)),
+        name: post.data.title
+      }))
     }
   };
 }

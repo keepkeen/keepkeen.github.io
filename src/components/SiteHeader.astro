@@ -1,12 +1,6 @@
 ---
 import { siteConfig } from '../site.config';
-
-const base = import.meta.env.BASE_URL;
-
-function withBase(path: string) {
-  const relative = path === '/' ? '.' : path.replace(/^\//, '');
-  return new URL(relative, `https://placeholder${base}`).pathname;
-}
+import { withBasePath } from '../utils/content';
 
 function normalize(path: string) {
   return path.replace(/\/$/, '') || '/';
@@ -15,16 +9,16 @@ function normalize(path: string) {
 const currentPath = normalize(Astro.url.pathname);
 const showStudioLink = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_STUDIO === 'true';
 const links = [
-  { label: 'Home', href: withBase('/') },
-  { label: 'Blog', href: withBase('/blog/') },
-  { label: 'About', href: withBase('/about/') },
-  ...(showStudioLink ? [{ label: 'Studio', href: withBase('/studio/') }] : [])
+  { label: 'Home', href: withBasePath('/') },
+  { label: 'Blog', href: withBasePath('/blog/') },
+  { label: 'About', href: withBasePath('/about/') },
+  ...(showStudioLink ? [{ label: 'Studio', href: withBasePath('/studio/') }] : [])
 ];
 ---
 
 <header class="site-header container">
   <div class="brand-block">
-    <a class="brand" href={withBase('/')} aria-label={`${siteConfig.name} home`}>
+    <a class="brand" href={withBasePath('/')} aria-label={`${siteConfig.name} home`}>
       {siteConfig.name}
     </a>
     <p class="brand-note">{siteConfig.role}</p>

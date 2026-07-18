@@ -118,109 +118,13 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
 <script>
   // @ts-nocheck
+  import { indexDocuments, searchDocuments } from '../utils/client-search';
+
   const dataElement = document.getElementById('blog-search-data');
 
   if (dataElement) {
-    const nonWordPattern = /[^\p{L}\p{N}\s-]+/gu;
-    const hanSequencePattern = /[\p{Script=Han}]+/gu;
-    const normalizeSearchText = (value) =>
-      value
-        .normalize('NFKC')
-        .toLowerCase()
-        .replace(nonWordPattern, ' ')
-        .replace(/[_-]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    const expandSearchQuery = (query) => {
-      const normalized = normalizeSearchText(query);
-      const hanTerms = [];
-
-      for (const sequence of query.match(hanSequencePattern) ?? []) {
-        const chars = Array.from(sequence);
-
-        hanTerms.push(sequence);
-
-        for (let index = 0; index < chars.length; index += 1) {
-          hanTerms.push(chars[index]);
-
-          for (let size = 2; size <= 4 && index + size <= chars.length; size += 1) {
-            hanTerms.push(chars.slice(index, index + size).join(''));
-          }
-        }
-      }
-
-      return [...new Set([...normalized.split(/\s+/), ...hanTerms].filter(Boolean))].join(' ');
-    };
-    const tokenize = (value) => normalizeSearchText(value).split(/\s+/).filter(Boolean);
-    const unique = (items) => [...new Set(items.filter(Boolean))];
-    const getEditDistance = (left, right) => {
-      if (left === right) {
-        return 0;
-      }
-
-      if (!left.length) {
-        return right.length;
-      }
-
-      if (!right.length) {
-        return left.length;
-      }
-
-      const matrix = Array.from({ length: left.length + 1 }, () => new Array(right.length + 1).fill(0));
-
-      for (let index = 0; index <= left.length; index += 1) {
-        matrix[index][0] = index;
-      }
-
-      for (let index = 0; index <= right.length; index += 1) {
-        matrix[0][index] = index;
-      }
-
-      for (let row = 1; row <= left.length; row += 1) {
-        for (let column = 1; column <= right.length; column += 1) {
-          const cost = left[row - 1] === right[column - 1] ? 0 : 1;
-
-          matrix[row][column] = Math.min(
-            matrix[row - 1][column] + 1,
-            matrix[row][column - 1] + 1,
-            matrix[row - 1][column - 1] + cost
-          );
-        }
-      }
-
-      return matrix[left.length][right.length];
-    };
-    const matchesWholeToken = (tokens, term) => tokens.includes(term);
-    const matchesTokenPrefix = (tokens, term) => tokens.some((token) => token.startsWith(term));
-    const matchesNormalizedText = (text, term) => text.includes(term);
-    const getFuzzyMatchScore = (term, tokens) => {
-      if (term.length < 4) {
-        return 0;
-      }
-
-      const threshold = term.length >= 7 ? 2 : 1;
-      let bestDistance = Number.POSITIVE_INFINITY;
-
-      for (const token of tokens) {
-        if (Math.abs(token.length - term.length) > threshold) {
-          continue;
-        }
-
-        const distance = getEditDistance(term, token);
-
-        if (distance < bestDistance) {
-          bestDistance = distance;
-        }
-      }
-
-      if (bestDistance > threshold) {
-        return 0;
-      }
-
-      return threshold === 1 ? 16 - bestDistance * 6 : 18 - bestDistance * 5;
-    };
-
     const documents = JSON.parse(dataElement.textContent ?? '[]');
+    const indexedDocuments = indexDocuments(documents);
     const shell = document.querySelector('[data-directory-shell]');
     const root = shell?.querySelector('[data-directory-root]');
     const list = root?.querySelector('[data-directory-list]');
@@ -249,25 +153,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         element
       ])
     );
-    const indexedDocuments = documents.map((document) => {
-      const normalizedTitle = normalizeSearchText(document.title);
-      const normalizedDescription = normalizeSearchText(document.description);
-      const normalizedTags = normalizeSearchText(document.tagsText);
-      const normalizedSearchTerms = normalizeSearchText(document.searchTerms);
-
-      return {
-        ...document,
-        normalizedTitle,
-        normalizedDescription,
-        normalizedTags,
-        normalizedSearchTerms,
-        titleTokens: unique(tokenize(document.title)),
-        descriptionTokens: unique(tokenize(document.description)),
-        tagTokens: unique(tokenize(document.tagsText)),
-        searchTokens: unique(tokenize(document.searchTerms))
-      };
-    });
-    const documentsById = new Map(indexedDocuments.map((document) => [document.id, document]));
 
     let activeId;
     let activeAnchor;
@@ -276,10 +161,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (min-width: 1081px)').matches;
 
     const clearPreviewPosition = () => {
-      if (!previewShell) {
-        return;
-      }
-
+      if (!previewShell) return;
       previewShell.style.removeProperty('left');
       previewShell.style.removeProperty('top');
     };
@@ -300,25 +182,17 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         left = anchorRect.left - gap - previewRect.width;
       }
 
-      left = Math.max(
-        viewportPadding,
-        Math.min(left, window.innerWidth - previewRect.width - viewportPadding)
-      );
+      left = Math.max(viewportPadding, Math.min(left, window.innerWidth - previewRect.width - viewportPadding));
 
       let top = anchorRect.top - 8;
-      top = Math.max(
-        viewportPadding,
-        Math.min(top, window.innerHeight - previewRect.height - viewportPadding)
-      );
+      top = Math.max(viewportPadding, Math.min(top, window.innerHeight - previewRect.height - viewportPadding));
 
       previewShell.style.left = `${Math.round(left)}px`;
       previewShell.style.top = `${Math.round(top)}px`;
     };
 
     const setSearchOpen = (open, options = {}) => {
-      if (!shell || !searchPanel || !searchToggle) {
-        return;
-      }
+      if (!shell || !searchPanel || !searchToggle) return;
 
       shell.classList.toggle('is-search-open', open);
       searchPanel.hidden = !open;
@@ -353,153 +227,25 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     };
 
     const renderList = (orderedIds) => {
-      if (!list) {
-        return;
-      }
+      if (!list) return;
 
       const visible = new Set(orderedIds);
 
       for (const [id, entry] of entries) {
-        if (visible.has(id)) {
-          entry.removeAttribute('hidden');
-        } else {
-          entry.setAttribute('hidden', '');
-        }
+        if (visible.has(id)) entry.removeAttribute('hidden');
+        else entry.setAttribute('hidden', '');
       }
 
       orderedIds.forEach((id) => {
         const entry = entries.get(id);
-
-        if (entry) {
-          list.appendChild(entry);
-        }
+        if (entry) list.appendChild(entry);
       });
 
-      if (!visible.has(activeId)) {
-        setActive(undefined);
-      }
-    };
-
-    const scoreDocument = (document, query) => {
-      const normalizedQuery = normalizeSearchText(query);
-      const queryTokens = unique(tokenize(query));
-      const expandedTokens = unique(expandSearchQuery(query).split(/\s+/));
-      const auxiliaryTokens = expandedTokens.filter((token) => !queryTokens.includes(token) && token.length >= 2);
-      let score = 0;
-      let matchedQueryTokens = 0;
-
-      if (document.normalizedTitle === normalizedQuery) score += 280;
-      else if (document.normalizedTitle.startsWith(normalizedQuery)) score += 220;
-      else if (matchesNormalizedText(document.normalizedTitle, normalizedQuery)) score += 140;
-
-      if (document.normalizedTags === normalizedQuery) score += 180;
-      else if (document.normalizedTags.startsWith(normalizedQuery)) score += 130;
-      else if (matchesNormalizedText(document.normalizedTags, normalizedQuery)) score += 90;
-
-      if (matchesNormalizedText(document.normalizedDescription, normalizedQuery)) score += 50;
-      if (matchesNormalizedText(document.normalizedSearchTerms, normalizedQuery)) score += 35;
-
-      queryTokens.forEach((token) => {
-        let tokenMatched = false;
-
-        if (matchesWholeToken(document.titleTokens, token)) {
-          score += 120;
-          tokenMatched = true;
-        } else if (matchesTokenPrefix(document.titleTokens, token)) {
-          score += 88;
-          tokenMatched = true;
-        } else if (matchesNormalizedText(document.normalizedTitle, token)) {
-          score += 54;
-          tokenMatched = true;
-        }
-
-        if (matchesWholeToken(document.tagTokens, token)) {
-          score += 92;
-          tokenMatched = true;
-        } else if (matchesTokenPrefix(document.tagTokens, token)) {
-          score += 70;
-          tokenMatched = true;
-        }
-
-        if (matchesTokenPrefix(document.descriptionTokens, token)) {
-          score += 26;
-          tokenMatched = true;
-        }
-
-        if (matchesWholeToken(document.searchTokens, token)) {
-          score += 24;
-          tokenMatched = true;
-        } else if (matchesTokenPrefix(document.searchTokens, token)) {
-          score += 16;
-          tokenMatched = true;
-        }
-
-        if (!tokenMatched) {
-          const fuzzyScore = Math.max(
-            getFuzzyMatchScore(token, document.titleTokens),
-            getFuzzyMatchScore(token, document.tagTokens),
-            getFuzzyMatchScore(token, document.searchTokens)
-          );
-
-          if (fuzzyScore > 0) {
-            score += fuzzyScore;
-            tokenMatched = true;
-          }
-        }
-
-        if (tokenMatched) {
-          matchedQueryTokens += 1;
-        }
-      });
-
-      auxiliaryTokens.forEach((token) => {
-        if (matchesWholeToken(document.searchTokens, token)) {
-          score += 10;
-        } else if (matchesTokenPrefix(document.searchTokens, token)) {
-          score += 6;
-        }
-      });
-
-      if (matchedQueryTokens === 0 && score < 80) {
-        return null;
-      }
-
-      return {
-        id: document.id,
-        matchedQueryTokens,
-        score
-      };
-    };
-
-    const searchDocuments = (query) => {
-      const ranked = indexedDocuments
-        .map((document) => scoreDocument(document, query))
-        .filter(Boolean)
-        .sort((left, right) => {
-          if (left.matchedQueryTokens !== right.matchedQueryTokens) {
-            return right.matchedQueryTokens - left.matchedQueryTokens;
-          }
-
-          if (left.score !== right.score) {
-            return right.score - left.score;
-          }
-
-          return (
-            Date.parse(documentsById.get(right.id)?.dateISO ?? '1970-01-01T00:00:00.000Z') -
-            Date.parse(documentsById.get(left.id)?.dateISO ?? '1970-01-01T00:00:00.000Z')
-          );
-        });
-
-      const topScore = ranked[0]?.score ?? 0;
-      const cutoff = Math.max(45, topScore * 0.28);
-
-      return ranked.filter((item) => item.score >= cutoff);
+      if (!visible.has(activeId)) setActive(undefined);
     };
 
     const updateSearch = () => {
-      if (!status) {
-        return;
-      }
+      if (!status) return;
 
       const query = input?.value.trim() ?? '';
       clearButton?.toggleAttribute('hidden', query.length === 0);
@@ -511,7 +257,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         return;
       }
 
-      const results = searchDocuments(query);
+      const results = searchDocuments(indexedDocuments, query);
       const orderedIds = results.map((result) => result.id);
       renderList(orderedIds);
       setActive(undefined);
@@ -530,20 +276,14 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     root?.addEventListener('pointerleave', () => setActive(undefined));
     root?.addEventListener('focusout', (event) => {
       const nextTarget = event.relatedTarget;
-
-      if (!(nextTarget instanceof Node) || !root.contains(nextTarget)) {
-        setActive(undefined);
-      }
+      if (!(nextTarget instanceof Node) || !root.contains(nextTarget)) setActive(undefined);
     });
 
     window.addEventListener(
       'resize',
       () => {
-        if (activeAnchor) {
-          positionPreview(activeAnchor);
-        } else {
-          clearPreviewPosition();
-        }
+        if (activeAnchor) positionPreview(activeAnchor);
+        else clearPreviewPosition();
       },
       { passive: true }
     );
@@ -551,9 +291,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     window.addEventListener(
       'scroll',
       () => {
-        if (activeAnchor) {
-          positionPreview(activeAnchor);
-        }
+        if (activeAnchor) positionPreview(activeAnchor);
       },
       { passive: true }
     );
@@ -562,10 +300,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       const isOpen = shell?.classList.contains('is-search-open');
 
       if (isOpen) {
-        if (input) {
-          input.value = '';
-        }
-
+        if (input) input.value = '';
         updateSearch();
         setSearchOpen(false);
         searchToggle.focus();
@@ -576,10 +311,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     });
 
     clearButton?.addEventListener('click', () => {
-      if (!input) {
-        return;
-      }
-
+      if (!input) return;
       input.value = '';
       updateSearch();
       input.focus();
@@ -588,20 +320,12 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     input?.addEventListener('input', updateSearch);
 
     document.addEventListener('click', (event) => {
-      if (!shell?.contains(event.target) && !input?.value.trim()) {
-        setSearchOpen(false);
-      }
+      if (!shell?.contains(event.target) && !input?.value.trim()) setSearchOpen(false);
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape' || !shell?.classList.contains('is-search-open')) {
-        return;
-      }
-
-      if (input) {
-        input.value = '';
-      }
-
+      if (event.key !== 'Escape' || !shell?.classList.contains('is-search-open')) return;
+      if (input) input.value = '';
       updateSearch();
       setSearchOpen(false);
       searchToggle?.focus();

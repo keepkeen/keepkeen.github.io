@@ -10,6 +10,8 @@ const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
   description="A local writing studio for drafting and previewing blog posts."
   noindex={true}
   keywords={['markdown editor', 'blog studio', 'notion import', 'writing workflow']}
+  loadKatex={true}
+  loadMonoFont={true}
 >
   <section class="page-intro">
     <p class="eyebrow">Studio</p>
@@ -310,10 +312,15 @@ const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
 
   <script>
     // @ts-nocheck
-    import { marked } from 'marked';
     import { dump, load } from 'js-yaml';
     import JSZip from 'jszip';
     import renderMathInElement from 'katex/contrib/auto-render';
+    import {
+      apiFetch as gatewayApiFetch,
+      clearGatewayTokenFromLocation,
+      getGatewayTokenFromLocation
+    } from '../../studio/gateway';
+    import { renderSafeMarkdown } from '../../studio/preview';
 
     const STORAGE_KEY = 'blog-studio-draft-v1';
     const root = document.querySelector('[data-studio-root]');
@@ -379,10 +386,7 @@ const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
         parentLabel: null
       };
 
-      marked.setOptions({
-        gfm: true,
-        breaks: false
-      });
+      const apiFetch = async (path, options = {}) => gatewayApiFetch(gatewayUrl, path, options);
 
       const emptyState = () => ({
         title: '',
@@ -415,70 +419,8 @@ const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
           : null;
       };
 
-      const getGatewayTokenFromLocation = () => {
-        const url = new URL(window.location.href);
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
-        return (
-          hashParams.get('gateway_token') ||
-          hashParams.get('studio_token') ||
-          url.searchParams.get('gateway_token') ||
-          url.searchParams.get('studio_token') ||
-          ''
-        ).trim();
-      };
 
-      const clearGatewayTokenFromLocation = () => {
-        const url = new URL(window.location.href);
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-        let changed = false;
-
-        ['gateway_token', 'studio_token'].forEach((key) => {
-          if (url.searchParams.has(key)) {
-            url.searchParams.delete(key);
-            changed = true;
-          }
-
-          if (hashParams.has(key)) {
-            hashParams.delete(key);
-            changed = true;
-          }
-        });
-
-        if (!changed) {
-          return;
-        }
-
-        const nextHash = hashParams.toString();
-        const nextUrl = `${url.pathname}${url.search}${nextHash ? `#${nextHash}` : ''}`;
-        window.history.replaceState({}, '', nextUrl);
-      };
-
-      const apiFetch = async (path, options = {}) => {
-        if (!gatewayUrl) {
-          throw new Error('Studio gateway is not configured.');
-        }
-
-        const response = await fetch(new URL(path, gatewayUrl).toString(), {
-          method: options.method ?? 'GET',
-          credentials: 'include',
-          headers: {
-            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-            'X-Studio-Client': 'studio',
-            ...(options.headers ?? {})
-          },
-          body: options.body ? JSON.stringify(options.body) : undefined
-        });
-
-        const text = await response.text();
-        const json = text ? JSON.parse(text) : {};
-
-        if (!response.ok) {
-          throw new Error(json?.error ?? 'Gateway request failed.');
-        }
-
-        return json;
-      };
 
       const renderNotionResults = () => {
         if (!notionResultList) {
@@ -1319,9 +1261,7 @@ const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
         }
 
         if (previewBody) {
-          previewBody.innerHTML = state.body.trim()
-            ? marked.parse(state.body)
-            : '<p>Start typing to preview your post.</p>';
+          previewBody.innerHTML = renderSafeMarkdown(state.body);
           renderMathInElement(previewBody, {
             delimiters: [
               { left: '$$', right: '$$', display: true },

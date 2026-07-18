@@ -5,6 +5,10 @@ on:
     branches:
       - main
       - master
+  pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -13,7 +17,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,6 +29,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
 
       - name: Setup Node
@@ -36,18 +41,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npm run check
+
+      - name: Syntax-check gateway
+        run: node --check gateway/server.mjs
+
       - name: Build site
         env:
           PUBLIC_SHOW_STUDIO: ${{ vars.PUBLIC_SHOW_STUDIO }}
           PUBLIC_STUDIO_GATEWAY_URL: ${{ vars.PUBLIC_STUDIO_GATEWAY_URL }}
         run: npm run build
 
+      - name: Report dist size
+        run: |
+          echo "dist summary"
+          du -sh dist
+          du -sh dist/* 2>/dev/null | sort -hr | head -20
+          find dist/_astro -type f -exec du -h {} + 2>/dev/null | sort -hr | head -15 || true
+
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
   deploy:
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: build
     runs-on: ubuntu-24.04
     environment:

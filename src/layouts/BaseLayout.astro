@@ -1,12 +1,12 @@
 ---
-import '@fontsource/jetbrains-mono';
-import 'katex/dist/katex.min.css';
 import '../styles/global.css';
+import katexStylesheet from 'katex/dist/katex.min.css?url';
+import monoStylesheet from '@fontsource/jetbrains-mono/400.css?url';
 
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { siteConfig } from '../site.config';
-import { withBasePath } from '../utils/content';
+import { normalizeHtmlLang, withBasePath } from '../utils/content';
 import { getDefaultSocialImage, getSiteJsonLd, type JsonLd } from '../utils/structured-data';
 
 interface Props {
@@ -22,6 +22,9 @@ interface Props {
   jsonLd?: JsonLd | JsonLd[];
   includeSiteJsonLd?: boolean;
   noindex?: boolean;
+  lang?: string;
+  loadKatex?: boolean;
+  loadMonoFont?: boolean;
 }
 
 const {
@@ -36,8 +39,12 @@ const {
   articleTags = [],
   jsonLd,
   includeSiteJsonLd = true,
-  noindex = false
+  noindex = false,
+  lang = 'en',
+  loadKatex = false,
+  loadMonoFont = false
 } = Astro.props;
+
 const metaTitle = title ? `${title} | ${siteConfig.name}` : siteConfig.defaultTitle;
 const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
 const canonical = new URL(Astro.url.pathname, siteOrigin);
@@ -53,10 +60,16 @@ const jsonLdItems = [
   ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [])
 ];
 const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+const htmlLang = normalizeHtmlLang(lang);
+const ogImageType = socialImage.endsWith('.png')
+  ? 'image/png'
+  : socialImage.endsWith('.jpg') || socialImage.endsWith('.jpeg')
+    ? 'image/jpeg'
+    : 'image/svg+xml';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -68,6 +81,8 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
     <link rel="canonical" href={canonical.toString()} />
     <link rel="icon" type="image/svg+xml" href={iconHref} />
     <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS`} href={rssHref} />
+    {loadKatex && <link rel="stylesheet" href={katexStylesheet} />}
+    {loadMonoFont && <link rel="stylesheet" href={monoStylesheet} />}
     <meta id="theme-color-meta" name="theme-color" content="#ffffff" />
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <meta property="og:type" content={ogType} />
@@ -75,8 +90,9 @@ const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-
     <meta property="og:title" content={metaTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.toString()} />
+    <meta property="og:locale" content={htmlLang === 'en' ? 'en_US' : htmlLang.replace('-', '_')} />
     <meta property="og:image" content={socialImage} />
-    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:type" content={ogImageType} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />

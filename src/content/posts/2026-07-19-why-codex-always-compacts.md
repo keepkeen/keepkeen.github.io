@@ -7,8 +7,9 @@ tags:
   - ai
   - engineering
   - tools
-featured: false
+featured: true
 draft: false
+lang: zh-CN
 ---
 
 > 本文是对 harness 分析的实地复核，数据来自本地 Codex rollout 会话、openai/codex 源码及全局配置改造。

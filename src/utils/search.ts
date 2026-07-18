@@ -3,6 +3,7 @@ import type { Post } from './content.ts';
 import {
   formatDate,
   getPlainExcerpt,
+  getPostLang,
   getPostPath,
   getReadingTime,
   stripMarkdown
@@ -14,12 +15,13 @@ export interface SearchDocument {
   title: string;
   description: string;
   excerpt: string;
-  bodyText: string;
   tags: string[];
   tagsText: string;
   dateISO: string;
   dateLabel: string;
   readingTime: number;
+  featured: boolean;
+  lang: string;
   searchTerms: string;
 }
 
@@ -112,7 +114,10 @@ export function expandSearchQuery(query: string) {
 
 export function buildSearchDocument(post: Post): SearchDocument {
   const bodyText = stripMarkdown(post.body ?? '');
+  // Keep search indexes bounded for long Chinese essays (pinyin/ngram expansion is expensive).
+  const searchableBody = bodyText.slice(0, 1800);
   const tagsText = post.data.tags.join(' ');
+  const lang = getPostLang(post);
 
   return {
     id: post.id,
@@ -120,12 +125,13 @@ export function buildSearchDocument(post: Post): SearchDocument {
     title: post.data.title,
     description: post.data.description,
     excerpt: getPlainExcerpt(bodyText, 240),
-    bodyText,
     tags: post.data.tags,
     tagsText,
     dateISO: post.data.date.toISOString(),
-    dateLabel: formatDate(post.data.date),
+    dateLabel: formatDate(post.data.date, lang),
     readingTime: getReadingTime(post.body),
-    searchTerms: buildSearchTerms([post.data.title, post.data.description, tagsText, bodyText])
+    featured: Boolean(post.data.featured),
+    lang,
+    searchTerms: buildSearchTerms([post.data.title, post.data.description, tagsText, searchableBody])
   };
 }

@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostList from '../../../components/PostList.astro';
+import { siteConfig } from '../../../site.config';
+import {
+  collectTags,
+  getTagPath,
+  getTagSlug,
+  sortPosts,
+  withBasePath
+} from '../../../utils/content';
+import { buildSearchDocument } from '../../../utils/search';
+import { getBreadcrumbJsonLd, getTagCollectionJsonLd } from '../../../utils/structured-data';
+
+export async function getStaticPaths() {
+  const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+  const tags = collectTags(posts);
+
+  return tags.map(({ tag, slug, count }) => ({
+    params: { tag: slug },
+    props: {
+      tag,
+      count,
+      posts: posts.filter((post) => post.data.tags.some((item) => getTagSlug(item) === slug))
+    }
+  }));
+}
+
+const { tag, count, posts } = Astro.props;
+const documents = posts.map((post) => buildSearchDocument(post));
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const jsonLd = [
+  getTagCollectionJsonLd(siteOrigin, tag, posts),
+  getBreadcrumbJsonLd([
+    { name: 'Home', url: new URL(import.meta.env.BASE_URL, siteOrigin).toString() },
+    { name: 'Blog', url: new URL('blog/', new URL(import.meta.env.BASE_URL, siteOrigin)).toString() },
+    { name: tag, url: new URL(getTagPath(tag), siteOrigin).toString() }
+  ])
+];
+---
+
+<BaseLayout
+  title={`Tag: ${tag}`}
+  description={`${count} posts tagged with ${tag}.`}
+  keywords={[tag, 'blog', 'tags']}
+  jsonLd={jsonLd}
+>
+  <section class="editorial-hero">
+    <div class="editorial-hero-main">
+      <p class="eyebrow">Tag</p>
+      <h1>{tag}</h1>
+    </div>
+    <div class="editorial-hero-side">
+      <p class="section-copy">{count} {count === 1 ? 'essay' : 'essays'} under this label.</p>
+      <div class="hero-links">
+        <a class="text-link" href={withBasePath('/blog/')}>Back to archive</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="directory-shell">
+    <PostList documents={documents} />
+  </section>
+</BaseLayout>

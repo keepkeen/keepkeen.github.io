@@ -7,6 +7,7 @@ export const GET: APIRoute = ({ site }) => {
   const robots = [
     'User-agent: *',
     'Allow: /',
+    'Disallow: /studio/',
     `Sitemap: ${new URL(withBasePath('/sitemap-index.xml'), siteOrigin).toString()}`
   ].join('\n');
 

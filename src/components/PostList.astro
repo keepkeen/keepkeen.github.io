@@ -1,5 +1,6 @@
 ---
 import type { SearchDocument } from '../utils/search';
+import { getTagPath } from '../utils/content';
 
 interface Props {
   documents: SearchDocument[];
@@ -13,7 +14,7 @@ const { documents, interactive = false, showInlinePreview = false } = Astro.prop
 <div class="directory-list" data-directory-list={interactive ? true : undefined}>
   {documents.map((document) => (
     <article
-      class="directory-item"
+      class:list={['directory-item', document.featured && 'is-featured']}
       data-directory-entry={interactive ? true : undefined}
       data-post-id={interactive ? document.id : undefined}
     >
@@ -22,6 +23,7 @@ const { documents, interactive = false, showInlinePreview = false } = Astro.prop
           <div class="entry-topline">
             <span>{document.dateLabel}</span>
             <span>{document.readingTime} min read</span>
+            {document.featured && <span class="entry-flag">Featured</span>}
           </div>
 
           <h3>
@@ -38,7 +40,7 @@ const { documents, interactive = false, showInlinePreview = false } = Astro.prop
 
         <div class="entry-tags" aria-label="Tags">
           {document.tags.map((tag) => (
-            <span>{tag}</span>
+            <a href={getTagPath(tag)}>{tag}</a>
           ))}
         </div>
       </div>

@@ -6,9 +6,10 @@ An editorial Astro blog for long-form writing on AI, software, markets, and life
 
 - Astro for static generation and routing.
 - Markdown and MDX content collections for essays.
-- KaTeX for LaTeX math rendering.
+- KaTeX for LaTeX math rendering, loaded only on pages that need it.
 - Shiki for code highlighting.
-- A GitHub Actions workflow for GitHub Pages deployment.
+- A hardened Studio gateway for optional Notion sync.
+- GitHub Actions for typecheck, build, and GitHub Pages deployment.
 
 ## Local Development
 
@@ -37,6 +38,9 @@ date: 2026-03-22
 tags:
   - ai
   - notes
+featured: false
+draft: false
+lang: en
 ---
 ```
 
@@ -45,7 +49,9 @@ Markdown posts support:
 - fenced code blocks
 - inline code
 - LaTeX math via `$$ ... $$`
-- tags and dates for archive sorting
+- tags, dates, featured flags, and optional `lang` (`en`, `zh-CN`, …)
+- automatic tag archive pages under `/blog/tags/<tag>/`
+- per-post Open Graph cards under `/og/<slug>.svg`
 
 ## Studio
 
@@ -70,11 +76,21 @@ Secure Notion API access does **not** run on GitHub Pages itself. The public sit
 3. Start the gateway locally:
 
 ```bash
+# generate secrets first, e.g. openssl rand -base64 32
 npm run studio:gateway
 ```
 
+Gateway hardening defaults:
+
+- request body size limit
+- auth + API rate limits
+- Notion request timeouts
+- signed sessions with `jti`
+- local HTTP cookies without forced `Secure` on `127.0.0.1`
+
 4. Build the site with `PUBLIC_STUDIO_GATEWAY_URL` pointed at that gateway.
 5. Open `/studio/` and authenticate once with the gateway token, or visit it with `#gateway_token=YOUR_TOKEN`.
+6. Studio Markdown previews are sanitized with DOMPurify before render.
 
 The gateway exposes:
 

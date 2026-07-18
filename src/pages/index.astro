@@ -4,11 +4,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PostList from '../components/PostList.astro';
 import { siteConfig } from '../site.config';
 import { buildSearchDocument } from '../utils/search';
-import { sortPosts, withBasePath } from '../utils/content';
+import { collectTags, sortPosts, withBasePath } from '../utils/content';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
-const latestPosts = posts.slice(0, 4);
-const latestDocuments = latestPosts.map((post) => buildSearchDocument(post));
+const featuredPosts = posts.filter((post) => post.data.featured);
+const latestSource = featuredPosts.length > 0
+  ? [
+      ...featuredPosts,
+      ...posts.filter((post) => !post.data.featured)
+    ].slice(0, 4)
+  : posts.slice(0, 4);
+const latestDocuments = latestSource.map((post) => buildSearchDocument(post));
+const tags = collectTags(posts).slice(0, 8);
 ---
 
 <BaseLayout>
@@ -33,10 +40,10 @@ const latestDocuments = latestPosts.map((post) => buildSearchDocument(post));
   <section class="directory-shell home-directory-shell">
     <div class="directory-toolbar">
       <div class="directory-toolbar-copy">
-        <p class="eyebrow">Recent writing</p>
+        <p class="eyebrow">{featuredPosts.length > 0 ? 'Selected writing' : 'Recent writing'}</p>
         <div class="directory-toolbar-meta">
           <p class="search-note">
-            {latestPosts.length} latest posts from the publication.
+            {latestDocuments.length} {featuredPosts.length > 0 ? 'selected' : 'latest'} posts from the publication.
           </p>
           <a class="text-link directory-toolbar-link" href={withBasePath('/blog/')}>Open the full archive</a>
         </div>
@@ -45,6 +52,27 @@ const latestDocuments = latestPosts.map((post) => buildSearchDocument(post));
 
     <PostList documents={latestDocuments} />
   </section>
+
+  {tags.length > 0 && (
+    <section class="section editorial-section">
+      <div class="section-rail">
+        <div class="section-rail-head">
+          <p class="eyebrow">Topics</p>
+          <h2 class="section-title">Browse by tag.</h2>
+        </div>
+        <div class="section-rail-body">
+          <div class="tag-cloud">
+            {tags.map((item) => (
+              <a class="tag-chip" href={item.href}>
+                <span>{item.tag}</span>
+                <span class="tag-count">{item.count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="section editorial-section">
     <div class="section-rail">
