@@ -2027,7 +2027,7 @@ CLIP zero-shot 分类不是直接训练分类头，而是把类别转成文本 p
 - 与 reference output/gradient 对齐；
 - 空输入、全 mask、长输入。
 
-如果目标是限时算法岗机考，而不是 PyTorch 面试手写，请转到`《ML / AI Coding 笔试补丁》`：其中提供 JSON stdin/stdout 契约、零依赖 Viterbi/Attention/IRLS 模板和自动边界测试。
+如果目标是限时算法岗机考，而不是 PyTorch 面试手写，请转到[《ML / AI Coding 笔试补丁》](/blog/ml-ai-coding-patch/)：其中提供 JSON stdin/stdout 契约、零依赖 Viterbi/Attention/IRLS 模板和自动边界测试。
 
 #### 面试现场：用 Transformers/PyTorch 写一个最小正确的 Qwen2 SFT
 

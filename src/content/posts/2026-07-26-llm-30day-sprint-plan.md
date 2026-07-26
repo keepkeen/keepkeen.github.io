@@ -33,8 +33,8 @@ seriesOrder: 4
 
 | 线 | 用什么资料 | 怎么用 |
 |---|---|---|
-| A 力扣与笔试算法 | [作战手册](/blog/algo-written-exam-playbook/)（P0/P1 清单 + 2026 年 4–7 月增量节）、`Hot100 模板`、`组合题决策树`、`ACM 速查`、`进阶模板` | 做题 + 24h/7d 盲写复写；不通读，按周主题查 |
-| B 模型/ML 手写 | [题库与证据 §3.2](/blog/llm-algo-interview-evidence/)（17 项大模型 coding）、`ML-AI-Coding 补丁`、`可执行模板` | 每天从空文件写 1 个模块，跑通边界测试 |
+| A 力扣与笔试算法 | [作战手册](/blog/algo-written-exam-playbook/)（P0/P1 清单 + 2026 年 4–7 月增量节）、[Hot100 模板](/blog/hot100-templates/)、[组合题决策树](/blog/exam-pattern-decision-tree/)、[ACM 速查](/blog/acm-io-cheatsheet/)、`进阶模板` | 做题 + 24h/7d 盲写复写；不通读，按周主题查 |
+| B 模型/ML 手写 | [题库与证据 §3.2](/blog/llm-algo-interview-evidence/)（17 项大模型 coding）、[ML-AI-Coding 补丁](/blog/ml-ai-coding-patch/)、`可执行模板` | 每天从空文件写 1 个模块，跑通边界测试 |
 | C 面经知识 | [求职指南 §9.6](/blog/llm-algo-interview-guide/)（51 张答案卡 T/R/A/P）+ [题库与证据 §4](/blog/llm-algo-interview-evidence/)（N1–N22）+ 指南 §3.6–3.8（趋势） | 每天 3–4 张卡：先自答再对卡，用"合格答案模板"六步口述 |
 | D 投递与模拟 | 指南 §10（投递）、§11（评分表）、作战手册"提前批动态" | Day 1 起投递；W2 起每周 mock |
 

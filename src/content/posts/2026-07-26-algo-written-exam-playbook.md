@@ -225,7 +225,7 @@ seriesOrder: 3
 
 ## 算法专场的 ML 手写支线
 
-模式识别、数值稳定、JSON 契约、可执行实现和边界测试见`《ML / AI Coding 笔试补丁》`。
+模式识别、数值稳定、JSON 契约、可执行实现和边界测试见[《ML / AI Coding 笔试补丁》](/blog/ml-ai-coding-patch/)。
 
 每个模块都要能独立从 JSON/文本输入运行，不能只写公式：
 
