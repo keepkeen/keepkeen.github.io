@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 670" role="img" aria-labelledby="title desc">
+  <title id="title">verl 系统架构分层</title>
+  <desc id="desc">Hydra 配置进入 Trainer 控制流，经逻辑 Role、WorkerGroup 与 Ray Actor，最终驱动训练 Engine、Rollout Server、TransferQueue 和 Agent Reward Loop。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="arrow-fill"/></marker>
+    <style>
+      .node{fill:#f8fafc;stroke:#64748b;stroke-width:2}.control{fill:#eef2ff;stroke:#6366f1}.data{fill:#ecfeff;stroke:#0891b2}.line{fill:none;stroke:#64748b;stroke-width:2.3;marker-end:url(#arrow)}.dash{stroke-dasharray:8 7}.arrow-fill{fill:#64748b}.label{fill:#0f172a;font:600 20px system-ui,sans-serif;text-anchor:middle}.sub{fill:#475569;font:15px system-ui,sans-serif;text-anchor:middle}
+      @media(prefers-color-scheme:dark){.node{fill:#172033;stroke:#94a3b8}.control{fill:#252449;stroke:#a5b4fc}.data{fill:#10333a;stroke:#22d3ee}.line{stroke:#94a3b8}.arrow-fill{fill:#94a3b8}.label{fill:#f8fafc}.sub{fill:#cbd5e1}}
+    </style>
+  </defs>
+  <rect class="control node" x="410" y="30" width="380" height="72" rx="15"/><text class="label" x="600" y="62">Hydra 配置 / main_ppo</text><text class="sub" x="600" y="85">组合组件并启动 Ray TaskRunner</text>
+  <rect class="control node" x="430" y="145" width="340" height="72" rx="15"/><text class="label" x="600" y="177">Trainer 控制流</text><text class="sub" x="600" y="200">决定算法阶段和执行顺序</text>
+  <rect class="node" x="440" y="260" width="320" height="72" rx="15"/><text class="label" x="600" y="292">Role（构造期逻辑标签）</text><text class="sub" x="600" y="315">Actor / Critic / Ref / Reward</text>
+  <rect class="node" x="405" y="375" width="390" height="72" rx="15"/><text class="label" x="600" y="407">WorkerGroup / ResourcePool</text><text class="sub" x="600" y="430">dispatch、collect、placement group</text>
+  <rect class="node" x="450" y="490" width="300" height="72" rx="15"/><text class="label" x="600" y="522">Ray Actors</text><text class="sub" x="600" y="545">多进程 SPMD 执行</text>
+  <rect class="data node" x="35" y="255" width="300" height="82" rx="15"/><text class="label" x="185" y="288">TransferQueue / DataProto</text><text class="sub" x="185" y="313">轨迹字段与批计算协议</text>
+  <rect class="data node" x="865" y="255" width="300" height="82" rx="15"/><text class="label" x="1015" y="288">AgentLoop / RewardLoop</text><text class="sub" x="1015" y="313">生成、工具、奖励与 Teacher</text>
+  <rect class="control node" x="140" y="590" width="380" height="58" rx="14"/><text class="label" x="330" y="625">Training Engine</text><text class="sub" x="330" y="645">FSDP2 / Megatron / …</text>
+  <rect class="control node" x="680" y="590" width="380" height="58" rx="14"/><text class="label" x="870" y="625">Rollout Server</text><text class="sub" x="870" y="645">vLLM / SGLang / TRT-LLM</text>
+  <path class="line" d="M600 102V145"/><path class="line" d="M600 217V260"/><path class="line" d="M600 332V375"/><path class="line" d="M600 447V490"/>
+  <path class="line" d="M510 562L390 590"/><path class="line" d="M690 562L810 590"/>
+  <path class="line dash" d="M430 181C315 181 300 245 300 255"/><path class="line dash" d="M770 181C885 181 900 245 900 255"/>
+  <path class="line dash" d="M335 296H440"/><path class="line dash" d="M865 296H760"/>
+</svg>

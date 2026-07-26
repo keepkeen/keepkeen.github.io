@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">verl 同步训练 step 时序</title>
+  <desc id="desc">数据与 ReplayBuffer 提交 prompt，Rollout 生成，Reward 评分，Actor Reference 和 Critic 计算概率与价值，Trainer 计算优势并更新模型，最后同步权重。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="arrow-fill"/></marker>
+    <style>
+      .head{fill:#eef2ff;stroke:#6366f1;stroke-width:2}.life{stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:7 7}.line{fill:none;stroke:#64748b;stroke-width:2.1;marker-end:url(#arrow)}.arrow-fill{fill:#64748b}.label{fill:#0f172a;font:600 17px system-ui,sans-serif;text-anchor:middle}.msg{fill:#334155;font:15px system-ui,sans-serif;text-anchor:middle}.phase{fill:#475569;font:600 14px system-ui,sans-serif}
+      @media(prefers-color-scheme:dark){.head{fill:#252449;stroke:#a5b4fc}.life{stroke:#64748b}.line{stroke:#94a3b8}.arrow-fill{fill:#94a3b8}.label{fill:#f8fafc}.msg,.phase{fill:#cbd5e1}}
+    </style>
+  </defs>
+  <g>
+    <rect class="head" x="20" y="22" width="150" height="56" rx="12"/><text class="label" x="95" y="56">Data / Buffer</text>
+    <rect class="head" x="220" y="22" width="150" height="56" rx="12"/><text class="label" x="295" y="56">Rollout</text>
+    <rect class="head" x="420" y="22" width="150" height="56" rx="12"/><text class="label" x="495" y="56">Reward</text>
+    <rect class="head" x="620" y="22" width="150" height="56" rx="12"/><text class="label" x="695" y="56">Actor / Ref</text>
+    <rect class="head" x="820" y="22" width="150" height="56" rx="12"/><text class="label" x="895" y="56">Critic</text>
+    <rect class="head" x="1020" y="22" width="150" height="56" rx="12"/><text class="label" x="1095" y="56">Trainer</text>
+    <path class="life" d="M95 78V690M295 78V690M495 78V690M695 78V690M895 78V690M1095 78V690"/>
+  </g>
+  <text class="phase" x="18" y="124">生成</text><path class="line" d="M95 120H295"/><text class="msg" x="195" y="111">prompts + uid</text>
+  <path class="line" d="M295 175H95"/><text class="msg" x="195" y="166">responses + masks</text>
+  <text class="phase" x="18" y="244">评分</text><path class="line" d="M295 235H495"/><text class="msg" x="395" y="226">response / ground truth</text>
+  <path class="line" d="M495 290H95"/><text class="msg" x="295" y="281">token / sequence scores</text>
+  <text class="phase" x="18" y="364">统计</text><path class="line" d="M1095 355H695"/><text class="msg" x="895" y="346">old / ref log-prob</text>
+  <path class="line" d="M1095 410H895"/><text class="msg" x="995" y="401">values（GAE）</text>
+  <path class="line" d="M95 465H1095"/><text class="msg" x="595" y="456">reward、log-prob、value 字段就绪</text>
+  <text class="phase" x="18" y="534">优化</text><path class="line" d="M1095 525H895"/><text class="msg" x="995" y="516">update critic（可选）</text>
+  <path class="line" d="M1095 580H695"/><text class="msg" x="895" y="571">update actor</text>
+  <text class="phase" x="18" y="654">同步</text><path class="line" d="M695 645H295"/><text class="msg" x="495" y="636">CheckpointEngine 同步新权重</text>
+</svg>

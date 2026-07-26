@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">verl 最简训练数据流</title>
+  <desc id="desc">Prompt 经 Rollout 生成回答，Reward 和 Log-prob 汇合计算 Advantage，更新 Actor 与 Critic，再同步新权重回 Rollout。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-fill"/>
+    </marker>
+    <style>
+      .node{fill:#f8fafc;stroke:#64748b;stroke-width:2}.accent{fill:#eef2ff;stroke:#6366f1}.line{fill:none;stroke:#64748b;stroke-width:2.4;marker-end:url(#arrow)}.arrow-fill{fill:#64748b}.label{fill:#0f172a;font:600 20px system-ui,sans-serif;text-anchor:middle}.sub{fill:#475569;font:15px system-ui,sans-serif;text-anchor:middle}
+      @media(prefers-color-scheme:dark){.node{fill:#172033;stroke:#94a3b8}.accent{fill:#252449;stroke:#a5b4fc}.line{stroke:#94a3b8}.arrow-fill{fill:#94a3b8}.label{fill:#f8fafc}.sub{fill:#cbd5e1}}
+    </style>
+  </defs>
+  <rect class="node" x="28" y="145" width="150" height="70" rx="14"/><text class="label" x="103" y="178">Prompt</text><text class="sub" x="103" y="201">训练数据</text>
+  <rect class="accent node" x="226" y="145" width="160" height="70" rx="14"/><text class="label" x="306" y="178">Rollout</text><text class="sub" x="306" y="201">生成 n 条回答</text>
+  <rect class="node" x="434" y="55" width="170" height="70" rx="14"/><text class="label" x="519" y="88">Reward</text><text class="sub" x="519" y="111">规则 / 模型评分</text>
+  <rect class="node" x="434" y="235" width="170" height="70" rx="14"/><text class="label" x="519" y="268">Log-prob</text><text class="sub" x="519" y="291">Old / Ref</text>
+  <rect class="accent node" x="650" y="145" width="170" height="70" rx="14"/><text class="label" x="735" y="178">Advantage</text><text class="sub" x="735" y="201">Return / KL</text>
+  <rect class="node" x="864" y="145" width="150" height="70" rx="14"/><text class="label" x="939" y="178">Update</text><text class="sub" x="939" y="201">Actor / Critic</text>
+  <rect class="accent node" x="1050" y="145" width="125" height="70" rx="14"/><text class="label" x="1112" y="178">Sync</text><text class="sub" x="1112" y="201">新权重</text>
+  <path class="line" d="M178 180 H226"/><path class="line" d="M386 166 C408 156 414 105 434 95"/><path class="line" d="M386 194 C408 204 414 255 434 265"/>
+  <path class="line" d="M604 90 C628 103 632 152 650 167"/><path class="line" d="M604 270 C628 257 632 208 650 193"/><path class="line" d="M820 180 H864"/><path class="line" d="M1014 180 H1050"/>
+  <path class="line" d="M1112 215 V330 H306 V218"/><text class="sub" x="710" y="350">下一轮生成使用更新后的 actor 权重</text>
+</svg>
