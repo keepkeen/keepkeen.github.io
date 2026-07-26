@@ -1,12 +1,14 @@
 ---
-import PostList from './PostList.astro';
+import ArchiveList from './ArchiveList.astro';
+import type { TimelineItem } from './ArchiveList.astro';
 import type { SearchDocument } from '../utils/search';
 
 interface Props {
   documents: SearchDocument[];
+  items: TimelineItem[];
 }
 
-const { documents } = Astro.props;
+const { documents, items } = Astro.props;
 const initialStatusText =
   documents.length === 1 ? '1 post in the archive.' : `${documents.length} posts in the archive.`;
 const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
@@ -79,7 +81,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
   </div>
 
   <div class="directory-layout" data-directory-root>
-    <PostList documents={documents} interactive={true} groupByYear={true} />
+    <ArchiveList items={items} />
   </div>
 </section>
 
@@ -123,7 +125,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     };
 
     // Search filters in place (entries keep their chronological/year grouping);
-    // empty year groups are hidden by CSS.
+    // empty year groups and series threads are hidden by CSS.
     const filterList = (visibleIds) => {
       const visible = new Set(visibleIds);
 
@@ -131,6 +133,12 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         if (visible.has(id)) entry.removeAttribute('hidden');
         else entry.setAttribute('hidden', '');
       }
+    };
+
+    const openThreadsForSearch = () => {
+      document.querySelectorAll('[data-series-thread]').forEach((thread) => {
+        thread.open = true;
+      });
     };
 
     const updateSearch = () => {
@@ -148,6 +156,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       const results = searchDocuments(indexedDocuments, query);
       const visibleIds = results.map((result) => result.id);
       filterList(visibleIds);
+      openThreadsForSearch();
 
       status.textContent =
         visibleIds.length > 0

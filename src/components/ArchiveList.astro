@@ -1,0 +1,100 @@
+---
+import PostRow from './PostRow.astro';
+import type { SearchDocument } from '../utils/search';
+
+export interface SeriesTimelineItem {
+  kind: 'series';
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  updatedLabel?: string;
+  documents: SearchDocument[];
+}
+
+export interface PostTimelineItem {
+  kind: 'post';
+  document: SearchDocument;
+}
+
+export type TimelineItem = SeriesTimelineItem | PostTimelineItem;
+
+interface Props {
+  items: TimelineItem[];
+}
+
+const { items } = Astro.props;
+
+function itemDateISO(item: TimelineItem) {
+  if (item.kind === 'post') {
+    return item.document.dateISO;
+  }
+
+  return item.documents.reduce(
+    (latest, document) => (document.dateISO > latest ? document.dateISO : latest),
+    item.documents[0]?.dateISO ?? ''
+  );
+}
+
+const groups: { year: number; items: TimelineItem[] }[] = [];
+
+for (const item of items) {
+  const year = new Date(itemDateISO(item)).getFullYear();
+  const group = groups[groups.length - 1];
+
+  if (group && group.year === year) {
+    group.items.push(item);
+  } else {
+    groups.push({ year, items: [item] });
+  }
+}
+---
+
+<div class="directory-list" data-directory-list>
+  {groups.map((group) => (
+    <section class="year-group">
+      <h2 class="year-heading">{group.year}</h2>
+      {group.items.map((item) =>
+        item.kind === 'post' ? (
+          <PostRow document={item.document} interactive={true} />
+        ) : (
+          <details class="series-thread" data-series-thread open>
+            <summary>
+              <svg class="thread-chevron" viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="m6 4 4.4 4L6 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <div class="series-thread-copy">
+                <div class="entry-topline">
+                  <span class="entry-flag">Series</span>
+                  <span>{item.documents.length} {item.documents.length === 1 ? 'part' : 'parts'}</span>
+                  {item.updatedLabel && <span>Updated {item.updatedLabel}</span>}
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </div>
+              <a class="series-thread-open text-link" href={item.href}>Open series</a>
+            </summary>
+
+            <div class="thread-children">
+              {item.documents.map((document, index) => (
+                <PostRow
+                  document={document}
+                  interactive={true}
+                  partLabel={`Part ${index + 1}`}
+                  class="thread-item"
+                />
+              ))}
+            </div>
+          </details>
+        )
+      )}
+    </section>
+  ))}
+</div>

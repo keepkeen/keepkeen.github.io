@@ -875,6 +875,7 @@ pre,
 
 .entry-copy h3 a::after,
 .series-row h2 a::after,
+.series-row h3 a::after,
 .series-part h3 a::after {
   content: '';
   position: absolute;
@@ -917,6 +918,107 @@ pre,
   display: none;
 }
 
+/* ---- Series threads in the archive (forum-style, collapsible) ---- */
+
+.series-thread {
+  border-bottom: 1px solid var(--line);
+}
+
+.series-thread > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem 1rem;
+  align-items: start;
+  padding: 1.1rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.series-thread > summary::-webkit-details-marker {
+  display: none;
+}
+
+.thread-chevron {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.45rem;
+  color: var(--text-muted);
+  transition: transform 160ms ease;
+}
+
+.series-thread[open] > summary .thread-chevron {
+  transform: rotate(90deg);
+}
+
+.series-thread-copy {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.series-thread-copy h3 {
+  font-size: 1.28rem;
+  line-height: 1.3;
+  transition: color 160ms ease;
+}
+
+.series-thread > summary:hover h3 {
+  color: var(--accent);
+}
+
+.series-thread-open {
+  margin-top: 0.3rem;
+  white-space: nowrap;
+}
+
+/* Reply-style connectors for the parts inside a thread. */
+.thread-children {
+  position: relative;
+  margin-left: 0.5rem;
+  padding-left: 1.9rem;
+}
+
+.thread-children .directory-item:first-child {
+  padding-top: 1.1rem;
+}
+
+.thread-children .directory-item:last-child {
+  padding-bottom: 1.15rem;
+}
+
+.thread-item::before {
+  content: '';
+  position: absolute;
+  left: -1.9rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-strong);
+}
+
+.thread-item:last-child::before {
+  bottom: auto;
+  height: 2.1rem;
+}
+
+.thread-item::after {
+  content: '';
+  position: absolute;
+  left: -1.9rem;
+  top: 2.1rem;
+  width: 1.15rem;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.entry-topline .entry-part {
+  color: var(--accent);
+}
+
+/* Hide a thread when search filters out all of its parts. */
+.series-thread:not(:has(.directory-item:not([hidden]))) {
+  display: none;
+}
+
 /* ---- Series (专题) ---- */
 
 .series-list {
@@ -946,17 +1048,20 @@ pre,
   gap: 0.55rem;
 }
 
-.series-row h2 {
+.series-row h2,
+.series-row h3 {
   font-size: 1.55rem;
   line-height: 1.25;
 }
 
 .series-row h2 a,
+.series-row h3 a,
 .series-part a {
   transition: color 160ms ease;
 }
 
 .series-row h2 a:hover,
+.series-row h3 a:hover,
 .series-part a:hover {
   color: var(--accent);
 }

@@ -1,0 +1,43 @@
+---
+import type { SearchDocument } from '../utils/search';
+import { getTagPath } from '../utils/content';
+
+interface Props {
+  document: SearchDocument;
+  interactive?: boolean;
+  partLabel?: string;
+  class?: string;
+}
+
+const { document, interactive = false, partLabel, class: className } = Astro.props;
+---
+
+<article
+  class:list={['directory-item', document.featured && 'is-featured', className]}
+  data-directory-entry={interactive ? true : undefined}
+  data-post-id={interactive ? document.id : undefined}
+>
+  <div class="entry-main">
+    <div class="entry-copy">
+      <div class="entry-topline">
+        {partLabel && <span class="entry-part">{partLabel}</span>}
+        <span>{document.dateLabel}</span>
+        <span>{document.readingTime} min read</span>
+        {document.featured && <span class="entry-flag">Featured</span>}
+      </div>
+
+      <h3>
+        <a href={document.href}>
+          {document.title}
+        </a>
+      </h3>
+      <p>{document.description}</p>
+    </div>
+
+    <div class="entry-tags" aria-label="Tags">
+      {document.tags.map((tag) => (
+        <a href={getTagPath(tag)}>{tag}</a>
+      ))}
+    </div>
+  </div>
+</article>

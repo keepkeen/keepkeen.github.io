@@ -1,14 +1,58 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogDirectory from '../../components/BlogDirectory.astro';
+import type { TimelineItem } from '../../components/ArchiveList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../site.config';
-import { sortPosts } from '../../utils/content';
+import { formatDate, getPostsInSeries, getSeriesPath, sortPosts } from '../../utils/content';
 import { buildSearchDocument } from '../../utils/search';
 import { getBlogCollectionJsonLd, getBreadcrumbJsonLd } from '../../utils/structured-data';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
 const documents = posts.map((post) => buildSearchDocument(post));
+const documentById = new Map(documents.map((document) => [document.id, document]));
+const seriesById = new Map(
+  (await getCollection('series', ({ data }) => !data.draft)).map((entry) => [entry.id, entry])
+);
+
+// Timeline: standalone posts stay chronological; a series appears once as a
+// thread, positioned at its newest post.
+const items: TimelineItem[] = [];
+const threadedSeries = new Set<string>();
+
+for (const post of posts) {
+  const seriesId = post.data.series;
+  const seriesEntry = seriesId ? seriesById.get(seriesId) : undefined;
+
+  if (seriesEntry && seriesId) {
+    if (threadedSeries.has(seriesId)) {
+      continue;
+    }
+
+    threadedSeries.add(seriesId);
+    const seriesPosts = getPostsInSeries(posts, seriesId);
+    const latest = seriesPosts[seriesPosts.length - 1];
+
+    items.push({
+      kind: 'series',
+      id: seriesId,
+      title: seriesEntry.data.title,
+      description: seriesEntry.data.description,
+      href: getSeriesPath(seriesId),
+      updatedLabel: latest ? formatDate(latest.data.date, 'en') : undefined,
+      documents: seriesPosts
+        .map((seriesPost) => documentById.get(seriesPost.id))
+        .filter((document): document is NonNullable<typeof document> => Boolean(document))
+    });
+    continue;
+  }
+
+  const document = documentById.get(post.id);
+
+  if (document) {
+    items.push({ kind: 'post', document });
+  }
+}
 const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
 const jsonLd = [
   getBlogCollectionJsonLd(siteOrigin, posts),
@@ -35,5 +79,5 @@ const jsonLd = [
     </div>
   </section>
 
-  <BlogDirectory documents={documents} />
+  <BlogDirectory documents={documents} items={items} />
 </BaseLayout>
