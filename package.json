@@ -23,7 +23,7 @@
     "@shikijs/transformers": "^4.3.1",
     "astro": "^6.0.8",
     "dompurify": "^3.4.12",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^5.2.2",
     "jszip": "^3.10.1",
     "katex": "^0.18.0",
     "marked": "^17.0.5",
