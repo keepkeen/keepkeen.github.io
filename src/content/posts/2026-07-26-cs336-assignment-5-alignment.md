@@ -1,6 +1,6 @@
 ---
 title: "CS336 Assignment 5：从 GRPO 到 DPO 的 Alignment 实战"
-description: "完整拆解 Stanford CS336 Assignment 5：实现 GRPO、Dr. GRPO、MaxRL、GSPO、SFT 数据打包与 DPO，并用 26 个本地测试验证关键数学细节。"
+description: "完整拆解 Stanford CS336 Assignment 5：实现 GRPO、Dr. GRPO、MaxRL、GSPO、SFT 数据打包与 DPO，并用 18 个独立测试验证关键数学细节。"
 date: 2026-07-26
 tags:
   - cs336
@@ -10,20 +10,24 @@ tags:
 featured: true
 draft: false
 lang: zh-CN
+series: stanford-cs336
+seriesOrder: 5
 ---
 
 > 结论先行：这份作业真正难的不是把公式抄成 PyTorch，而是让 token shift、response mask、advantage normalizer、microbatch 分母和 off-policy importance weight 在同一个坐标系里严格对齐。
 
-我完成了 Stanford CS336 Spring 2026 Assignment 5 的本地代码部分：主作业的 GRPO / RLVR 组件与训练 step，以及 optional supplement 中可由本地测试验证的 SFT、MMLU/GSM8K parser 和 DPO loss。最终结果是 **26 个测试全部通过**。
+我完成了 Stanford CS336 Spring 2026 Assignment 5 的本地代码部分：主作业的 GRPO / RLVR 组件与训练 step，以及 optional supplement 中可由本地测试验证的 SFT、MMLU/GSM8K parser 和 DPO loss。为安全公开，我将原创实现整理成无历史独立快照，并用 **18 个不依赖课程资产的测试**重新验证。
 
 先放入口：
 
-- [作业代码仓库](https://github.com/keepkeen/cs336-coursework/tree/cs336-coursework/assignment5-alignment)
-- [核心实现 `alignment.py`](https://github.com/keepkeen/cs336-coursework/blob/cs336-coursework/assignment5-alignment/cs336_alignment/alignment.py)
-- [课程 adapter 接线](https://github.com/keepkeen/cs336-coursework/blob/cs336-coursework/assignment5-alignment/tests/adapters.py)
-- [完整作业总文档](https://github.com/keepkeen/cs336-coursework/blob/cs336-coursework/assignment5-alignment/tasks/assignment5_alignment_report.md)
-- [逐函数实现讲解](https://github.com/keepkeen/cs336-coursework/blob/cs336-coursework/assignment5-alignment/tasks/solution_explanation.md)
-- [测试目录与 snapshot](https://github.com/keepkeen/cs336-coursework/tree/cs336-coursework/assignment5-alignment/tests)
+- [独立代码仓库](https://github.com/keepkeen/cs336-assignment5-alignment)
+- [核心实现 `alignment.py`](https://github.com/keepkeen/cs336-assignment5-alignment/blob/main/src/cs336_alignment/alignment.py)
+- [独立回归测试](https://github.com/keepkeen/cs336-assignment5-alignment/blob/main/tests/test_alignment.py)
+- [运行说明与实现范围](https://github.com/keepkeen/cs336-assignment5-alignment/blob/main/README.md)
+- [归属与发布边界](https://github.com/keepkeen/cs336-assignment5-alignment/blob/main/NOTICE)
+- [课程官方仓库](https://github.com/stanford-cs336/assignment5-alignment)
+
+公开仓库只包含原创算法代码、独立测试和说明文档；课程讲义、starter tests、prompt、数据集、模型资产、远程训练工具和提交脚本均未复制。
 
 ---
 
@@ -52,18 +56,13 @@ Optional supplement 则补上更完整的 post-training 管线：
 
 ## 2. 我的实现结构
 
-课程测试通过 `tests/adapters.py` 调用学生实现。初始 adapter 里的函数都只会抛出 `NotImplementedError`。
-
-我没有把全部逻辑堆在 adapter 里，而是增加了独立模块：
+我把可复用算法放在一个独立模块里，并用不依赖课程 fixture 的测试直接验证公开 API：
 
 ```text
-tests/test_*.py
+tests/test_alignment.py
        │
        ▼
-tests/adapters.py          课程规定的接口层
-       │
-       ▼
-cs336_alignment/alignment.py
+src/cs336_alignment/alignment.py
        ├── tokenization / response mask
        ├── log-prob / entropy
        ├── reward / advantage
@@ -74,7 +73,7 @@ cs336_alignment/alignment.py
        └── DPO loss
 ```
 
-这种分层让测试 glue 和真实实现保持分离，之后如果补完整 GPU 训练脚本，也可以直接复用同一套函数。
+这种分层让验证逻辑和真实实现保持分离，之后如果补完整 GPU 训练脚本，也可以直接复用同一套函数。
 
 ---
 
@@ -103,7 +102,7 @@ labels = padded_tokens[1:]
 
 因此 `response_mask[t]` 表示的是 `labels[t]` 是否属于 response，而不是 `input_ids[t]` 是否属于 response。
 
-另一个 snapshot 才暴露出来的细节是：**先 padding 完整序列，再切 `input_ids` 和 `labels`**。如果先切片再分别 padding，短序列末端会发生一位偏差。
+另一个回归测试才暴露出来的细节是：**先 padding 完整序列，再切 `input_ids` 和 `labels`**。如果先切片再分别 padding，短序列末端会发生一位偏差。
 
 ## 4. 从 logits 到 response log-prob
 
@@ -211,7 +210,7 @@ full batch
 
 还有一个更隐蔽的点：作业要求剪掉 advantage 为零的 sequence 以节省 forward。但剪枝后，sequence normalization 的全局分母仍应是**原始 batch sequence count**。否则剪枝会无意中放大剩余样本的梯度。
 
-这是我在本地 snapshot 全通过后额外做实现审查时补上的质量修正。
+这是我在本地回归测试全通过后额外做实现审查时补上的质量修正。
 
 ## 8. Off-policy：从 token ratio 到 GSPO
 
@@ -259,15 +258,13 @@ $$
 
 ## 9. Supplement：SFT packed dataset
 
-SFT 使用仓库提供的 Alpaca 模板：
+公开实现使用仓库内自有的中性文档模板：
 
 ```text
-Below is an instruction that describes a task. Write a response that appropriately completes the request.
+Instruction:
+{instruction}
 
-### Instruction:
-{prompt}
-
-### Response:
+Response:
 {response}
 ```
 
@@ -280,7 +277,7 @@ input_ids = chunk[:-1]
 labels = chunk[1:]
 ```
 
-不足完整长度的最后一个 chunk 直接丢弃。测试 fixture 不只检查 shape，而是逐 token 检查 75 个 packed example，因此模板末尾换行、BOS/EOS 和切片方式都必须精确一致。
+不足完整长度的最后一个 chunk 直接丢弃。独立测试会检查 packed example 的长度、shift 和 batch shape；模板、BOS/EOS 和切片方式仍然必须精确一致。
 
 ## 10. MMLU 与 GSM8K parser
 
@@ -316,13 +313,13 @@ $$
 
 实现细节：
 
-- chosen / rejected 都用完整 Alpaca 文档格式
+- chosen / rejected 都用同一个中性文档格式
 - response 后追加 EOS
 - 对完整 concat string 求 next-token log-prob sum
 - reference model 放在 `torch.no_grad()` 下
 - reference log-prob 移到 policy model device 后再相减
 
-测试标准是 tiny model fixture 上的 loss 接近 `0.9104`，容差 `1e-4`。如果只对裸 prompt/response 求概率，结果不会匹配。
+公开测试使用固定 logits 构造非同模型的 policy/reference，并把实现结果与手算 DPO 目标逐项比较，避免“两个模型完全相同所以永远得到 $\log 2$”这种弱测试。
 
 ## 12. 测试到底在验证什么
 
@@ -331,17 +328,19 @@ $$
 ```text
 .venv/bin/python -m pytest -q
 
-26 passed in 2.79s
+18 passed in 2.21s
 ```
 
 | 测试组 | 数量 | 主要标准 |
 |---|---:|---|
-| GRPO | 19 | tensor snapshot、loss、更新后模型参数、grad 清理 |
-| Metrics | 4 | 成功/失败解析行为 |
-| SFT data | 2 | dataset 长度、逐 token fixture、batch shape/dtype |
-| DPO | 1 | 固定模型上的 loss 数值 |
+| Tokenization / log-prob | 3 | shift、mask、padding、entropy、空 response |
+| Reward / advantage | 2 | component mean、GRPO / Dr. GRPO / MaxRL |
+| Policy loss / aggregation | 5 | 手算目标值、clipping、两种分母 |
+| GRPO train step | 4 | 参数更新、AdamW 边界、累积等价、跨 microbatch 指标 |
+| SFT / parser | 3 | packing、错误脱敏、MMLU/GSM8K |
+| DPO | 1 | 非同 policy/reference 的手算 loss |
 
-训练 step 测试会比较 optimizer step 后 tiny model 的全部参数，因此它同时覆盖了：
+训练 step 测试会比较 optimizer step 后 tiny model 的全部参数，并比较 full batch 与 microbatch accumulation 的结果，因此它同时覆盖了：
 
 - loss 公式
 - microbatch 缩放
@@ -371,7 +370,7 @@ uv run pytest tests/test_grpo.py
 
 ## 14. 哪些部分还没有做
 
-代码层面，本地测试覆盖的任务已经完成。未执行的是 handout 中的远程实验 deliverables：
+代码层面，公开算法核心与独立测试已经完成。未执行的是 handout 中的远程实验 deliverables：
 
 - OLMo-2-0425-1B prompting baseline
 - GRPO 训练到指定 validation accuracy
@@ -381,7 +380,7 @@ uv run pytest tests/test_grpo.py
 - supplement 的 SFT / DPO GPU 训练
 - AlpacaEval、SimpleSafetyTests、red-teaming 结果与图表
 
-因此本文的“完成”指 **本地实现与本地评分测试完成**，不把未运行的 GPU 实验伪装成结果。
+因此本文的“完成”指 **本地实现与独立验证完成**，不把未运行的 GPU 实验伪装成结果。
 
 ---
 
@@ -398,7 +397,7 @@ uv run pytest tests/test_grpo.py
 - [OpenAI o3/o4-mini System Card](https://openai.com/index/o3-o4-mini-system-card/)：reasoning RL 之外的 deliberative alignment、能力阈值与部署安全。
 - [Anthropic Constitutional Classifiers](https://www.anthropic.com/research/next-generation-constitutional-classifiers)：训练后安全 guardrail 与 jailbreak 防御。
 
-[完整总文档](https://github.com/keepkeen/cs336-coursework/blob/cs336-coursework/assignment5-alignment/tasks/assignment5_alignment_report.md) 还整理了 Meta Llama 4、LlamaFirewall、Gemini 2.5、Seed1.5-Thinking、Phi-4-reasoning 和 DPO/RL survey 等资料。
+继续沿这条线还可以阅读 Meta Llama 4、LlamaFirewall、Gemini 2.5、Seed1.5-Thinking、Phi-4-reasoning 和 DPO/RL survey 等资料。
 
 ## 16. 最后的理解
 
@@ -410,6 +409,6 @@ uv run pytest tests/test_grpo.py
 - “off-policy correction”必须区分 token ratio 与 sequence ratio
 - “DPO 不需要 reward model”不代表 tokenization 和 reference policy 可以随便处理
 
-当这些细节都通过 snapshot 和参数更新测试后，GRPO、GSPO、DPO 就不再只是论文里的缩写，而是同一套概率模型、采样分布、奖励和梯度估计之间的具体选择。
+当这些细节都通过手算目标值、等价性和参数更新测试后，GRPO、GSPO、DPO 就不再只是论文里的缩写，而是同一套概率模型、采样分布、奖励和梯度估计之间的具体选择。
 
-代码和文档都在这里：**[keepkeen/cs336-coursework · Assignment 5](https://github.com/keepkeen/cs336-coursework/tree/cs336-coursework/assignment5-alignment)**。
+代码和发布说明都在这里：**[keepkeen/cs336-assignment5-alignment](https://github.com/keepkeen/cs336-assignment5-alignment)**。
