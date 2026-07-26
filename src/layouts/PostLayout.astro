@@ -1,7 +1,6 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
-import Comments from '../components/Comments.astro';
 import {
   formatDate,
   getPostLang,
@@ -24,7 +23,7 @@ interface Props {
   next?: Post;
 }
 
-const { post, headings = [], previous, next } = Astro.props;
+const { post, headings = [], previous: globalPrevious, next: globalNext } = Astro.props;
 const tableOfContents = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
 const postUrl = new URL(getPostPath(post), siteOrigin).toString();
@@ -43,8 +42,7 @@ const labels = isZh
       seriesPart: (part: number, total: number) => `第 ${part} 篇 / 共 ${total} 篇`,
       inThisSeries: '本专题目录',
       currentPart: '本篇',
-      related: '相关文章',
-      comments: '评论'
+      related: '相关文章'
     }
   : {
       eyebrow: 'Essay',
@@ -58,8 +56,7 @@ const labels = isZh
       seriesPart: (part: number, total: number) => `Part ${part} of ${total}`,
       inThisSeries: 'In this series',
       currentPart: 'Reading',
-      related: 'Related essays',
-      comments: 'Comments'
+      related: 'Related essays'
     };
 
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
@@ -70,6 +67,16 @@ const seriesPosition = seriesPosts.findIndex((item) => item.id === post.id) + 1;
 const showSeries = Boolean(seriesEntry) && seriesPosition > 0;
 const seriesIds = new Set(seriesPosts.map((item) => item.id));
 const relatedPosts = getRelatedPosts(post, allPosts, 3).filter((item) => !seriesIds.has(item.id));
+
+// Posts inside a series navigate within the series (reading order), not the
+// global timeline; standalone posts keep the chronological neighbors.
+const previous = showSeries ? seriesPosts[seriesPosition - 2] : globalPrevious;
+const next = showSeries ? seriesPosts[seriesPosition] : globalNext;
+
+if (showSeries) {
+  labels.noPrevious = isZh ? '这是本系列的第一篇。' : 'First part of this series.';
+  labels.noNext = isZh ? '本系列到此为止。' : 'Last part of this series.';
+}
 const loadKatex = postHasMath(post);
 const loadMonoFont = /```/.test(post.body ?? '');
 const jsonLd = [
@@ -223,8 +230,6 @@ const jsonLd = [
         }
       </div>
     </nav>
-
-    <Comments lang={lang} label={labels.comments} />
   </article>
 </BaseLayout>
 

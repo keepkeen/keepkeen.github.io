@@ -35,7 +35,7 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
   .slice(0, 4);
 ---
 
-<BaseLayout>
+<BaseLayout lang="zh-CN">
   <section class="editorial-hero home-hero">
     <div class="editorial-hero-main">
       <p class="eyebrow">{siteConfig.hero.eyebrow}</p>
@@ -93,7 +93,7 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
         <div class="section-rail-intro">
           <div class="section-rail-head">
             <p class="eyebrow">Series</p>
-            <h2 class="section-title">One theme, followed through.</h2>
+            <h2 class="section-title">一个主题，写到底。</h2>
           </div>
           <a class="text-link" href={withBasePath('/series/')}>All series</a>
         </div>

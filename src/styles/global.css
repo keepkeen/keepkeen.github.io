@@ -1239,8 +1239,7 @@ a.series-panel-title:hover {
 .article-intro,
 .article-navigation,
 .series-panel,
-.related-panel,
-.comments-section {
+.related-panel {
   max-width: min(100%, calc(var(--reading-width) + 2rem));
   margin: 0 auto;
 }
@@ -1285,11 +1284,6 @@ a.series-panel-title:hover {
   font-variant-numeric: tabular-nums;
 }
 
-.comments-section {
-  margin-top: 2.5rem;
-  padding-top: 1.35rem;
-  border-top: 1px solid var(--line);
-}
 
 .article-intro {
   display: grid;
@@ -1460,6 +1454,15 @@ a.series-panel-title:hover {
   background: var(--bg-elevated);
 }
 
+/* Very long technical posts ship thousands of highlight spans; let the
+   browser skip layout/paint for offscreen blocks. */
+.prose pre,
+.prose .katex-display,
+.prose table {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 18rem;
+}
+
 .prose pre[data-language]::before {
   content: attr(data-language);
   position: absolute;
@@ -1581,6 +1584,30 @@ a.series-panel-title:hover {
   border-bottom-color: var(--line-strong);
   font-weight: 650;
   white-space: nowrap;
+}
+
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.4rem auto;
+  border-radius: var(--radius-sm);
+}
+
+.prose figure {
+  margin: 1.6rem 0;
+}
+
+.prose figure img {
+  margin: 0 auto;
+}
+
+.prose figcaption {
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  text-align: center;
 }
 
 .prose blockquote {
@@ -2017,7 +2044,6 @@ a.series-panel-title:hover {
   .article-navigation,
   .series-panel,
   .related-panel,
-  .comments-section,
   .copy-button,
   .heading-anchor {
     display: none !important;

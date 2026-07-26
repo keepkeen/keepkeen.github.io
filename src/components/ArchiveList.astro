@@ -57,7 +57,7 @@ for (const item of items) {
         item.kind === 'post' ? (
           <PostRow document={item.document} interactive={true} />
         ) : (
-          <details class="series-thread" data-series-thread open>
+          <details class="series-thread" data-series-thread>
             <summary>
               <svg class="thread-chevron" viewBox="0 0 16 16" aria-hidden="true">
                 <path

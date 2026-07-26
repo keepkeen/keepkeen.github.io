@@ -1,78 +1,73 @@
 export const siteConfig = {
   name: 'Liuliming',
-  role: 'AI systems, software taste, and deliberate work.',
+  role: '大模型算法、训练系统与工程实践的学习笔记。',
   siteUrl: 'https://keepkeen.github.io',
   email: '',
   location: 'Shanghai, China',
-  defaultTitle: 'Liuliming | AI Systems, Software Taste, and the Long Game',
+  defaultTitle: 'Liuliming | 大模型算法与系统笔记',
   description:
-    'A technical publication about AI systems, software taste, markets, and the disciplines that make serious work durable.',
+    '关于大模型算法、训练框架与工程实践的中文笔记：课程作业实录、源码精读、面试证据账本与求职资料。',
   hero: {
     eyebrow: 'Liuliming / Keepkeen',
-    headline: 'AI systems, software taste, and the long game.',
-    lead: 'Essays and field notes on building with AI, written from inside the work.',
-    deck: 'Mostly technical, occasionally personal.',
-    signature: 'Written in public. Kept deliberately small.'
+    headline: '大模型算法与系统，边学边写。',
+    lead: '课程作业逐篇复盘、训练框架源码精读、求职面经的证据账本——写给正在走这条路的人，也写给未来的自己。',
+    deck: '中文长文为主，重工程与实证。',
+    signature: '公开地学，认真地写。'
   },
-  // Comments are powered by giscus (GitHub Discussions). To enable:
-  // 1. Enable Discussions on the repo and install https://github.com/apps/giscus
-  // 2. Generate the four ids at https://giscus.app and fill them in below.
-  comments: {
-    enabled: false,
-    repo: '',
-    repoId: '',
-    category: 'Announcements',
-    categoryId: ''
+  // Privacy-friendly analytics via GoatCounter (https://www.goatcounter.com):
+  // register a site there and put its code here (e.g. 'keepkeen' for
+  // keepkeen.goatcounter.com). Empty string keeps analytics disabled.
+  analytics: {
+    goatcounter: ''
   },
   deskFacts: [
-    { label: 'Base', value: 'Shanghai / China' },
-    { label: 'Mode', value: 'Essays, notebooks, experiments' },
-    { label: 'Bias', value: 'Elegance over noise' },
+    { label: 'Base', value: '上海' },
+    { label: 'Mode', value: '长文 · 系列 · 源码精读' },
+    { label: 'Bias', value: '证据优先' },
     { label: 'Online', value: 'GitHub / keepkeen' }
   ],
   currentQuestions: [
-    'What makes an AI product trustworthy after the demo glow fades?',
-    'How much of engineering taste can be taught, and how much must be absorbed by exposure?',
-    'What does a calm, compounding career look like in a noisy decade?'
+    '训练框架的设计取舍，怎样讲给第一次读源码的人听？',
+    '大模型岗位的面试信号里，哪些经得起证据核对？',
+    '课程作业与真实工程之间，缺的那一层到底是什么？'
   ],
   about: {
     intro:
-      'I am interested in work that lives between technical depth and human judgment: intelligent systems, durable software, thoughtful products, and the inner discipline required to keep improving for a long time.',
+      '我在系统性地学习大模型：从课程作业、训练框架源码到面试与求职，把整个过程原样写成笔记。',
     body: [
-      'I like software that explains itself, interfaces that respect attention, and writing that leaves the reader a little sharper than before.',
-      'This blog is where I publish essays, learning notes, and reflections from inside the work. I want it to feel less like content output and more like an edited notebook: selective, coherent, and alive.',
-      'If there is a through-line in what I care about, it is this: make the system cleaner, make the judgment better, and give time enough room to matter.'
+      '这里的文章多数很长：课程作业的逐篇复盘、verl 与 slime 这类训练框架的源码精读、以证据为准的面经账本。长，是因为想把"为什么"讲完整。',
+      '我希望它读起来更像一本编辑过的笔记，而不是内容输出：成系列、可检索、有出处。',
+      '如果这些笔记恰好帮你省下了一些摸索的时间，那就是它最好的用处。'
     ],
     journey: [
       {
-        period: 'Now',
-        title: 'AI systems, writing, and technical taste',
-        description: 'Building and studying tools that shape modern work, while writing publicly to sharpen judgment.'
+        period: '现在',
+        title: '大模型算法与训练系统',
+        description: 'CS336 课程实录、RLHF 训练框架源码精读，以及围绕它们的工程笔记。'
       },
       {
-        period: 'Ongoing',
-        title: 'Taste in code, products, and interfaces',
-        description: 'Paying close attention to the small structural decisions that make products feel more coherent.'
+        period: '进行中',
+        title: '大模型算法岗求职笔记',
+        description: '面经证据账本、笔试作战手册与 30 天执行计划。'
       },
       {
-        period: 'Always',
-        title: 'The long game',
-        description: 'Learning how patience, focus, capital allocation, and compounding outlast intensity.'
+        period: '一直',
+        title: '把学习过程写下来',
+        description: '公开写作是最诚实的复盘方式：写不清楚，就是还没学会。'
       }
     ],
     values: [
-      'Precision over posturing.',
-      'Taste as a serious technical skill.',
-      'Systems that age well.',
-      'Attention that compounds.'
+      '证据优先，注明出处。',
+      '长文成系列，不做碎片输出。',
+      '源码为准，不转述二手结论。',
+      '写给未来的自己，也写给同路人。'
     ],
     now: [
-      'Building agentic workflows, evaluation loops, and cleaner interfaces for technical work.',
-      'Writing about AI reliability, software taste, decision-making, and market structure.',
-      'Collecting design references that feel inevitable rather than fashionable.'
+      '精读 verl 与 slime 的训练主链路源码。',
+      '逐篇完成并复盘 Stanford CS336 的课程作业。',
+      '维护大模型算法岗的求职笔记与题库。'
     ],
-    colophon:
-      'Built with Astro, Markdown, KaTeX, and an editorial bias toward rhythm, restraint, and clarity.'
+    colophon: '基于 Astro 与 Markdown 构建，数学公式用 KaTeX。设计偏好节制、留白与清晰。'
   },
   socialLinks: [
     {

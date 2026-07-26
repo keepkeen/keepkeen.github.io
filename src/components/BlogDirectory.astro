@@ -2,6 +2,7 @@
 import ArchiveList from './ArchiveList.astro';
 import type { TimelineItem } from './ArchiveList.astro';
 import type { SearchDocument } from '../utils/search';
+import { withBasePath } from '../utils/content';
 
 interface Props {
   documents: SearchDocument[];
@@ -11,10 +12,13 @@ interface Props {
 const { documents, items } = Astro.props;
 const initialStatusText =
   documents.length === 1 ? '1 post in the archive.' : `${documents.length} posts in the archive.`;
-const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 ---
 
-<section class="directory-shell" data-directory-shell>
+<section
+  class="directory-shell"
+  data-directory-shell
+  data-search-endpoint={withBasePath('/search-index.json')}
+>
   <div class="directory-toolbar">
     <div class="directory-toolbar-copy">
       <p class="eyebrow">Archive</p>
@@ -85,24 +89,19 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
   </div>
 </section>
 
-<script is:inline type="application/json" id="blog-search-data" set:html={searchPayload}></script>
-
 <script>
   // @ts-nocheck
-  import { indexDocuments, searchDocuments } from '../utils/client-search';
+  import { searchIndex } from '../utils/client-search';
 
-  const dataElement = document.getElementById('blog-search-data');
+  const shell = document.querySelector('[data-directory-shell]');
 
-  if (dataElement) {
-    const documents = JSON.parse(dataElement.textContent ?? '[]');
-    const indexedDocuments = indexDocuments(documents);
-    const shell = document.querySelector('[data-directory-shell]');
-    const root = shell?.querySelector('[data-directory-root]');
+  if (shell) {
+    const root = shell.querySelector('[data-directory-root]');
     const input = /** @type {HTMLInputElement | null} */ (document.getElementById('blog-search'));
-    const searchToggle = shell?.querySelector('[data-search-toggle]');
-    const searchPanel = shell?.querySelector('[data-search-panel]');
-    const clearButton = shell?.querySelector('[data-clear-search]');
-    const status = shell?.querySelector('[data-search-status]');
+    const searchToggle = shell.querySelector('[data-search-toggle]');
+    const searchPanel = shell.querySelector('[data-search-panel]');
+    const clearButton = shell.querySelector('[data-clear-search]');
+    const status = shell.querySelector('[data-search-status]');
     const defaultStatus = status?.getAttribute('data-default-status') ?? '';
     const entries = new Map(
       [...(root?.querySelectorAll('[data-directory-entry]') ?? [])].map((element) => [
@@ -110,17 +109,45 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         element
       ])
     );
+    const allIds = [...entries.keys()];
+
+    // The search index is fetched lazily the first time search is opened,
+    // so the archive page itself stays small.
+    let indexEntries = null;
+    let indexPromise = null;
+
+    const ensureIndex = () => {
+      indexPromise ??= fetch(shell.getAttribute('data-search-endpoint'))
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        })
+        .then((data) => {
+          indexEntries = data;
+        })
+        .catch(() => {
+          indexPromise = null;
+
+          if (status) status.textContent = 'Search index failed to load. Try again.';
+        });
+
+      return indexPromise;
+    };
 
     const setSearchOpen = (open, options = {}) => {
-      if (!shell || !searchPanel || !searchToggle) return;
+      if (!searchPanel || !searchToggle) return;
 
       shell.classList.toggle('is-search-open', open);
       searchPanel.hidden = !open;
       searchToggle.setAttribute('aria-expanded', String(open));
       searchToggle.setAttribute('aria-label', open ? 'Close search' : 'Open search');
 
-      if (open && options.focus) {
-        requestAnimationFrame(() => input?.focus());
+      if (open) {
+        ensureIndex();
+
+        if (options.focus) {
+          requestAnimationFrame(() => input?.focus());
+        }
       }
     };
 
@@ -148,24 +175,31 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       clearButton?.toggleAttribute('hidden', query.length === 0);
 
       if (!query) {
-        filterList(documents.map((document) => document.id));
+        filterList(allIds);
         status.textContent = defaultStatus;
         return;
       }
 
-      const results = searchDocuments(indexedDocuments, query);
-      const visibleIds = results.map((result) => result.id);
+      if (!indexEntries) {
+        status.textContent = 'Loading search index…';
+        ensureIndex()?.then(() => {
+          if (indexEntries) updateSearch();
+        });
+        return;
+      }
+
+      const visibleIds = searchIndex(indexEntries, query);
       filterList(visibleIds);
       openThreadsForSearch();
 
       status.textContent =
         visibleIds.length > 0
           ? `${visibleIds.length} results for "${query}".`
-          : `No results for "${query}". Try title, tag, Chinese, pinyin, or a shorter fuzzy query.`;
+          : `No results for "${query}". Try title, tag, Chinese, or pinyin.`;
     };
 
     searchToggle?.addEventListener('click', () => {
-      const isOpen = shell?.classList.contains('is-search-open');
+      const isOpen = shell.classList.contains('is-search-open');
 
       if (isOpen) {
         if (input) input.value = '';
@@ -188,11 +222,11 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     input?.addEventListener('input', updateSearch);
 
     document.addEventListener('click', (event) => {
-      if (!shell?.contains(event.target) && !input?.value.trim()) setSearchOpen(false);
+      if (!shell.contains(event.target) && !input?.value.trim()) setSearchOpen(false);
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && shell?.classList.contains('is-search-open')) {
+      if (event.key === 'Escape' && shell.classList.contains('is-search-open')) {
         if (input) input.value = '';
         updateSearch();
         setSearchOpen(false);
@@ -214,7 +248,5 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         setSearchOpen(true, { focus: true });
       }
     });
-
-    updateSearch();
   }
 </script>

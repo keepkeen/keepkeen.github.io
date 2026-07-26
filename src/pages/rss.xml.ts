@@ -29,21 +29,34 @@ export const GET: APIRoute = async ({ site }) => {
   const feedUrl = new URL(withBasePath('/rss.xml'), siteOrigin).toString();
   const homepage = new URL(withBasePath('/'), siteOrigin).toString();
   const lastBuildDate = (posts[0]?.data.updatedDate ?? posts[0]?.data.date ?? new Date()).toUTCString();
+  // Keep the feed lean: newest 25 items, full HTML only for the newest 10
+  // and only when a single post's HTML stays under the size cap.
+  const FEED_ITEM_LIMIT = 25;
+  const FULL_CONTENT_LIMIT = 10;
+  const FULL_CONTENT_MAX_BYTES = 150_000;
+
   const items = (
     await Promise.all(
-      posts.map(async (post) => {
+      posts.slice(0, FEED_ITEM_LIMIT).map(async (post, index) => {
         const url = new URL(getPostPath(post), siteOrigin).toString();
         const description = post.data.description || getPlainExcerpt(stripMarkdown(post.body ?? ''), 220);
         const published = post.data.date.toUTCString();
-        const contentHtml = await renderPostHtml(post.body ?? '');
+        let contentBlock = '';
+
+        if (index < FULL_CONTENT_LIMIT) {
+          const contentHtml = await renderPostHtml(post.body ?? '');
+
+          if (contentHtml.length <= FULL_CONTENT_MAX_BYTES) {
+            contentBlock = `\n  <content:encoded>${toCdata(contentHtml)}</content:encoded>`;
+          }
+        }
 
         return `<item>
   <title>${escapeXml(post.data.title)}</title>
   <link>${url}</link>
   <guid isPermaLink="true">${url}</guid>
   <pubDate>${published}</pubDate>
-  <description>${escapeXml(description)}</description>
-  <content:encoded>${toCdata(contentHtml)}</content:encoded>
+  <description>${escapeXml(description)}</description>${contentBlock}
   ${post.data.tags.map((tag) => `<category>${escapeXml(tag)}</category>`).join('\n  ')}
 </item>`;
       })

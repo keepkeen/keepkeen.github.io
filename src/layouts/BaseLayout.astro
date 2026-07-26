@@ -64,6 +64,7 @@ const jsonLdItems = [
 ];
 const robotsContent = noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
 const htmlLang = normalizeHtmlLang(lang);
+const goatCounterCode = siteConfig.analytics?.goatcounter ?? '';
 const ogImageType = socialImage.endsWith('.png')
   ? 'image/png'
   : socialImage.endsWith('.jpg') || socialImage.endsWith('.jpeg')
@@ -111,6 +112,14 @@ const ogImageType = socialImage.endsWith('.png')
     {jsonLdItems.map((entry) => (
       <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
+    {goatCounterCode && !import.meta.env.DEV && (
+      <script
+        is:inline
+        data-goatcounter={`https://${goatCounterCode}.goatcounter.com/count`}
+        async
+        src="https://gc.zgo.at/count.js"
+      />
+    )}
     <script is:inline>
       (() => {
         const STORAGE_KEY = 'blog-theme-preference';
