@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import { siteConfig } from '../site.config';
 import { withBasePath } from '../utils/content';
 
@@ -9,11 +8,9 @@ function normalize(path: string) {
 
 const currentPath = normalize(Astro.url.pathname);
 const showStudioLink = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_STUDIO === 'true';
-const hasSeries = (await getCollection('series', ({ data }) => !data.draft)).length > 0;
 const links = [
   { label: 'Home', href: withBasePath('/') },
   { label: 'Blog', href: withBasePath('/blog/') },
-  ...(hasSeries ? [{ label: 'Series', href: withBasePath('/series/') }] : []),
   { label: 'About', href: withBasePath('/about/') },
   ...(showStudioLink ? [{ label: 'Studio', href: withBasePath('/studio/') }] : [])
 ];
