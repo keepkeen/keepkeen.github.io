@@ -13,7 +13,7 @@ series: llm-algo-job-hunt
 seriesOrder: 7
 ---
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。指向工作区内未发布文件（模板、测试等）的链接已替换为纯文本；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
 
 > 目标：从“背关键词套模板”升级为“形式化题目、写最小充分状态、按复杂度筛选、用反例验伪”。本篇是 [Hot100 模板](/blog/hot100-templates/) 与 [大厂超纲模板](/blog/exam-beyond-syllabus-patch/) 之间的桥梁。
 
@@ -148,7 +148,7 @@ seriesOrder: 7
 | 限步最短路 | 最多走 K 条边/中转 | `cheapest_with_edge_limit` | 同轮必须读旧 dist |
 | MITM | `n≈40` 的子集优化 | `min_abs_subset_sum_difference` | 空子集、负数、左右二分 |
 
-以上可执行实现位于 `algorithm_exam_advanced.py`。
+以上可执行实现位于 [algorithm_exam_advanced.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/templates/algorithm_exam_advanced.py)。
 
 ### 差分约束不要混成一种
 

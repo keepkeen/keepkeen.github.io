@@ -13,7 +13,7 @@ series: llm-algo-job-hunt
 seriesOrder: 3
 ---
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。指向工作区内未发布文件（模板、测试等）的链接已替换为纯文本；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
 
 > 调研截止：2026-07-26。这里的“2027”优先指 **2027 届招聘**；2027 自然年的考试尚未发生。所有公开题按“官方/授权题库、考生回忆、改编回忆、算法同构、预测”分级，不能混称原题。
 
@@ -203,7 +203,7 @@ seriesOrder: 3
 - KMP、字符串哈希、LCA、拓扑排序、Dijkstra/0-1 BFS、质因数分解。
 - 目标阿里/字节/拼多多高难场：线段树、MST/生成树构造、函数图、树上 DAG DP；匈牙利匹配至少会识别和写 O(n³) 模板。
 - 状压 DP 入门：LC 698 或 847，至少掌握 `mask` 表示和状态数估算。
-- 代码入口：`进阶模板`。
+- 代码入口：[进阶模板](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/templates/algorithm_exam_advanced.py)。
 
 ### P2：有余力再补
 

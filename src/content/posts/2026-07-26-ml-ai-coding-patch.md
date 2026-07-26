@@ -13,11 +13,11 @@ series: llm-algo-job-hunt
 seriesOrder: 11
 ---
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。指向工作区内未发布文件（模板、测试等）的链接已替换为纯文本；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
 
 > 对应 27 届实习季公开题型：阿里 AI Coding、美团 One-Class SVM/IRLS、蚂蚁 Viterbi、携程门控 Top-k Attention。它们多数没有精确 LeetCode 映射，考的是接口、矩阵/概率状态、数值稳定和隐藏测试。
 
-可执行零依赖实现：`ml_ai_coding_exam.py`；自动测试：`test_ml_ai_coding_exam.py`。
+可执行零依赖实现：[ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/templates/ml_ai_coding_exam.py)；自动测试：[test_ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/tests/test_ml_ai_coding_exam.py)。
 
 ## 1. 五类题面信号
 

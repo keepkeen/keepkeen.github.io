@@ -14,7 +14,7 @@ series: llm-algo-job-hunt
 seriesOrder: 4
 ---
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。指向工作区内未发布文件（模板、测试等）的链接已替换为纯文本；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
 
 > 目标：一个月内把力扣/笔试算法、模型手写、面经知识三条线全部过完一轮并达到可投递线，赶上 2027 届秋招提前批与 8 月正式批笔试高峰。
 >
@@ -33,8 +33,8 @@ seriesOrder: 4
 
 | 线 | 用什么资料 | 怎么用 |
 |---|---|---|
-| A 力扣与笔试算法 | [作战手册](/blog/algo-written-exam-playbook/)（P0/P1 清单 + 2026 年 4–7 月增量节）、[Hot100 模板](/blog/hot100-templates/)、[组合题决策树](/blog/exam-pattern-decision-tree/)、[ACM 速查](/blog/acm-io-cheatsheet/)、`进阶模板` | 做题 + 24h/7d 盲写复写；不通读，按周主题查 |
-| B 模型/ML 手写 | [题库与证据 §3.2](/blog/llm-algo-interview-evidence/)（17 项大模型 coding）、[ML-AI-Coding 补丁](/blog/ml-ai-coding-patch/)、`可执行模板` | 每天从空文件写 1 个模块，跑通边界测试 |
+| A 力扣与笔试算法 | [作战手册](/blog/algo-written-exam-playbook/)（P0/P1 清单 + 2026 年 4–7 月增量节）、[Hot100 模板](/blog/hot100-templates/)、[组合题决策树](/blog/exam-pattern-decision-tree/)、[ACM 速查](/blog/acm-io-cheatsheet/)、[进阶模板](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/templates/algorithm_exam_advanced.py) | 做题 + 24h/7d 盲写复写；不通读，按周主题查 |
+| B 模型/ML 手写 | [题库与证据 §3.2](/blog/llm-algo-interview-evidence/)（17 项大模型 coding）、[ML-AI-Coding 补丁](/blog/ml-ai-coding-patch/)、[可执行模板](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/templates/ml_ai_coding_exam.py) | 每天从空文件写 1 个模块，跑通边界测试 |
 | C 面经知识 | [求职指南 §9.6](/blog/llm-algo-interview-guide/)（51 张答案卡 T/R/A/P）+ [题库与证据 §4](/blog/llm-algo-interview-evidence/)（N1–N22）+ 指南 §3.6–3.8（趋势） | 每天 3–4 张卡：先自答再对卡，用"合格答案模板"六步口述 |
 | D 投递与模拟 | 指南 §10（投递）、§11（评分表）、作战手册"提前批动态" | Day 1 起投递；W2 起每周 mock |
 
