@@ -14,14 +14,13 @@ series: stanford-cs336
 seriesOrder: 4
 ---
 
-> 本文对应仓库里的 **Assignment 4: Data**。我不是 Stanford 在校生，也没有把它当作正式课程提交；这是一份独立完成、公开验证的学习记录。代码与文档固定在提交 [`4f2b421`](https://github.com/keepkeen/cs336-coursework/tree/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data)，未运行的全量数据和 GPU 指标会明确标出，不用估算值冒充实验结果。
+> 本文对应仓库里的 **Assignment 4: Data**。我不是 Stanford 在校生，也没有把它当作正式课程提交；这是一份独立完成、公开验证的学习记录。公开代码经过敏感信息清理并使用全新的单提交历史，固定在 [`e7cced8`](https://github.com/keepkeen/cs336-assignment4-data/tree/e7cced8bd953f881f035f2e6b2601ad19b889b21)。未运行的全量数据和 GPU 指标会明确标出，不用估算值冒充实验结果。
 
 ## 快速入口
 
 - [完整代码仓库][repo]
 - [作业说明 Markdown][handout]
 - [完整中文实现讲解][explanation]
-- [书面问题与样本分析][written-answers]
 - [严格完成度审计][audit]
 
 ## 结果先行
@@ -201,7 +200,7 @@ $$
 - pipeline 命令链与自动 report；
 - 合法/非法训练数据预检。
 
-稳定的全套测试记录为 `37 passed`；最后一轮脚本回归为 `28 passed in 0.38s`。此外，完整本地 example-WET runner 实际执行通过，而不只是 dry run：最终得到 2,682 篇文档和 3,929,317 个 GPT-2 tokens，train/validation 都能构造 `2 x 512` CPU batch。
+原始实现阶段的稳定全套测试记录为 `37 passed`，最后一轮脚本回归为 `28 passed in 0.38s`；清理后的独立公开副本又重新运行了完整测试集，结果为 `51 passed in 4.95s`。此外，完整本地 example-WET runner 实际执行通过，而不只是 dry run：最终得到 2,682 篇文档和 3,929,317 个 GPT-2 tokens，train/validation 都能构造 `2 x 512` CPU batch。
 
 测试代码可以直接看 [`tests/test_script_helpers.py`][script-tests]，所有命令和历史验证记录在 [completion audit][audit] 中。
 
@@ -224,7 +223,7 @@ $$
 - Paloma C4 100 best validation loss 和 learning curve；
 - 基于全量保留/丢弃样本的最后一轮阈值调整。
 
-本机没有 Stanford `/shared-data`、共享 Modal volume 和所需 GPU 配额，本地磁盘也不适合缓存全部 WET。因此这些字段在 [written answers][written-answers] 和 [completion audit][audit] 中保持未完成，而不是填入推测值。
+本机没有 Stanford `/shared-data`、共享 Modal volume 和所需 GPU 配额，本地磁盘也不适合缓存全部 WET。因此这些字段在实现讲解和 [completion audit][audit] 中保持未完成，而不是填入推测值。
 
 资源到位后，先运行数据预检，再启动训练：
 
@@ -243,18 +242,17 @@ uv run modal run scripts/train.py --train-bin /root/data/your_data.bin
 
 这份 Assignment 4 的价值也在这里：它不是训练一个更大的模型，而是逼着我们把“数据质量”从直觉写成代码、计数、样本和可复现的失败证据。
 
-[repo]: https://github.com/keepkeen/cs336-coursework/tree/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data
-[handout]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/cs336_assignment4_data.md
-[processing]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/cs336_data/processing.py
-[adapters]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/tests/adapters.py
-[filter]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/scripts/filter_wet_data.py
-[dedup]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/scripts/deduplicate_filtered_data.py
-[tokenization]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/cs336_data/tokenization.py
-[tokenize-script]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/scripts/tokenize_filtered_data.py
-[runner]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/scripts/run_data_pipeline.py
-[inspect]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/cs336_data/training_inspect.py
-[report]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/scripts/summarize_pipeline_run.py
-[script-tests]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/tests/test_script_helpers.py
-[explanation]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/tasks/solution_explanation.md
-[written-answers]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/tasks/written_answers.md
-[audit]: https://github.com/keepkeen/cs336-coursework/blob/4f2b4219a91c55f6ef47e11e1205b95f64cd834a/assignment4-data/tasks/completion_audit.md
+[repo]: https://github.com/keepkeen/cs336-assignment4-data/tree/e7cced8bd953f881f035f2e6b2601ad19b889b21
+[handout]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/cs336_assignment4_data.md
+[processing]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/cs336_data/processing.py
+[adapters]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/tests/adapters.py
+[filter]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/scripts/filter_wet_data.py
+[dedup]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/scripts/deduplicate_filtered_data.py
+[tokenization]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/cs336_data/tokenization.py
+[tokenize-script]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/scripts/tokenize_filtered_data.py
+[runner]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/scripts/run_data_pipeline.py
+[inspect]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/cs336_data/training_inspect.py
+[report]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/scripts/summarize_pipeline_run.py
+[script-tests]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/tests/test_script_helpers.py
+[explanation]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/tasks/solution_explanation.md
+[audit]: https://github.com/keepkeen/cs336-assignment4-data/blob/e7cced8bd953f881f035f2e6b2601ad19b889b21/tasks/completion_audit.md
