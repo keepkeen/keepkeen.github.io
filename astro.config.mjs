@@ -3,6 +3,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { transformerMetaHighlight, transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers';
 import { siteConfig } from './site.config.mjs';
 
 const repository = process.env.GITHUB_REPOSITORY?.split('/')[1];
@@ -32,7 +33,12 @@ export default defineConfig({
         light: 'github-light',
         dark: 'github-dark'
       },
-      defaultColor: false
+      defaultColor: false,
+      transformers: [
+        transformerNotationDiff(),
+        transformerNotationHighlight(),
+        transformerMetaHighlight()
+      ]
     }
   },
   scopedStyleStrategy: 'where'

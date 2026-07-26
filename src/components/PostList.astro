@@ -5,40 +5,69 @@ import { getTagPath } from '../utils/content';
 interface Props {
   documents: SearchDocument[];
   interactive?: boolean;
+  groupByYear?: boolean;
 }
 
-const { documents, interactive = false } = Astro.props;
+const { documents, interactive = false, groupByYear = false } = Astro.props;
+
+const groups: { year: number | null; documents: SearchDocument[] }[] = [];
+
+if (groupByYear) {
+  for (const document of documents) {
+    const year = new Date(document.dateISO).getFullYear();
+    const group = groups[groups.length - 1];
+
+    if (group && group.year === year) {
+      group.documents.push(document);
+    } else {
+      groups.push({ year, documents: [document] });
+    }
+  }
+} else {
+  groups.push({ year: null, documents });
+}
 ---
 
 <div class="directory-list" data-directory-list={interactive ? true : undefined}>
-  {documents.map((document) => (
-    <article
-      class:list={['directory-item', document.featured && 'is-featured']}
-      data-directory-entry={interactive ? true : undefined}
-      data-post-id={interactive ? document.id : undefined}
-    >
-      <div class="entry-main">
-        <div class="entry-copy">
-          <div class="entry-topline">
-            <span>{document.dateLabel}</span>
-            <span>{document.readingTime} min read</span>
-            {document.featured && <span class="entry-flag">Featured</span>}
+  {groups.map((group) => {
+    const entries = group.documents.map((document) => (
+      <article
+        class:list={['directory-item', document.featured && 'is-featured']}
+        data-directory-entry={interactive ? true : undefined}
+        data-post-id={interactive ? document.id : undefined}
+      >
+        <div class="entry-main">
+          <div class="entry-copy">
+            <div class="entry-topline">
+              <span>{document.dateLabel}</span>
+              <span>{document.readingTime} min read</span>
+              {document.featured && <span class="entry-flag">Featured</span>}
+            </div>
+
+            <h3>
+              <a href={document.href}>
+                {document.title}
+              </a>
+            </h3>
+            <p>{document.description}</p>
           </div>
 
-          <h3>
-            <a href={document.href}>
-              {document.title}
-            </a>
-          </h3>
-          <p>{document.description}</p>
+          <div class="entry-tags" aria-label="Tags">
+            {document.tags.map((tag) => (
+              <a href={getTagPath(tag)}>{tag}</a>
+            ))}
+          </div>
         </div>
+      </article>
+    ));
 
-        <div class="entry-tags" aria-label="Tags">
-          {document.tags.map((tag) => (
-            <a href={getTagPath(tag)}>{tag}</a>
-          ))}
-        </div>
-      </div>
-    </article>
-  ))}
+    return group.year !== null ? (
+      <section class="year-group">
+        <h2 class="year-heading">{group.year}</h2>
+        {entries}
+      </section>
+    ) : (
+      entries
+    );
+  })}
 </div>

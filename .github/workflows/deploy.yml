@@ -38,11 +38,20 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Install CJK fonts for social-card rendering
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-core
+
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate content
+        run: npm run validate:content
+
       - name: Typecheck
         run: npm run check
+
+      - name: Unit tests
+        run: npm test
 
       - name: Syntax-check gateway
         run: node --check gateway/server.mjs

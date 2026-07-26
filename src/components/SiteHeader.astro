@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import { siteConfig } from '../site.config';
 import { withBasePath } from '../utils/content';
 
@@ -8,9 +9,11 @@ function normalize(path: string) {
 
 const currentPath = normalize(Astro.url.pathname);
 const showStudioLink = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_STUDIO === 'true';
+const hasSeries = (await getCollection('series', ({ data }) => !data.draft)).length > 0;
 const links = [
   { label: 'Home', href: withBasePath('/') },
   { label: 'Blog', href: withBasePath('/blog/') },
+  ...(hasSeries ? [{ label: 'Series', href: withBasePath('/series/') }] : []),
   { label: 'About', href: withBasePath('/about/') },
   ...(showStudioLink ? [{ label: 'Studio', href: withBasePath('/studio/') }] : [])
 ];
@@ -26,14 +29,19 @@ const links = [
 
   <div class="site-actions">
     <nav class="site-nav" aria-label="Primary">
-      {links.map((link) => (
-        <a
-          class:list={['nav-link', normalize(link.href) === currentPath && 'is-active']}
-          href={link.href}
-        >
-          {link.label}
-        </a>
-      ))}
+      {links.map((link) => {
+        const linkPath = normalize(link.href);
+        const isHome = linkPath === normalize(withBasePath('/'));
+        const isActive = isHome
+          ? currentPath === linkPath
+          : currentPath === linkPath || currentPath.startsWith(`${linkPath}/`);
+
+        return (
+          <a class:list={['nav-link', isActive && 'is-active']} href={link.href}>
+            {link.label}
+          </a>
+        );
+      })}
     </nav>
 
     <button class="icon-button theme-toggle" type="button" data-theme-toggle data-resolved-theme="light">

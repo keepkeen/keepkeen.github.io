@@ -1,6 +1,18 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
-import { formatDate, getPostLang, getPostPath, getReadingTime, getTagPath, postHasMath } from '../utils/content';
+import Comments from '../components/Comments.astro';
+import {
+  formatDate,
+  getPostLang,
+  getPostPath,
+  getPostsInSeries,
+  getReadingTime,
+  getRelatedPosts,
+  getSeriesPath,
+  getTagPath,
+  postHasMath
+} from '../utils/content';
 import type { Post } from '../utils/content';
 import { siteConfig } from '../site.config';
 import { getBlogPostingJsonLd, getBreadcrumbJsonLd, getPostSocialImage } from '../utils/structured-data';
@@ -26,7 +38,13 @@ const labels = isZh
       previous: '上一篇',
       next: '下一篇',
       noPrevious: '没有更早的文章了。',
-      noNext: '这已经是最新一篇。'
+      noNext: '这已经是最新一篇。',
+      seriesLabel: '专题',
+      seriesPart: (part: number, total: number) => `第 ${part} 篇 / 共 ${total} 篇`,
+      inThisSeries: '本专题目录',
+      currentPart: '本篇',
+      related: '相关文章',
+      comments: '评论'
     }
   : {
       eyebrow: 'Essay',
@@ -35,8 +53,23 @@ const labels = isZh
       previous: 'Previous',
       next: 'Next',
       noPrevious: 'No earlier essay yet.',
-      noNext: 'You are at the latest note.'
+      noNext: 'You are at the latest note.',
+      seriesLabel: 'Series',
+      seriesPart: (part: number, total: number) => `Part ${part} of ${total}`,
+      inThisSeries: 'In this series',
+      currentPart: 'Reading',
+      related: 'Related essays',
+      comments: 'Comments'
     };
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const seriesEntry = post.data.series ? await getEntry('series', post.data.series) : undefined;
+const seriesPosts =
+  seriesEntry && !seriesEntry.data.draft ? getPostsInSeries(allPosts, seriesEntry.id) : [];
+const seriesPosition = seriesPosts.findIndex((item) => item.id === post.id) + 1;
+const showSeries = Boolean(seriesEntry) && seriesPosition > 0;
+const seriesIds = new Set(seriesPosts.map((item) => item.id));
+const relatedPosts = getRelatedPosts(post, allPosts, 3).filter((item) => !seriesIds.has(item.id));
 const loadKatex = postHasMath(post);
 const loadMonoFont = /```/.test(post.body ?? '');
 const jsonLd = [
@@ -81,6 +114,14 @@ const jsonLd = [
           ))}
         </span>
       </div>
+
+      {showSeries && seriesEntry && (
+        <p class="article-series">
+          <span class="article-series-label">{labels.seriesLabel}</span>
+          <a href={getSeriesPath(seriesEntry.id)}>{seriesEntry.data.title}</a>
+          <span class="article-series-part">{labels.seriesPart(seriesPosition, seriesPosts.length)}</span>
+        </p>
+      )}
     </header>
 
     <div class:list={['article-layout', tableOfContents.length === 0 && 'article-layout-single']}>
@@ -115,6 +156,46 @@ const jsonLd = [
       </div>
     </div>
 
+    {showSeries && seriesEntry && (
+      <aside class="series-panel" aria-label={labels.inThisSeries}>
+        <div class="series-panel-head">
+          <p class="panel-label">{labels.inThisSeries}</p>
+          <a class="text-link" href={getSeriesPath(seriesEntry.id)}>{seriesEntry.data.title}</a>
+        </div>
+        <ol class="series-panel-list">
+          {seriesPosts.map((item, index) => (
+            <li class:list={['series-panel-item', item.id === post.id && 'is-current']}>
+              <span class="series-panel-index">{String(index + 1).padStart(2, '0')}</span>
+              {item.id === post.id ? (
+                <span class="series-panel-title" aria-current="page">
+                  {item.data.title}
+                  <span class="series-panel-marker">{labels.currentPart}</span>
+                </span>
+              ) : (
+                <a class="series-panel-title" href={getPostPath(item)}>
+                  {item.data.title}
+                </a>
+              )}
+            </li>
+          ))}
+        </ol>
+      </aside>
+    )}
+
+    {relatedPosts.length > 0 && (
+      <aside class="related-panel" aria-label={labels.related}>
+        <p class="panel-label">{labels.related}</p>
+        <ul class="related-list">
+          {relatedPosts.map((item) => (
+            <li class="related-item">
+              <a href={getPostPath(item)}>{item.data.title}</a>
+              <span>{formatDate(item.data.date, 'en')}</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
     <nav class="article-navigation" aria-label="Post navigation">
       <div class="nav-stack">
         <p class="panel-label">{labels.previous}</p>
@@ -142,6 +223,8 @@ const jsonLd = [
         }
       </div>
     </nav>
+
+    <Comments lang={lang} label={labels.comments} />
   </article>
 </BaseLayout>
 

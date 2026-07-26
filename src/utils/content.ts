@@ -1,6 +1,7 @@
 import type { CollectionEntry } from 'astro:content';
 
 export type Post = CollectionEntry<'posts'>;
+export type Series = CollectionEntry<'series'>;
 export type PostLang = 'en' | 'zh' | 'zh-CN' | 'zh-TW';
 
 const markdownSyntaxPattern =
@@ -21,8 +22,10 @@ export function formatDate(date: Date, lang: PostLang | string = 'en') {
   }).format(date);
 }
 
+// Reading speed differs by script: ~350 chars/min for Chinese, ~220 wpm for latin.
 export function getReadingTime(source?: string) {
-  return Math.max(1, Math.round(countWords(source) / 220));
+  const { han, latin } = countByScript(source);
+  return Math.max(1, Math.round(han / 350 + latin / 220));
 }
 
 export function stripMarkdown(source: string) {
@@ -36,7 +39,7 @@ export function stripMarkdown(source: string) {
     .trim();
 }
 
-export function countWords(source?: string) {
+export function countByScript(source?: string) {
   const text = stripMarkdown(source ?? '');
   const han = (text.match(/[\p{Script=Han}]/gu) ?? []).length;
   const latin = text
@@ -44,6 +47,11 @@ export function countWords(source?: string) {
     .split(/\s+/)
     .filter(Boolean).length;
 
+  return { han, latin };
+}
+
+export function countWords(source?: string) {
+  const { han, latin } = countByScript(source);
   return han + latin;
 }
 
@@ -85,6 +93,29 @@ export function getPostPath(post: Post) {
   return withBasePath(`/blog/${getPostSlug(post)}/`);
 }
 
+export function getSeriesPath(seriesId: string) {
+  return withBasePath(`/series/${seriesId}/`);
+}
+
+export function getSeriesLang(series: Series): PostLang {
+  return series.data.lang ?? 'en';
+}
+
+export function getPostsInSeries(posts: Post[], seriesId: string) {
+  return posts
+    .filter((post) => post.data.series === seriesId && !post.data.draft)
+    .sort((left, right) => {
+      const leftOrder = left.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+      const rightOrder = right.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+
+      if (leftOrder !== rightOrder) {
+        return leftOrder - rightOrder;
+      }
+
+      return left.data.date.valueOf() - right.data.date.valueOf();
+    });
+}
+
 export function getTagSlug(tag: string) {
   return tag
     .normalize('NFKD')
@@ -111,6 +142,25 @@ export function collectTags(posts: Post[]) {
   return [...counts.entries()]
     .map(([tag, count]) => ({ tag, count, slug: getTagSlug(tag), href: getTagPath(tag) }))
     .sort((left, right) => right.count - left.count || left.tag.localeCompare(right.tag));
+}
+
+export function getRelatedPosts(post: Post, posts: Post[], limit = 3) {
+  const tagSet = new Set(post.data.tags.map((tag) => tag.toLowerCase()));
+
+  return posts
+    .filter((candidate) => candidate.id !== post.id && !candidate.data.draft)
+    .map((candidate) => ({
+      candidate,
+      overlap: candidate.data.tags.filter((tag) => tagSet.has(tag.toLowerCase())).length
+    }))
+    .filter((entry) => entry.overlap > 0)
+    .sort(
+      (left, right) =>
+        right.overlap - left.overlap ||
+        right.candidate.data.date.valueOf() - left.candidate.data.date.valueOf()
+    )
+    .slice(0, limit)
+    .map((entry) => entry.candidate);
 }
 
 export function postHasMath(post: Post) {

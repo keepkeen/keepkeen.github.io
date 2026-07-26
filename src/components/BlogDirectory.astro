@@ -79,7 +79,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
   </div>
 
   <div class="directory-layout" data-directory-root>
-    <PostList documents={documents} interactive={true} />
+    <PostList documents={documents} interactive={true} groupByYear={true} />
   </div>
 </section>
 
@@ -96,7 +96,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const indexedDocuments = indexDocuments(documents);
     const shell = document.querySelector('[data-directory-shell]');
     const root = shell?.querySelector('[data-directory-root]');
-    const list = root?.querySelector('[data-directory-list]');
     const input = /** @type {HTMLInputElement | null} */ (document.getElementById('blog-search'));
     const searchToggle = shell?.querySelector('[data-search-toggle]');
     const searchPanel = shell?.querySelector('[data-search-panel]');
@@ -123,20 +122,15 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       }
     };
 
-    const renderList = (orderedIds) => {
-      if (!list) return;
-
-      const visible = new Set(orderedIds);
+    // Search filters in place (entries keep their chronological/year grouping);
+    // empty year groups are hidden by CSS.
+    const filterList = (visibleIds) => {
+      const visible = new Set(visibleIds);
 
       for (const [id, entry] of entries) {
         if (visible.has(id)) entry.removeAttribute('hidden');
         else entry.setAttribute('hidden', '');
       }
-
-      orderedIds.forEach((id) => {
-        const entry = entries.get(id);
-        if (entry) list.appendChild(entry);
-      });
     };
 
     const updateSearch = () => {
@@ -146,18 +140,18 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       clearButton?.toggleAttribute('hidden', query.length === 0);
 
       if (!query) {
-        renderList(documents.map((document) => document.id));
+        filterList(documents.map((document) => document.id));
         status.textContent = defaultStatus;
         return;
       }
 
       const results = searchDocuments(indexedDocuments, query);
-      const orderedIds = results.map((result) => result.id);
-      renderList(orderedIds);
+      const visibleIds = results.map((result) => result.id);
+      filterList(visibleIds);
 
       status.textContent =
-        orderedIds.length > 0
-          ? `${orderedIds.length} results for "${query}".`
+        visibleIds.length > 0
+          ? `${visibleIds.length} results for "${query}".`
           : `No results for "${query}". Try title, tag, Chinese, pinyin, or a shorter fuzzy query.`;
     };
 

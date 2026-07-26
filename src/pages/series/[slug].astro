@@ -1,0 +1,119 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../site.config';
+import {
+  formatDate,
+  getPostLang,
+  getPostPath,
+  getPostsInSeries,
+  getReadingTime,
+  getSeriesLang,
+  getSeriesPath,
+  sortPosts,
+  withBasePath
+} from '../../utils/content';
+import { getBreadcrumbJsonLd } from '../../utils/structured-data';
+
+export async function getStaticPaths() {
+  const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+  const allSeries = await getCollection('series', ({ data }) => !data.draft);
+
+  return allSeries.map((entry) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      posts: getPostsInSeries(posts, entry.id)
+    }
+  }));
+}
+
+const { entry, posts } = Astro.props;
+const { Content } = await render(entry);
+const hasIntro = (entry.body ?? '').trim().length > 0;
+const lang = getSeriesLang(entry);
+const isZh = lang.startsWith('zh');
+const labels = isZh
+  ? {
+      eyebrow: '专题',
+      count: (total: number) => `共 ${total} 篇，按顺序阅读。`,
+      back: '返回全部专题',
+      parts: '篇目',
+      readingTime: (minutes: number) => `约 ${minutes} 分钟`
+    }
+  : {
+      eyebrow: 'Series',
+      count: (total: number) => `${total} ${total === 1 ? 'part' : 'parts'}, meant to be read in order.`,
+      back: 'All series',
+      parts: 'The parts',
+      readingTime: (minutes: number) => `${minutes} min read`
+    };
+
+const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
+const jsonLd = [
+  getBreadcrumbJsonLd([
+    { name: 'Home', url: new URL(import.meta.env.BASE_URL, siteOrigin).toString() },
+    { name: 'Series', url: new URL('series/', new URL(import.meta.env.BASE_URL, siteOrigin)).toString() },
+    { name: entry.data.title, url: new URL(getSeriesPath(entry.id), siteOrigin).toString() }
+  ])
+];
+---
+
+<BaseLayout
+  title={`${labels.eyebrow}: ${entry.data.title}`}
+  description={entry.data.description}
+  keywords={['series', entry.data.title]}
+  jsonLd={jsonLd}
+  lang={lang}
+>
+  <section class="editorial-hero">
+    <div class="editorial-hero-main">
+      <p class="eyebrow">{labels.eyebrow}</p>
+      <h1>{entry.data.title}</h1>
+      <p class="section-copy">{entry.data.description}</p>
+    </div>
+    <div class="editorial-hero-side">
+      <p class="hero-note">{labels.count(posts.length)}</p>
+      <div class="hero-links">
+        <a class="text-link" href={withBasePath('/series/')}>{labels.back}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="directory-shell series-shell">
+    {hasIntro && (
+      <div class="series-intro prose">
+        <Content />
+      </div>
+    )}
+
+    <div class="series-parts">
+      <p class="panel-label">{labels.parts}</p>
+      <ol class="series-part-list">
+        {posts.map((post, index) => {
+          const postLang = getPostLang(post);
+
+          return (
+            <li class="series-part">
+              <p class="note-index">{String(index + 1).padStart(2, '0')}</p>
+              <div class="series-part-body">
+                <div class="entry-topline">
+                  <span>{formatDate(post.data.date, 'en')}</span>
+                  <span>
+                    {postLang.startsWith('zh')
+                      ? labels.readingTime(getReadingTime(post.body))
+                      : `${getReadingTime(post.body)} min read`}
+                  </span>
+                </div>
+                <h3>
+                  <a href={getPostPath(post)}>{post.data.title}</a>
+                </h3>
+                <p>{post.data.description}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBasePath } from '../utils/content';
+---
+
+<BaseLayout title="Page not found" noindex={true} includeSiteJsonLd={false}>
+  <section class="editorial-hero">
+    <div class="editorial-hero-main">
+      <p class="eyebrow">404</p>
+      <h1>This page has been edited out.</h1>
+      <p class="section-copy">
+        Whatever lived here was moved, renamed, or never existed. The archive below has everything
+        that survived the cut.
+      </p>
+    </div>
+    <div class="editorial-hero-side">
+      <div class="hero-links">
+        <a class="text-link" href={withBasePath('/')}>Back to the front page</a>
+        <a class="text-link" href={withBasePath('/blog/')}>Browse the archive</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

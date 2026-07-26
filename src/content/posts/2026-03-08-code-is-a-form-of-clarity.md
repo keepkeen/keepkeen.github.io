@@ -6,6 +6,8 @@ tags:
   - code
   - craft
   - writing
+series: the-long-game
+seriesOrder: 2
 ---
 
 Good code does more than run. It explains. It gives the next person enough structure to move quickly without decoding your intent from scratch.

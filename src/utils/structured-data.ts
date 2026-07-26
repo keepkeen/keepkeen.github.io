@@ -34,11 +34,11 @@ function getAuthorEntity(siteOrigin: URL) {
 }
 
 export function getDefaultSocialImage(siteOrigin: URL) {
-  return toAbsoluteUrl(siteOrigin, withBasePath('/social-card.svg'));
+  return toAbsoluteUrl(siteOrigin, withBasePath('/social-card.png'));
 }
 
 export function getPostSocialImage(siteOrigin: URL, post: Post) {
-  return toAbsoluteUrl(siteOrigin, withBasePath(`/og/${getPostSlug(post)}.svg`));
+  return toAbsoluteUrl(siteOrigin, withBasePath(`/og/${getPostSlug(post)}.png`));
 }
 
 export function getSiteJsonLd(siteOrigin: URL): JsonLd[] {

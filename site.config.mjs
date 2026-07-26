@@ -10,11 +10,19 @@ export const siteConfig = {
   hero: {
     eyebrow: 'Liuliming / Keepkeen',
     headline: 'AI systems, software taste, and the long game.',
-    lead:
-      'A technical publication about AI systems, product judgment, markets, and the habits that make serious work hold up over time.',
-    deck:
-      'Essays, field notes, and working principles from inside the work.',
+    lead: 'Essays and field notes on building with AI, written from inside the work.',
+    deck: 'Mostly technical, occasionally personal.',
     signature: 'Written in public. Kept deliberately small.'
+  },
+  // Comments are powered by giscus (GitHub Discussions). To enable:
+  // 1. Enable Discussions on the repo and install https://github.com/apps/giscus
+  // 2. Generate the four ids at https://giscus.app and fill them in below.
+  comments: {
+    enabled: false,
+    repo: '',
+    repoId: '',
+    category: 'Announcements',
+    categoryId: ''
   },
   deskFacts: [
     { label: 'Base', value: 'Shanghai / China' },

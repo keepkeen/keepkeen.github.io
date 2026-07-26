@@ -1,6 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
+// The Studio is a local writing tool. Emit the page only in dev, or when
+// PUBLIC_SHOW_STUDIO is explicitly enabled — production builds skip it entirely.
+export function getStaticPaths() {
+  const enabled = import.meta.env.DEV || import.meta.env.PUBLIC_SHOW_STUDIO === 'true';
+  return enabled ? [{ params: { gate: undefined } }] : [];
+}
+
 const today = new Date().toISOString().slice(0, 10);
 const gatewayUrl = import.meta.env.PUBLIC_STUDIO_GATEWAY_URL ?? '';
 ---
