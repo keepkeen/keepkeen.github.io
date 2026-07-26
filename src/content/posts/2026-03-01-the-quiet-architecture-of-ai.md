@@ -6,8 +6,6 @@ tags:
   - ai
   - engineering
   - systems
-series: the-long-game
-seriesOrder: 1
 ---
 
 The best AI products rarely feel magical in the daily sense. They feel stable, responsive, and oddly generous. They answer the question you meant to ask, not only the one you typed.

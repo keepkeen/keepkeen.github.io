@@ -59,9 +59,6 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
       <div class="directory-toolbar-copy">
         <p class="eyebrow">{featuredPosts.length > 0 ? 'Selected writing' : 'Recent writing'}</p>
         <div class="directory-toolbar-meta">
-          <p class="search-note">
-            {latestDocuments.length} {featuredPosts.length > 0 ? 'selected' : 'latest'} posts from the publication.
-          </p>
           <a class="text-link directory-toolbar-link" href={withBasePath('/blog/')}>Open the full archive</a>
         </div>
       </div>
@@ -75,7 +72,6 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
       <div class="section-rail">
         <div class="section-rail-head">
           <p class="eyebrow">Topics</p>
-          <h2 class="section-title">Browse by tag.</h2>
         </div>
         <div class="section-rail-body">
           <div class="tag-cloud">

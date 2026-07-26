@@ -4,7 +4,7 @@ import BlogDirectory from '../../components/BlogDirectory.astro';
 import type { TimelineItem } from '../../components/ArchiveList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../site.config';
-import { formatDate, getPostsInSeries, getSeriesPath, sortPosts } from '../../utils/content';
+import { formatDate, getPostsInSeries, sortPosts } from '../../utils/content';
 import { buildSearchDocument } from '../../utils/search';
 import { getBlogCollectionJsonLd, getBreadcrumbJsonLd } from '../../utils/structured-data';
 
@@ -38,7 +38,6 @@ for (const post of posts) {
       id: seriesId,
       title: seriesEntry.data.title,
       description: seriesEntry.data.description,
-      href: getSeriesPath(seriesId),
       updatedLabel: latest ? formatDate(latest.data.date, 'en') : undefined,
       documents: seriesPosts
         .map((seriesPost) => documentById.get(seriesPost.id))

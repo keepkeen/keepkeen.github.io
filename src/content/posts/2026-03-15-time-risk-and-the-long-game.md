@@ -6,8 +6,6 @@ tags:
   - life
   - investing
   - reflection
-series: the-long-game
-seriesOrder: 3
 ---
 
 I have become more interested in compounding than in intensity. Intensity is visible. Compounding is quieter, but it usually matters more.

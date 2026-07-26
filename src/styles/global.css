@@ -926,7 +926,7 @@ pre,
 
 .series-thread > summary {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.9rem 1rem;
   align-items: start;
   padding: 1.1rem 0;
@@ -963,11 +963,6 @@ pre,
 
 .series-thread > summary:hover h3 {
   color: var(--accent);
-}
-
-.series-thread-open {
-  margin-top: 0.3rem;
-  white-space: nowrap;
 }
 
 /* Reply-style connectors for the parts inside a thread. */

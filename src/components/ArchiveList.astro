@@ -7,7 +7,6 @@ export interface SeriesTimelineItem {
   id: string;
   title: string;
   description: string;
-  href: string;
   updatedLabel?: string;
   documents: SearchDocument[];
 }
@@ -79,7 +78,6 @@ for (const item of items) {
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
               </div>
-              <a class="series-thread-open text-link" href={item.href}>Open series</a>
             </summary>
 
             <div class="thread-children">
