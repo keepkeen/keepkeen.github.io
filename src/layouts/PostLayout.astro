@@ -17,6 +17,26 @@ const tableOfContents = headings.filter((heading) => heading.depth === 2 || head
 const siteOrigin = Astro.site ?? new URL(siteConfig.siteUrl);
 const postUrl = new URL(getPostPath(post), siteOrigin).toString();
 const lang = getPostLang(post);
+const isZh = lang.startsWith('zh');
+const labels = isZh
+  ? {
+      eyebrow: '文章',
+      readingTime: `约 ${getReadingTime(post.body)} 分钟`,
+      onThisPage: '本页目录',
+      previous: '上一篇',
+      next: '下一篇',
+      noPrevious: '没有更早的文章了。',
+      noNext: '这已经是最新一篇。'
+    }
+  : {
+      eyebrow: 'Essay',
+      readingTime: `${getReadingTime(post.body)} min read`,
+      onThisPage: 'On this page',
+      previous: 'Previous',
+      next: 'Next',
+      noPrevious: 'No earlier essay yet.',
+      noNext: 'You are at the latest note.'
+    };
 const loadKatex = postHasMath(post);
 const loadMonoFont = /```/.test(post.body ?? '');
 const jsonLd = [
@@ -46,12 +66,12 @@ const jsonLd = [
 >
   <article class="article-shell">
     <header class="article-intro">
-      <p class="eyebrow">Essay</p>
+      <p class="eyebrow">{labels.eyebrow}</p>
       <h1>{post.data.title}</h1>
       <p class="article-lead">{post.data.description}</p>
       <div class="meta-row">
         <span>{formatDate(post.data.date, lang)}</span>
-        <span>{getReadingTime(post.body)} min read</span>
+        <span>{labels.readingTime}</span>
         <span class="article-tags">
           {post.data.tags.map((tag, index) => (
             <>
@@ -66,8 +86,8 @@ const jsonLd = [
     <div class:list={['article-layout', tableOfContents.length === 0 && 'article-layout-single']}>
       {tableOfContents.length > 0 && (
         <aside class="article-sidebar">
-          <nav class="article-toc plain-panel" aria-label="Table of contents">
-            <p class="panel-label">On this page</p>
+          <nav class="article-toc" aria-label={labels.onThisPage} data-toc>
+            <p class="panel-label">{labels.onThisPage}</p>
             <ol>
               {tableOfContents.map((heading) => (
                 <li class:list={[heading.depth === 3 && 'is-sub-item']}>
@@ -76,6 +96,17 @@ const jsonLd = [
               ))}
             </ol>
           </nav>
+
+          <details class="article-toc-mobile">
+            <summary>{labels.onThisPage}</summary>
+            <ol>
+              {tableOfContents.map((heading) => (
+                <li class:list={[heading.depth === 3 && 'is-sub-item']}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </details>
         </aside>
       )}
 
@@ -84,32 +115,74 @@ const jsonLd = [
       </div>
     </div>
 
-    <nav class="article-navigation plain-panel" aria-label="Post navigation">
+    <nav class="article-navigation" aria-label="Post navigation">
       <div class="nav-stack">
-        <p class="panel-label">Previous</p>
+        <p class="panel-label">{labels.previous}</p>
         {
           previous ? (
             <a class="text-link" href={getPostPath(previous)}>
               {previous.data.title}
             </a>
           ) : (
-            <span class="caption">No earlier essay yet.</span>
+            <span class="caption">{labels.noPrevious}</span>
           )
         }
       </div>
 
       <div class="nav-stack">
-        <p class="panel-label">Next</p>
+        <p class="panel-label">{labels.next}</p>
         {
           next ? (
             <a class="text-link" href={getPostPath(next)}>
               {next.data.title}
             </a>
           ) : (
-            <span class="caption">You are at the latest note.</span>
+            <span class="caption">{labels.noNext}</span>
           )
         }
       </div>
     </nav>
   </article>
 </BaseLayout>
+
+<script>
+  // Scroll spy: highlight the table-of-contents entry for the section in view.
+  const toc = document.querySelector('[data-toc]');
+
+  if (toc) {
+    const links = new Map(
+      [...toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map((link) => [
+        decodeURIComponent(link.hash.slice(1)),
+        link
+      ])
+    );
+    const headings = [...document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]')].filter(
+      (heading) => links.has(heading.id)
+    );
+
+    if (headings.length > 0) {
+      let currentId: string | null = null;
+
+      const update = () => {
+        const offset = 110;
+        let activeId = headings[0].id;
+
+        for (const heading of headings) {
+          if (heading.getBoundingClientRect().top <= offset) activeId = heading.id;
+          else break;
+        }
+
+        if (activeId === currentId) return;
+        currentId = activeId;
+
+        for (const [id, link] of links) {
+          link.classList.toggle('is-current', id === activeId);
+        }
+      };
+
+      update();
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+    }
+  }
+</script>

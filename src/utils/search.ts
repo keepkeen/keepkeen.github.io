@@ -128,7 +128,8 @@ export function buildSearchDocument(post: Post): SearchDocument {
     tags: post.data.tags,
     tagsText,
     dateISO: post.data.date.toISOString(),
-    dateLabel: formatDate(post.data.date, lang),
+    // List UI is English; keep one date format per list regardless of post language.
+    dateLabel: formatDate(post.data.date, 'en'),
     readingTime: getReadingTime(post.body),
     featured: Boolean(post.data.featured),
     lang,

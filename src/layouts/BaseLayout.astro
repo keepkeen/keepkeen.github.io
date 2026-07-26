@@ -1,7 +1,10 @@
 ---
 import '../styles/global.css';
+import '@fontsource-variable/source-serif-4';
+import '@fontsource-variable/noto-serif-sc';
 import katexStylesheet from 'katex/dist/katex.min.css?url';
 import monoStylesheet from '@fontsource/jetbrains-mono/400.css?url';
+import monoBoldStylesheet from '@fontsource/jetbrains-mono/700.css?url';
 
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -83,6 +86,7 @@ const ogImageType = socialImage.endsWith('.png')
     <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS`} href={rssHref} />
     {loadKatex && <link rel="stylesheet" href={katexStylesheet} />}
     {loadMonoFont && <link rel="stylesheet" href={monoStylesheet} />}
+    {loadMonoFont && <link rel="stylesheet" href={monoBoldStylesheet} />}
     <meta id="theme-color-meta" name="theme-color" content="#ffffff" />
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <meta property="og:type" content={ogType} />
@@ -256,7 +260,24 @@ const ogImageType = socialImage.endsWith('.png')
         container.appendChild(button);
       };
 
+      const attachHeadingAnchors = () => {
+        document.querySelectorAll('.prose h2[id], .prose h3[id]').forEach((heading) => {
+          if (heading.querySelector('.heading-anchor')) {
+            return;
+          }
+
+          const anchor = document.createElement('a');
+          anchor.className = 'heading-anchor';
+          anchor.href = `#${heading.id}`;
+          anchor.textContent = '#';
+          anchor.setAttribute('aria-label', 'Link to this section');
+          heading.appendChild(anchor);
+        });
+      };
+
       const enhanceArticleUtilities = () => {
+        attachHeadingAnchors();
+
         document.querySelectorAll('.prose pre').forEach((block) => {
           attachCopyButton(block, () => block.querySelector('code')?.textContent ?? block.textContent ?? '');
         });

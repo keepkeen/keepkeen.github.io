@@ -7,9 +7,8 @@ interface Props {
 }
 
 const { documents } = Astro.props;
-const initialDocument = documents[0];
-const emptyText = 'No posts yet.';
-const initialStatusText = `${documents.length} posts indexed. Move through the titles to preview them.`;
+const initialStatusText =
+  documents.length === 1 ? '1 post in the archive.' : `${documents.length} posts in the archive.`;
 const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 ---
 
@@ -49,7 +48,14 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
         <div id="blog-search-panel" class="search-panel" data-search-panel hidden>
           <label class="sr-only" for="blog-search">Search posts</label>
-          <input id="blog-search" class="search-input" type="search" autocomplete="off" spellcheck="false" />
+          <input
+            id="blog-search"
+            class="search-input"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Title, tag, 中文, pinyin…"
+          />
           <button
             class="icon-button search-clear"
             type="button"
@@ -73,44 +79,7 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
   </div>
 
   <div class="directory-layout" data-directory-root>
-    <PostList documents={documents} interactive={true} showInlinePreview={true} />
-
-    <aside
-      class:list={['directory-preview', !initialDocument && 'is-empty']}
-      data-directory-preview-shell
-      aria-live="polite"
-    >
-      {documents.map((document) => (
-        <section class="preview-card" data-directory-preview data-post-id={document.id}>
-          <p class="eyebrow">Preview</p>
-          <h3>{document.title}</h3>
-          <p class="preview-description">{document.description}</p>
-
-          <dl class="preview-metadata">
-            <div>
-              <dt>Date</dt>
-              <dd>{document.dateLabel}</dd>
-            </div>
-            <div>
-              <dt>Read</dt>
-              <dd>{document.readingTime} min</dd>
-            </div>
-            <div>
-              <dt>Tags</dt>
-              <dd>{document.tags.join(' / ')}</dd>
-            </div>
-          </dl>
-
-          <p class="preview-excerpt">{document.excerpt}</p>
-        </section>
-      ))}
-
-      {!initialDocument && (
-        <section class="preview-card is-active">
-          <p class="preview-excerpt">{emptyText}</p>
-        </section>
-      )}
-    </aside>
+    <PostList documents={documents} interactive={true} />
   </div>
 </section>
 
@@ -128,7 +97,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     const shell = document.querySelector('[data-directory-shell]');
     const root = shell?.querySelector('[data-directory-root]');
     const list = root?.querySelector('[data-directory-list]');
-    const previewShell = shell?.querySelector('[data-directory-preview-shell]');
     const input = /** @type {HTMLInputElement | null} */ (document.getElementById('blog-search'));
     const searchToggle = shell?.querySelector('[data-search-toggle]');
     const searchPanel = shell?.querySelector('[data-search-panel]');
@@ -141,55 +109,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         element
       ])
     );
-    const links = new Map(
-      [...(root?.querySelectorAll('[data-directory-link]') ?? [])].map((element) => [
-        element.getAttribute('data-post-id'),
-        element
-      ])
-    );
-    const previews = new Map(
-      [...(root?.querySelectorAll('[data-directory-preview]') ?? [])].map((element) => [
-        element.getAttribute('data-post-id'),
-        element
-      ])
-    );
-
-    let activeId;
-    let activeAnchor;
-
-    const canUseFloatingPreview = () =>
-      typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (min-width: 1081px)').matches;
-
-    const clearPreviewPosition = () => {
-      if (!previewShell) return;
-      previewShell.style.removeProperty('left');
-      previewShell.style.removeProperty('top');
-    };
-
-    const positionPreview = (anchor) => {
-      if (!previewShell || !anchor || !canUseFloatingPreview()) {
-        clearPreviewPosition();
-        return;
-      }
-
-      const anchorRect = anchor.getBoundingClientRect();
-      const previewRect = previewShell.getBoundingClientRect();
-      const gap = 20;
-      const viewportPadding = 16;
-      let left = anchorRect.right + gap;
-
-      if (left + previewRect.width > window.innerWidth - viewportPadding) {
-        left = anchorRect.left - gap - previewRect.width;
-      }
-
-      left = Math.max(viewportPadding, Math.min(left, window.innerWidth - previewRect.width - viewportPadding));
-
-      let top = anchorRect.top - 8;
-      top = Math.max(viewportPadding, Math.min(top, window.innerHeight - previewRect.height - viewportPadding));
-
-      previewShell.style.left = `${Math.round(left)}px`;
-      previewShell.style.top = `${Math.round(top)}px`;
-    };
 
     const setSearchOpen = (open, options = {}) => {
       if (!shell || !searchPanel || !searchToggle) return;
@@ -201,28 +120,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
       if (open && options.focus) {
         requestAnimationFrame(() => input?.focus());
-      }
-    };
-
-    const setActive = (id, anchor) => {
-      const hasActivePreview = Boolean(id && entries.has(id) && previews.has(id));
-      activeId = hasActivePreview ? id : undefined;
-      activeAnchor = hasActivePreview ? anchor ?? links.get(id) ?? undefined : undefined;
-
-      root?.classList.toggle('has-active-preview', hasActivePreview);
-
-      for (const [entryId, entry] of entries) {
-        entry.classList.toggle('is-active', hasActivePreview && entryId === id);
-      }
-
-      for (const [previewId, preview] of previews) {
-        preview.classList.toggle('is-active', hasActivePreview && previewId === id);
-      }
-
-      if (hasActivePreview && activeAnchor) {
-        requestAnimationFrame(() => positionPreview(activeAnchor));
-      } else {
-        clearPreviewPosition();
       }
     };
 
@@ -240,8 +137,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
         const entry = entries.get(id);
         if (entry) list.appendChild(entry);
       });
-
-      if (!visible.has(activeId)) setActive(undefined);
     };
 
     const updateSearch = () => {
@@ -252,7 +147,6 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
 
       if (!query) {
         renderList(documents.map((document) => document.id));
-        setActive(undefined);
         status.textContent = defaultStatus;
         return;
       }
@@ -260,41 +154,12 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
       const results = searchDocuments(indexedDocuments, query);
       const orderedIds = results.map((result) => result.id);
       renderList(orderedIds);
-      setActive(undefined);
 
       status.textContent =
         orderedIds.length > 0
           ? `${orderedIds.length} results for "${query}".`
           : `No results for "${query}". Try title, tag, Chinese, pinyin, or a shorter fuzzy query.`;
     };
-
-    for (const [id, link] of links) {
-      link.addEventListener('pointerenter', () => setActive(id ?? undefined, link));
-      link.addEventListener('focus', () => setActive(id ?? undefined, link));
-    }
-
-    root?.addEventListener('pointerleave', () => setActive(undefined));
-    root?.addEventListener('focusout', (event) => {
-      const nextTarget = event.relatedTarget;
-      if (!(nextTarget instanceof Node) || !root.contains(nextTarget)) setActive(undefined);
-    });
-
-    window.addEventListener(
-      'resize',
-      () => {
-        if (activeAnchor) positionPreview(activeAnchor);
-        else clearPreviewPosition();
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'scroll',
-      () => {
-        if (activeAnchor) positionPreview(activeAnchor);
-      },
-      { passive: true }
-    );
 
     searchToggle?.addEventListener('click', () => {
       const isOpen = shell?.classList.contains('is-search-open');
@@ -324,11 +189,27 @@ const searchPayload = JSON.stringify(documents).replace(/</g, '\\u003c');
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape' || !shell?.classList.contains('is-search-open')) return;
-      if (input) input.value = '';
-      updateSearch();
-      setSearchOpen(false);
-      searchToggle?.focus();
+      if (event.key === 'Escape' && shell?.classList.contains('is-search-open')) {
+        if (input) input.value = '';
+        updateSearch();
+        setSearchOpen(false);
+        searchToggle?.focus();
+        return;
+      }
+
+      if (event.defaultPrevented) return;
+
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLElement &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      const slashPressed = event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey;
+      const commandKPressed = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+
+      if ((slashPressed && !isTyping) || commandKPressed) {
+        event.preventDefault();
+        setSearchOpen(true, { focus: true });
+      }
     });
 
     updateSearch();

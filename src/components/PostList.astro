@@ -5,10 +5,9 @@ import { getTagPath } from '../utils/content';
 interface Props {
   documents: SearchDocument[];
   interactive?: boolean;
-  showInlinePreview?: boolean;
 }
 
-const { documents, interactive = false, showInlinePreview = false } = Astro.props;
+const { documents, interactive = false } = Astro.props;
 ---
 
 <div class="directory-list" data-directory-list={interactive ? true : undefined}>
@@ -27,11 +26,7 @@ const { documents, interactive = false, showInlinePreview = false } = Astro.prop
           </div>
 
           <h3>
-            <a
-              href={document.href}
-              data-directory-link={interactive ? true : undefined}
-              data-post-id={interactive ? document.id : undefined}
-            >
+            <a href={document.href}>
               {document.title}
             </a>
           </h3>
@@ -44,12 +39,6 @@ const { documents, interactive = false, showInlinePreview = false } = Astro.prop
           ))}
         </div>
       </div>
-
-      {showInlinePreview && (
-        <div class="entry-inline-preview">
-          <p>{document.excerpt}</p>
-        </div>
-      )}
     </article>
   ))}
 </div>
