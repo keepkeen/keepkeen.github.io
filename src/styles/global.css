@@ -1589,6 +1589,17 @@ html.toc-drawer-open body {
   background: var(--bg-elevated);
 }
 
+.prose .copy-shell {
+  position: relative;
+  max-width: 100%;
+  margin: 1.4rem 0;
+}
+
+.prose .copy-shell > pre,
+.prose .copy-shell > .katex-display {
+  margin: 0;
+}
+
 /* Very long technical posts ship thousands of highlight spans; let the
    browser skip layout/paint for offscreen blocks. */
 .prose pre,
@@ -1660,15 +1671,20 @@ html.toc-drawer-open body {
   transition: opacity 160ms ease, border-color 160ms ease;
 }
 
-.prose pre:hover .copy-button,
-.prose .katex-display:hover .copy-button,
+.copy-shell:hover .copy-button,
+.copy-shell.is-copy-active .copy-button,
 .copy-button:focus-visible {
   opacity: 1;
 }
 
-@media (hover: none) {
+@media (hover: none) and (pointer: coarse) {
   .copy-button {
-    opacity: 1;
+    pointer-events: none;
+  }
+
+  .copy-shell.is-copy-active .copy-button,
+  .copy-button:focus-visible {
+    pointer-events: auto;
   }
 }
 

@@ -238,10 +238,16 @@ const ogImageType = socialImage.endsWith('.png')
           return;
         }
 
+        const shell = document.createElement('div');
+        shell.className = 'copy-shell';
+        container.before(shell);
+        shell.appendChild(container);
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'copy-button';
         button.textContent = COPY_LABEL;
+        button.setAttribute('aria-label', 'Copy to clipboard');
 
         button.addEventListener('click', async () => {
           const text = getText().trim();
@@ -255,18 +261,33 @@ const ogImageType = socialImage.endsWith('.png')
             button.textContent = COPIED_LABEL;
             window.setTimeout(() => {
               button.textContent = COPY_LABEL;
+              shell.classList.remove('is-copy-active');
             }, 1600);
           } catch (error) {
             button.textContent = 'Failed';
             window.setTimeout(() => {
               button.textContent = COPY_LABEL;
+              shell.classList.remove('is-copy-active');
             }, 1600);
             console.error(error);
           }
         });
 
         container.dataset.copyReady = 'true';
-        container.appendChild(button);
+        container.addEventListener('scroll', () => {
+          shell.classList.remove('is-copy-active');
+        }, { passive: true });
+        shell.addEventListener('click', (event) => {
+          if (event.target === button) {
+            return;
+          }
+
+          document.querySelectorAll('.copy-shell.is-copy-active').forEach((activeShell) => {
+            activeShell.classList.remove('is-copy-active');
+          });
+          shell.classList.add('is-copy-active');
+        });
+        shell.appendChild(button);
       };
 
       const attachHeadingAnchors = () => {
@@ -314,6 +335,15 @@ const ogImageType = socialImage.endsWith('.png')
       }
 
       document.addEventListener('astro:page-load', enhanceArticleUtilities);
+      document.addEventListener('pointerdown', (event) => {
+        if (event.target instanceof Element && event.target.closest('.copy-shell')) {
+          return;
+        }
+
+        document.querySelectorAll('.copy-shell.is-copy-active').forEach((shell) => {
+          shell.classList.remove('is-copy-active');
+        });
+      });
     </script>
   </body>
 </html>
