@@ -2124,7 +2124,14 @@ html.toc-drawer-open body {
 }
 
 @media (max-width: 760px) {
+  .page-article .page-shell {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+
   .page-article .main-content {
+    flex: 1 0 auto;
     padding-bottom: 2rem;
   }
 
@@ -2133,6 +2140,7 @@ html.toc-drawer-open body {
   }
 
   .page-article .site-footer {
+    flex: 0 0 auto;
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
