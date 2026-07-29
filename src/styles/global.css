@@ -1490,6 +1490,14 @@ html.toc-drawer-open body {
 }
 
 @media (min-width: 1180px) {
+  .page-article {
+    --reading-width: 70ch;
+  }
+
+  .page-article .article-intro {
+    max-width: min(100%, calc(18rem + var(--reading-width)));
+  }
+
   .article-layout:not(.article-layout-single) {
     grid-template-columns: 14rem minmax(0, var(--reading-width));
     gap: 4rem;
@@ -2116,6 +2124,18 @@ html.toc-drawer-open body {
 }
 
 @media (max-width: 760px) {
+  .page-article .main-content {
+    padding-bottom: 2rem;
+  }
+
+  .page-article .article-shell {
+    padding-bottom: 0;
+  }
+
+  .page-article .site-footer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
   .article-sidebar {
     display: none;
   }
