@@ -19,8 +19,8 @@ LLM 强化学习的一轮训练至少包含五种性质不同的工作：准备 
 
 最简数据流如下：
 
-<div style="overflow-x: auto; margin: 1.5rem 0;">
-  <img src="/images/verl-interview-guide/overview-flow.svg" alt="verl 最简训练数据流" style="display: block; min-width: 760px; width: 100%; height: auto;" loading="lazy" />
+<div class="wide-media">
+  <img class="wide-media-image" src="/images/verl-interview-guide/overview-flow.svg" alt="verl 最简训练数据流" loading="lazy" />
 </div>
 
 ## 五个最重要的设计点

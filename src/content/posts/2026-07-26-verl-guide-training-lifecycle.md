@@ -35,8 +35,8 @@ actor、critic 等训练 worker 先占据资源并建立进程组；rollout serv
 
 无论 V0/V1，核心依赖关系相同：
 
-<div style="overflow-x: auto; margin: 1.5rem 0;">
-  <img src="/images/verl-interview-guide/training-sequence.svg" alt="verl 同步训练 step 时序" style="display: block; min-width: 760px; width: 100%; height: auto;" loading="lazy" />
+<div class="wide-media">
+  <img class="wide-media-image" src="/images/verl-interview-guide/training-sequence.svg" alt="verl 同步训练 step 时序" loading="lazy" />
 </div>
 
 V0 的线性参考实现位于 [`verl/trainer/ppo/ray_trainer.py:1440-1665`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/trainer/ppo/ray_trainer.py#L1440-L1665)。V1 将生产/消费拆入 TransferQueue 和 replay buffer。多数基础 estimator 复用相同数学函数，但 V1 的轨迹整理、支持边界和 estimator 前置数据并不完全等价于 V0。

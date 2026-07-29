@@ -15,8 +15,8 @@ seriesOrder: 3
 
 ## 分层心智模型
 
-<div style="overflow-x: auto; margin: 1.5rem 0;">
-  <img src="/images/verl-interview-guide/architecture.svg" alt="verl 系统架构分层" style="display: block; min-width: 760px; width: 100%; height: auto;" loading="lazy" />
+<div class="wide-media">
+  <img class="wide-media-image" src="/images/verl-interview-guide/architecture.svg" alt="verl 系统架构分层" loading="lazy" />
 </div>
 
 上层回答“算法下一步做什么”，下层回答“在哪些 GPU、以何种并行方式做”。这就是框架可扩展性的来源。

@@ -18,8 +18,8 @@ seriesOrder: 14
 
 ## 全流程
 
-<div style="overflow-x: auto; margin: 1.5rem 0;">
-  <img src="/images/verl-interview-guide/lifecycle.svg" alt="从原始数据到 Hugging Face 模型的完整流程" style="display: block; min-width: 760px; width: 100%; height: auto;" loading="lazy" />
+<div class="wide-media">
+  <img class="wide-media-image" src="/images/verl-interview-guide/lifecycle.svg" alt="从原始数据到 Hugging Face 模型的完整流程" loading="lazy" />
 </div>
 
 ## 1. 先固定版本和硬件事实
