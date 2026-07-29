@@ -148,6 +148,17 @@ const jsonLd = [
               ))}
             </ol>
           </nav>
+
+          <details class="article-toc-mobile">
+            <summary>{labels.onThisPage}</summary>
+            <ol>
+              {tableOfContents.map((heading) => (
+                <li class:list={[heading.depth === 3 && 'is-sub-item']}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </details>
         </aside>
       )}
 
@@ -356,7 +367,7 @@ const jsonLd = [
       tocOpenButton.focus({ preventScroll: true });
     });
 
-    window.matchMedia('(min-width: 1180px)').addEventListener('change', (event) => {
+    window.matchMedia('(min-width: 761px)').addEventListener('change', (event) => {
       if (event.matches) closeDrawer();
     });
   }
