@@ -1308,6 +1308,7 @@ a.series-panel-title:hover {
 }
 
 .article-sidebar {
+  display: none;
   min-width: 0;
   max-width: var(--reading-width);
   width: 100%;
@@ -1315,7 +1316,7 @@ a.series-panel-title:hover {
 }
 
 .article-toc ol,
-.article-toc-mobile ol {
+.article-toc-drawer ol {
   display: grid;
   gap: 0.55rem;
   list-style: none;
@@ -1323,12 +1324,12 @@ a.series-panel-title:hover {
 }
 
 .article-toc li.is-sub-item,
-.article-toc-mobile li.is-sub-item {
+.article-toc-drawer li.is-sub-item {
   padding-left: 0.9rem;
 }
 
 .article-toc a,
-.article-toc-mobile a {
+.article-toc-drawer a {
   display: inline-block;
   color: var(--text-muted);
   font-size: 0.88rem;
@@ -1336,11 +1337,12 @@ a.series-panel-title:hover {
 }
 
 .article-toc a:hover,
-.article-toc-mobile a:hover {
+.article-toc-drawer a:hover {
   color: var(--text);
 }
 
-.article-toc a.is-current {
+.article-toc a.is-current,
+.article-toc-drawer a.is-current {
   color: var(--accent);
 }
 
@@ -1349,24 +1351,120 @@ a.series-panel-title:hover {
   display: none;
 }
 
-/* Mobile / narrow: collapsed disclosure above the prose. */
-.article-toc-mobile {
-  padding-bottom: 0.85rem;
+.toc-fab {
+  position: fixed;
+  left: max(0.85rem, env(safe-area-inset-left));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 15;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-color: var(--line-strong);
+  box-shadow: 0 0.45rem 1.4rem rgba(17, 17, 17, 0.14);
+  transition: opacity 160ms ease, transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.toc-fab svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+html.toc-drawer-open,
+html.toc-drawer-open body {
+  overflow: hidden;
+}
+
+.toc-drawer-open .toc-fab {
+  opacity: 0;
+  transform: translateY(0.25rem);
+  pointer-events: none;
+}
+
+.article-toc-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: min(20rem, calc(100vw - 2.25rem));
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--text);
+  opacity: 0;
+  transform: translateX(-1rem);
+  box-shadow: 0.75rem 0 2rem rgba(17, 17, 17, 0.12);
+  transition: opacity 180ms ease, transform 180ms ease, overlay 180ms allow-discrete, display 180ms allow-discrete;
+}
+
+.article-toc-drawer[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@starting-style {
+  .article-toc-drawer[open] {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+}
+
+.article-toc-drawer::backdrop {
+  background: rgba(17, 17, 17, 0.28);
+}
+
+.article-toc-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: max(1.1rem, env(safe-area-inset-top)) 1rem 0.9rem;
   border-bottom: 1px solid var(--line);
 }
 
-.article-toc-mobile summary {
-  padding: 0.2rem 0;
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
+.article-toc-drawer-close {
+  flex-shrink: 0;
 }
 
-.article-toc-mobile[open] summary {
-  margin-bottom: 0.75rem;
+.article-toc-drawer-nav {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 1rem max(1.25rem, env(safe-area-inset-bottom));
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.article-toc-drawer ol {
+  gap: 0.15rem;
+}
+
+.article-toc-drawer li.is-sub-item {
+  padding-left: 0.85rem;
+}
+
+.article-toc-drawer a {
+  display: block;
+  padding: 0.52rem 0.7rem;
+  border-left: 2px solid transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  line-height: 1.45;
+}
+
+.article-toc-drawer a:hover,
+.article-toc-drawer a:focus-visible {
+  background: var(--bg-muted);
+  color: var(--text);
+}
+
+.article-toc-drawer a.is-current {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 @media (min-width: 1180px) {
@@ -1376,6 +1474,7 @@ a.series-panel-title:hover {
   }
 
   .article-layout:not(.article-layout-single) .article-sidebar {
+    display: block;
     max-width: none;
     margin: 0;
   }
@@ -1391,8 +1490,9 @@ a.series-panel-title:hover {
     scrollbar-color: var(--line-strong) transparent;
   }
 
-  .article-toc-mobile {
-    display: none;
+  .toc-fab,
+  .article-toc-drawer {
+    display: none !important;
   }
 }
 
@@ -2059,7 +2159,8 @@ a.series-panel-title:hover {
   .site-header,
   .site-footer,
   .article-toc,
-  .article-toc-mobile,
+  .toc-fab,
+  .article-toc-drawer,
   .article-navigation,
   .series-panel,
   .related-panel,
