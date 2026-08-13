@@ -91,7 +91,7 @@ const initialStatusText =
 
 <script>
   // @ts-nocheck
-  import { searchIndex } from '../utils/client-search';
+  import { searchIndexDetailed } from '../utils/client-search';
 
   const shell = document.querySelector('[data-directory-shell]');
 
@@ -162,6 +162,69 @@ const initialStatusText =
       }
     };
 
+    // Renders "where it matched" evidence under a result row: up to three
+    // section snippets with the query highlighted, deep-linking to the
+    // heading anchor so readers can judge relevance before opening.
+    const renderSnippets = (entry, result) => {
+      let box = entry.querySelector('[data-search-snippets]');
+
+      if (!result || result.sections.length === 0) {
+        box?.remove();
+        return;
+      }
+
+      if (!box) {
+        box = document.createElement('div');
+        box.className = 'search-snippets';
+        box.setAttribute('data-search-snippets', '');
+        entry.appendChild(box);
+      }
+
+      box.textContent = '';
+      const baseHref = entry.querySelector('a[href]')?.getAttribute('href') ?? '#';
+
+      for (const section of result.sections) {
+        const link = document.createElement('a');
+        link.className = 'search-snippet';
+        link.href = section.anchor ? `${baseHref}#${section.anchor}` : baseHref;
+
+        const headingEl = document.createElement('span');
+        headingEl.className = 'search-snippet-heading';
+        headingEl.textContent = section.heading || 'Intro';
+
+        const textEl = document.createElement('span');
+        textEl.className = 'search-snippet-text';
+
+        for (const part of section.parts) {
+          if (part.marked) {
+            const mark = document.createElement('mark');
+            mark.textContent = part.text;
+            textEl.appendChild(mark);
+          } else {
+            textEl.appendChild(document.createTextNode(part.text));
+          }
+        }
+
+        link.append(headingEl, textEl);
+        box.appendChild(link);
+      }
+
+      if (result.extraMatchCount > 0) {
+        const more = document.createElement('p');
+        more.className = 'search-snippets-more';
+        more.textContent = `+ ${result.extraMatchCount} more matching section${
+          result.extraMatchCount === 1 ? '' : 's'
+        }`;
+        box.appendChild(more);
+      }
+    };
+
+    const clearSnippets = () => {
+      for (const [, entry] of entries) {
+        entry.querySelector('[data-search-snippets]')?.remove();
+      }
+    };
+
     const openThreadsForSearch = () => {
       document.querySelectorAll('[data-series-thread]').forEach((thread) => {
         thread.open = true;
@@ -176,6 +239,7 @@ const initialStatusText =
 
       if (!query) {
         filterList(allIds);
+        clearSnippets();
         status.textContent = defaultStatus;
         return;
       }
@@ -188,13 +252,19 @@ const initialStatusText =
         return;
       }
 
-      const visibleIds = searchIndex(indexEntries, query);
-      filterList(visibleIds);
+      const results = searchIndexDetailed(indexEntries, query);
+      const resultById = new Map(results.map((result) => [result.id, result]));
+
+      filterList([...resultById.keys()]);
       openThreadsForSearch();
 
+      for (const [id, entry] of entries) {
+        renderSnippets(entry, resultById.get(id));
+      }
+
       status.textContent =
-        visibleIds.length > 0
-          ? `${visibleIds.length} results for "${query}".`
+        results.length > 0
+          ? `${results.length} results for "${query}" — matching sections shown inline.`
           : `No results for "${query}". Try title, tag, Chinese, or pinyin.`;
     };
 

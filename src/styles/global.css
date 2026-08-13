@@ -848,6 +848,54 @@ pre,
   font-size: 0.9rem;
 }
 
+/* Matched-section evidence rendered under each search result. */
+.search-snippets {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.7rem 0 0.25rem;
+  padding-left: 0.95rem;
+  border-left: 2px solid var(--line);
+}
+
+.search-snippet {
+  display: grid;
+  gap: 0.18rem;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  text-decoration: none;
+  color: var(--text-muted);
+}
+
+.search-snippet-heading {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.search-snippet:hover .search-snippet-heading,
+.search-snippet:focus-visible .search-snippet-heading {
+  color: var(--accent);
+}
+
+.search-snippet-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.search-snippet-text mark {
+  background: var(--accent-soft);
+  color: inherit;
+  padding: 0 0.12em;
+  border-radius: 2px;
+}
+
+.search-snippets-more {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
 .directory-toolbar-link {
   flex-shrink: 0;
 }
