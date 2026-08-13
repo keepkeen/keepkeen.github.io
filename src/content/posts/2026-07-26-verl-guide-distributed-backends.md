@@ -1,7 +1,8 @@
 ---
 title: "verl 分布式执行与训练、Rollout 后端"
-description: "比较共置与分离、FSDP2 与 Megatron、vLLM 与 SGLang，以及异步权重同步。"
+description: "比较共置与分离、FSDP2 与 Megatron、vLLM 与 SGLang，以及六种权重同步后端与异步正确性。"
 date: 2026-07-26
+updatedDate: 2026-08-14
 tags:
   - verl
   - distributed-systems
@@ -27,6 +28,8 @@ Ray 不替代 NCCL/FSDP/Megatron；它负责进程、资源和 RPC 编排，模�
 
 actor/rollout 共享 GPU，收益是减少专用 GPU 数量和跨节点权重传输；代价是显存状态切换、CUDA context 竞争和阶段串行。典型顺序：休眠 rollout/释放 KV cache → 恢复 actor 训练状态 → 更新 → 恢复 rollout weights → 同步 → actor 参数可 offload → 恢复 KV cache。
 
+vLLM 的 sleep 分级：CUDA 且 vLLM>=0.18 默认 level 2（释放权重+KV cache），启用 MTP/LoRA adapter 或 NPU 时用 level 1（仅 KV cache 转存），由 `VLLM_SLEEP_LEVEL` 与 hybrid sleep 逻辑决定。`rollout.free_cache_engine` 默认 True，控制是否每轮释放/恢复。
+
 ### 分离
 
 训练 GPU 和 rollout GPU 独立，可并行重叠，推理服务也能选择独立 TP/DP；代价是每次参数同步更昂贵，并引入样本陈旧度。适合资源充足、rollout 长尾明显或希望独立扩缩容的场景。
@@ -35,77 +38,90 @@ actor/rollout 共享 GPU，收益是减少专用 GPU 数量和跨节点权重传
 
 | mode | 特征 | 适用 |
 |---|---|---|
-| `sync` | 生成一批、训练一批，版本最清晰 | 起步、复现、排查正确性 |
-| `colocate_async` | 同一资源上的生成/训练做更细流水化 | GPU 不足但希望减少阶段空洞 |
-| `separate_async` | 增加 standalone rollout 资源，同时仍保留 hybrid replicas，按频率同步参数 | 大规模、rollout/工具长尾、追求吞吐 |
+| `sync` | 生成一批、训练一批，版本最清晰；禁用 partial rollout | 起步、复现、排查正确性 |
+| `colocate_async` | 同一资源上生成/训练细流水化；sample 后 abort+sleep，step 后恢复生成；支持 partial rollout；`num_warmup_batches`（默认 1） | GPU 不足但希望减少阶段空洞 |
+| `separate_async` | 增加 standalone rollout 资源（`rollout.nnodes/n_gpus_per_node`），hybrid replicas 可在 TRAINER/ROLLOUT 模式间切换；`parameter_sync_step` 默认 4，且要求 `train_batch_size == parameter_sync_step * ppo_mini_batch_size` | 大规模、rollout/工具长尾、追求吞吐 |
 
-异步配置的 `parameter_sync_step`、`max_off_policy_threshold` 和 `max_off_policy_strategy=drop|wait` 共同定义数据新鲜度。吞吐提高并不自动意味着有效学习速度提高。
+异步配置里，replay buffer 的 `max_off_policy_threshold`（默认 8）与 `max_off_policy_strategy=drop|wait` 共同定义数据新鲜度（`ppo_trainer.yaml` 的 `trainer.v1.sampler`）。吞吐提高并不自动意味着有效学习速度提高。
 
-仓库另有 [`verl/experimental/fully_async_policy`](https://github.com/verl-project/verl/tree/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/experimental/fully_async_policy) 独立入口，它不是 V1 的第四种 `trainer_mode`。它用 Rollouter、MessageQueue、Trainer、ParameterSynchronizer 组织 streaming/partial rollout、陈旧度和动态资源；成熟度与约束应按 [`docs/advance/fully_async.md`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/fully_async.md) 单独评估。
+**重要更新（#7188，2026-07-29）**：`separate_async` 已支持 Decoupled PPO，不再强制 `bypass_mode=True`。实现方式是用 `verl/experimental/separation/` 的 `DetachActorWorker` 替换 actor worker，支持把训练前的权重 detach 到 CPU、按 `local_trigger_step` 在"π_old 权重"与"当前权重"之间切换来重算 old log-prob。E2E 脚本已显式跑 `bypass_mode=False`。
 
-## FSDP/FSDP2
+仓库另有 `verl/experimental/fully_async_policy`（Rollouter + MessageQueue + ParameterSynchronizer 的 streaming/partial rollout 架构）和 `one_step_off_policy`（2026/01 从 recipe/ 迁入 experimental）。注意 2026-08 的状态变化：CI 已整体从这两条实验路径迁移到 V1 `separate_async`（#7357，删除旧 workflow 与 e2e 脚本，官方注明"准备把 fully_async 移入 recipe 仓库"）。面试中应表述为"独立实验入口，能力正被 V1 separate_async 吸收"，不要称其为 V1 的第四种 trainer mode。
 
-适合 Hugging Face 生态、中小到大型 dense 模型、快速接新模型。FSDP 按 data-parallel rank 分片参数/梯度/优化器状态；FSDP2 基于 DTensor、逐参数分片，组合性和 reshard 通常更好。
+## 训练后端：EngineRegistry
 
-常见能力：CPU offload、activation checkpointing、sequence parallel/Ulysses、remove padding、mixed precision。代价是前后向 all-gather/reduce-scatter，以及 actor→rollout 权重布局转换。
+当前 `EngineRegistry` 注册的后端（[`verl/workers/engine/`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/workers/engine)，按 `engine_config.strategy` 选择）：
 
-选择理由应说成：“模型原生 HF、规模与网络允许、开发效率优先”，而不是“FSDP 永远更快”。
+| backend | 说明 |
+|---|---|
+| `fsdp` / `fsdp2` | 同一个 FSDPEngine 类注册两个名字；`fsdp` 走 PyTorch FSDP1，`fsdp2` 走 `fully_shard`/DTensor（需 PyTorch>=2.4）。支持 CPU offload、activation checkpointing、Ulysses 序列并行、remove padding、LoRA |
+| `megatron` | TP/PP/EP/CP + distributed optimizer、DCP（动态上下文并行）、router replay、MTP、Muon 优化器、LoRA bridge |
+| `veomni` | 字节 VeOmni 平台后端（仅 fsdp2 分片），支持 Ulysses SP、router replay、DeepSeek-V4 |
+| `torchtitan` | PyTorch 官方 TorchTitan：FSDP2 + TP + PP |
+| `automodel` | NVIDIA NeMo Automodel 适配 |
+| `mindspeed` | 昇腾 NPU 的 MindSpeed 适配（注册为 megatron 的 NPU 变体） |
 
-## Megatron
+### FSDP/FSDP2
 
-适合超大 dense/MoE、长上下文、多机高速互联。它提供：
+适合 Hugging Face 生态、中小到大型 dense 模型、快速接新模型。FSDP 按 data-parallel rank 分片参数/梯度/优化器状态；FSDP2 基于 DTensor、逐参数分片，组合性和 reshard 通常更好。代价是前后向 all-gather/reduce-scatter，以及 actor→rollout 权重布局转换。
 
-- TP：矩阵在多卡切分。
-- PP：不同层放不同 stage。
-- CP：上下文维度切分。
-- EP/ETP：MoE expert 并行。
-- data parallel + distributed optimizer。
+选择理由应说成："模型原生 HF、规模与网络允许、开发效率优先"，而不是"FSDP 永远更快"。
 
-优势是成熟的多维并行和大模型效率；代价是模型实现/权重映射、pipeline bubble、拓扑和 checkpoint 更复杂。训练能启动但 rollout 更新后输出异常时，应优先核对训练权重到 HF/inference 权重的名称、shape 和分片转换。
+### Megatron
 
-EngineRegistry 还包含 TorchTitan、VeOmni、AutoModel、MindSpeed/NPU 等平台或扩展后端。面试中知道其存在即可；具体成熟度、模型支持和 recipe 必须以当前源码注册及 CI 为准，不能从目录名推断生产可用性。
+适合超大 dense/MoE、长上下文、多机高速互联。提供 TP（矩阵切分）、PP（层间流水）、CP（上下文切分，另有 2026-08 新增的动态 CP：按 packed micro-batch 长度动态选 CP size，见 [`docs/advance/dynamic_context_parallel.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/advance/dynamic_context_parallel.rst)）、EP/ETP（MoE expert 并行）、distributed optimizer，以及 Muon 优化器（#7120，经 Megatron-Core TensorParallelMuon 暴露，[`examples/muon/`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/examples/muon/README.md)）。
+
+优势是成熟的多维并行和大模型效率；代价是模型实现/权重映射（经 Megatron-Bridge/mbridge）、pipeline bubble、拓扑和 checkpoint 更复杂。训练能启动但 rollout 更新后输出异常时，应优先核对训练权重到 HF/inference 权重的名称、shape 和分片转换。
 
 ## Rollout 后端
 
-当前 async rollout registry 主要注册 vLLM、SGLang、TRT-LLM server。选择时看模型支持、版本、TP/DP、prefix cache、多轮工具、VLM 和权重热更新能力。
+当前 `_ROLLOUT_REGISTRY`（[`verl/workers/rollout/base.py:88-109`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/workers/rollout/base.py#L88-L109)）只注册 async server 模式：vLLM、SGLang、TRT-LLM 三者都经 `ServerAdapter`；`rollout.mode=sync` 会在配置校验直接报错（SPMD sync rollout 已于 v0.7 移除）。vLLM 要求 >= 0.18（#7190）。
 
 - vLLM：成熟的 continuous batching、PagedAttention 和广泛模型支持。
-- SGLang：多轮/agent、结构化生成和服务侧能力丰富，在 verl 社区使用广泛。
-- HF rollout：仓库有 `HFRollout` 实现并可调用 `generate`，但未注册到当前主 async registry；更适合把它理解为 legacy/受限实现，不能据“文件存在”断言主路径开箱支持。
+- SGLang：多轮/agent、结构化生成和服务侧能力丰富，在 verl 社区使用广泛；PD 分离（prefill/decode 不对称部署）目前是 SGLang 独有能力。
+- HF rollout：`HFRollout` 文件仍存在但未注册进主 registry，属 legacy/受限实现，不能据"文件存在"断言主路径开箱支持。
 
-源码：[`verl/workers/rollout/base.py:88-109`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/workers/rollout/base.py#L88-L109)，[`verl/workers/rollout/hf_rollout.py`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/workers/rollout/hf_rollout.py)。
+部署形态由 `RolloutReplica` 统一管理，分三种：HYBRID（与训练同进程共卡）、COLOCATED（同 GPU 不同进程，常用于 LLM-as-judge/RM）、STANDALONE（独立 GPU，`separate_async` 使用）。
 
 ## Rollout TP 不是越大越好
 
 更大 TP 能让单个模型装得下、增加单请求算力，但也增加跨卡通信并减少 DP 副本数。在大量独立 prompt 的生成中，更多 DP 副本有时吞吐更高。需要联合考虑：模型是否装得下、KV cache、prompt/response 长度、batch、互联带宽和长尾。
 
-## 权重同步
+## 权重同步：CheckpointEngine
 
-Checkpoint Engine 抽象训练 worker 到 rollout server 的权重传递。共置通常用本地/naive 同步；分离可用 NCCL/HCCL/NIXL/Mooncake 等路径，具体受硬件和拓扑限制。
+Checkpoint Engine 抽象训练 worker 到 rollout server 的权重传递，统一 `send_weights / receive_weights / get_weights` API。当前注册表（[`verl/checkpoint_engine/`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/checkpoint_engine)）：
 
-delta-sharded 通过在训练 shard 上计算 bit-exact 稀疏差分，只传变化坐标和值，减少全量传输和峰值内存；当参数变化不稀疏、后端/精度不满足约束时可能不划算。面试要强调 checksum、版本原子性和失败恢复，否则 rollout 可能混用权重版本。
+| backend | 机制 | 适用 |
+|---|---|---|
+| `naive` | 共置进程内 per-tensor 拷贝 | colocate（V1 基类强制） |
+| `nccl` | NCCL broadcast（bucketed）；NPU 上同名注册为 HCCL 实现 | 分离部署全量同步 |
+| `nixl` | NIXL P2P 点对点 | 跨节点异构传输 |
+| `mooncake` / `kimi_ckpt_engine` | Mooncake store / Kimi 开源 checkpoint-engine | 大规模分离集群 |
+| `delta_sharded` | 在训练 shard 上做 bytewise 稀疏差分，只传变化的 (位置,值)；首轮全量 seed，此后 delta | 参数变化稀疏时省带宽/峰值内存 |
 
-参考：[`verl/checkpoint_engine/README.md`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/checkpoint_engine/README.md)、[`docs/advance/delta_weight_sync.md`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/delta_weight_sync.md)。
+`delta_sharded` 的差分是 bit-exact 的（view-as-int 逐字节比较），并配套 `ShardSpec/BlockPlacement` 契约让 FSDP2/Megatron 的分片布局映射到 HF 目标布局（#7144 起由训练后端负责 HF export plan）；rollout 侧目前主要支持 SGLang 的自定义 weight loader。当参数变化不稀疏、后端/精度不满足约束时可能不划算。面试要强调 checksum、版本原子性和失败恢复，否则 rollout 可能混用权重版本。
+
+参考：[`verl/checkpoint_engine/README.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/checkpoint_engine/README.md)、[`docs/advance/delta_weight_sync.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/advance/delta_weight_sync.md)。
 
 ## 异步正确性与 rollout correction
 
-异步下可能同时存在生成轨迹的 rollout policy、训练该 batch 前固定的 old anchor、以及更新中的 current actor。Decoupled 模式保留三策略并可对 rollout→old 偏移做 token/sequence importance sampling 或 rejection sampling；Bypass 模式直接令 old 等于 rollout，只保留 rollout/current 两策略，并选择 PPO clip 或显式 IS 的 REINFORCE loss。`separate_async` 当前强制 bypass。
+异步下可能同时存在生成轨迹的 rollout policy、训练该 batch 前固定的 old anchor、以及更新中的 current actor。Decoupled 模式（`bypass_mode=false`，默认）保留三策略，并可对 rollout→old 偏移做 token/sequence importance sampling 或 rejection sampling；Bypass 模式直接令 old 等于 rollout，只保留 rollout/current 两策略，并选择 PPO clip 或显式 IS 的 REINFORCE loss。三种 trainer mode 现在都可以选 decoupled 或 bypass（#7188 之后）。
 
-rollout correction 能缓解而不能无限修复陈旧数据。还要联合监控模型版本跨度、IS 权重/有效样本率、clip fraction、drop/wait 和最终 wall-clock 学习曲线。配置入口：[`verl/trainer/config/algorithm/rollout_correction.yaml`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/trainer/config/algorithm/rollout_correction.yaml)，原理见 [`docs/algo/rollout_corr.md`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/algo/rollout_corr.md)。
+rollout correction 能缓解而不能无限修复陈旧数据。还要联合监控模型版本跨度、IS 权重/有效样本率、clip fraction、drop/wait 和最终 wall-clock 学习曲线。配置入口：[`verl/trainer/config/algorithm/rollout_correction.yaml`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/config/algorithm/rollout_correction.yaml)（`rollout_is`、`rollout_is_threshold=2.0`、`rollout_rs`、`bypass_mode=false`、`loss_type=ppo_clip|reinforce`），原理见 [`docs/algo/rollout_corr.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/algo/rollout_corr.md) 与 [`rollout_corr_math.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/algo/rollout_corr_math.md)。
 
 ## 多机启动与网络
 
 Ray head 管理控制面，worker 节点加入集群，再提交训练任务。底层模型通信仍依赖 NCCL/HCCL。真实排障要检查：
 
 - 每节点 CUDA/驱动/依赖一致；
-- 网卡与 NCCL socket/IB 选择；
+- 网卡与 NCCL socket/IB 选择（Slurm 场景网卡接口已可配置，#7386）；
 - 防火墙和端口；
 - `/dev/shm` 与 Ray object store；
 - 共享 checkpoint 路径；
 - placement group 是否拿到完整资源；
 - 节点 GPU 数与配置是否一致。
 
-参考 [`docs/start/multinode.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/start/multinode.rst)。
+参考 [`docs/start/multinode.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/start/multinode.rst)。
 
 ## 典型场景选择
 
@@ -113,6 +129,6 @@ Ray head 管理控制面，worker 节点加入集群，再提交训练任务。�
 |---|---|
 | 单机 8 卡、7B/14B、先跑通 | V1 sync + FSDP2 + vLLM，actor/rollout colocate |
 | 70B、显存紧 | FSDP2 + checkpoint/offload/reshard；评估 LoRA |
-| 235B/671B MoE、多机 | Megatron + TP/PP/CP/EP，严格按网络拓扑设计 |
-| 工具调用长尾 | SGLang/vLLM AgentLoop；先 sync 验证，再 separate async |
-| rollout 成为主要瓶颈 | 增加 rollout DP、调 token budget/KV cache；资源足够再分离异步 |
+| 235B/671B MoE、多机 | Megatron + TP/PP/CP/EP（或 veomni），严格按网络拓扑设计 |
+| 工具调用长尾 | SGLang/vLLM AgentLoop；先 sync 验证，再 separate_async |
+| rollout 成为主要瓶颈 | 增加 rollout DP、调 token budget/KV cache；资源足够再分离异步 + delta 权重同步 |

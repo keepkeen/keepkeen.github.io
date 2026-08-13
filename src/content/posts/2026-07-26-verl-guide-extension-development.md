@@ -1,7 +1,8 @@
 ---
 title: "如何扩展 verl：算法、Reward、模型与后端"
-description: "梳理新增 estimator、reward、模型、rollout、AgentLoop 和训练后端的扩展入口。"
+description: "梳理新增 estimator、reward、模型、rollout、AgentLoop、训练后端与自定义 sampler 的扩展入口。"
 date: 2026-07-26
+updatedDate: 2026-08-14
 tags:
   - verl
   - development
@@ -17,7 +18,7 @@ seriesOrder: 10
 
 先判断变化属于哪层：
 
-- 新 advantage：在 [`core_algos.py`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/trainer/ppo/core_algos.py) 注册 estimator，明确输入字段、mask、是否需要 critic。
+- 新 advantage：在 `core_algos.py` 注册 estimator，明确输入字段、mask、是否需要 critic。
 - 新 policy objective：注册 loss mode，复用 actor worker 的 log-prob/mini-batch 逻辑。
 - 新采样/过滤：扩展 V1 replay buffer/sampler 或 Trainer hook。
 - 新阶段/新模型角色：才需要改 Trainer 控制流和 Role/ResourcePool。
@@ -30,7 +31,7 @@ seriesOrder: 10
 
 测试建议：手工金样本、解析异常、超时、恶意输出、超长和 batch 并发；确认 reward 落在最后有效 token 或预期 token 上。
 
-参考 [`docs/preparation/reward_function.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/preparation/reward_function.rst)。
+参考 [`docs/preparation/reward_function.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/preparation/reward_function.rst)。
 
 ## 新模型
 
@@ -40,13 +41,13 @@ seriesOrder: 10
 2. 训练后端能构造、分片、保存和恢复模型。
 3. 训练权重能正确映射到 rollout 后端，并在更新后生成一致结果。
 
-FSDP/HF 接入通常简单；Megatron 需要模型结构和权重转换。先做固定输入下单卡 HF、训练 worker、rollout server 的 logits/生成对照，再上分布式。相关指南在 [`docs/advance/fsdp_extension.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/fsdp_extension.rst)、[`docs/advance/megatron_extension.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/megatron_extension.rst)。
+FSDP/HF 接入通常简单；Megatron 需要模型结构和权重转换。先做固定输入下单卡 HF、训练 worker、rollout server 的 logits/生成对照，再上分布式。相关指南在 [`docs/advance/fsdp_extension.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/advance/fsdp_extension.rst)、[`docs/advance/megatron_extension.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/advance/megatron_extension.rst)。
 
 ## 新 rollout 后端
 
 接入不只是写一个 `generate`：需要处理 `BaseRollout`/`ServerAdapter` 的生成与 sleep/wake/权重生命周期，在主 `_ROLLOUT_REGISTRY` 显式登记当前 async adapter，并通过 `RolloutReplicaRegistry`/LLM server client 管理副本和路由。还要实现生成参数转换、token 结果、权重更新、TP/DP 与多模态能力。当前主 registry 是硬编码映射，不是任意 decorator 插件。
 
-正确性测试比“能返回文本”更严格：
+正确性测试比"能返回文本"更严格：
 
 - 给定权重和 seed 的 token/log-prob 对齐；
 - EOS/stop/截断语义；
@@ -60,7 +61,7 @@ FSDP/HF 接入通常简单；Megatron 需要模型结构和权重转换。先做
 
 ## 新训练后端
 
-通过 EngineRegistry 和 TrainingWorker 的统一 API 接入：模型初始化、推理 batch、训练 mini-batch、optimizer、checkpoint、参数导出/同步。最难部分通常不是 forward/backward，而是：
+通过 EngineRegistry 和 TrainingWorker 的统一 API 接入：在 `verl/workers/engine/<your_backend>/` 下实现 `BaseEngine` 子类并用 `@EngineRegistry.register(model_type=..., backend=...)` 注册，把 `engine_config.strategy` 指向新名字即可被 worker 层拾取（worker 层已引擎无关）。需要实现：模型初始化、推理 batch、训练 mini-batch、optimizer、checkpoint、参数导出/同步。最难部分通常不是 forward/backward，而是：
 
 - 与 WorkerGroup rank/world size 对齐；
 - 动态 batch 和 mask；
@@ -69,9 +70,11 @@ FSDP/HF 接入通常简单；Megatron 需要模型结构和权重转换。先做
 - offload/reshard 生命周期；
 - profiling/metrics。
 
-## 自定义 V1 sampler
+## 自定义 V1 sampler 与 AgentLoopManager
 
 `trainer.v1.sampler.custom_sampler.{path,name}` 可加载 ReplayBuffer 子类。sampler 决定哪些 ready trajectory 组成训练 batch、哪些被消费/丢弃，因而会改变数据分布和 on/off-policy 程度。必须记录选择率、版本分布和失败组，避免吞吐优化悄悄改变算法。
+
+整个 rollout 编排层也可替换：`actor_rollout_ref.rollout.agent.agent_loop_manager_class` 指定自定义 AgentLoopManager（[`main_ppo.py:112-132`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/main_ppo.py#L112-L132)），唯一契约是实现 `generate_sequences` 并把输出写入 TransferQueue。这是接入自研 Agent 框架/环境集群的官方扩展点。
 
 ## 设计评审问题清单
 

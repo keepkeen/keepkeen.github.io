@@ -2,6 +2,7 @@
 title: "verl 实战：从训练数据到 Hugging Face 模型导出"
 description: "串联数据准备、dry-run、smoke test、正式训练、checkpoint、合并与离线验证。"
 date: 2026-07-26
+updatedDate: 2026-08-14
 tags:
   - verl
   - model-export
@@ -14,7 +15,7 @@ series: verl-interview-guide
 seriesOrder: 14
 ---
 
-本文不承诺一条命令适配所有硬件，而是给出不会迷路的操作顺序。具体 CUDA/NPU、PyTorch、vLLM/SGLang 版本组合应按 [`docs/start/install.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/start/install.rst)、对应容器和当前 example 核查；仓库 quickstart 也明确推荐优先使用项目提供的 Docker 环境。
+这一篇不承诺一条命令适配所有硬件，而是给出不会迷路的操作顺序。具体 CUDA/NPU、PyTorch、vLLM/SGLang 版本组合应按 [`docs/start/install.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/start/install.rst)、对应容器和当前 example 核查；仓库 quickstart 也明确推荐优先使用项目提供的 Docker 环境。
 
 ## 全流程
 
@@ -24,7 +25,7 @@ seriesOrder: 14
 
 ## 1. 先固定版本和硬件事实
 
-记录：verl commit/tag、recipe commit、容器 tag、GPU/NPU 型号与数量、driver、PyTorch、训练后端、rollout 后端和基础模型 revision。只写“使用最新版”无法复现，且推理后端支持矩阵可能比 Trainer API 更快变化。
+记录：verl commit/tag、recipe commit、容器 tag、GPU/NPU 型号与数量、driver、PyTorch、训练后端、rollout 后端和基础模型 revision。只写"使用最新版"无法复现，且推理后端支持矩阵可能比 Trainer API 更快变化。
 
 启动前做最小检查：
 
@@ -61,7 +62,7 @@ extra_info: {split: "train", index: ..., answer: ..., question: ...}
 3. **reward**：用正确、错误、格式异常、超长和恶意答案测试 component 与失败类型。
 4. **分组**：GRPO/RLOO 检查同一 `uid` 的 `n` 条回答确实成组，组内 reward 能产生差异。
 
-不要用“训练 loss 能算出来”代替这四项。reward 或 mask 错误常不会报异常，却会稳定优化错误目标。
+不要用"训练 loss 能算出来"代替这四项。reward 或 mask 错误常不会报异常，却会稳定优化错误目标。
 
 ## 4. 从现成脚本开始
 
@@ -84,7 +85,7 @@ bash examples/grpo_trainer/run_qwen3_8b_fsdp.sh \
   'trainer.logger=["console"]'
 ```
 
-这些数值只是脚本形态示例，不是硬件建议。第一次应按模型/显存显著缩短 response、batch、epoch 和保存间隔；同时保证 group size、mini-batch 整除和模型并行约束。若只有 24GB 单卡，仓库 [`docs/start/quickstart.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/start/quickstart.rst) 的 0.5B PPO 示例比 8B GRPO 更适合作为安装验证。
+这些数值只是脚本形态示例，不是硬件建议。第一次应按模型/显存显著缩短 response、batch、epoch 和保存间隔；同时保证 group size、mini-batch 整除和模型并行约束。若只有 24GB 单卡，仓库 `docs/start/quickstart.rst` 的 0.5B PPO 示例比 8B GRPO 更适合作为安装验证。
 
 ## 5. 会解释脚本中的六组参数
 
@@ -145,7 +146,7 @@ python -m verl.model_merger merge \
   --target_dir /path/to/exported_hf_model
 ```
 
-Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已经产出可直接加载的 `model/huggingface/`，无需 merger。只有纯 Megatron distributed checkpoint 的 `model/dist_ckpt/` 才使用 `--backend megatron`，必要时加 `--tie-word-embedding`；超大模型可按 [`docs/advance/checkpoint.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/checkpoint.rst) 使用多节点 `torchrun` 分布式 merge。实际以 manifest、`save_contents` 和 `use_mbridge` 为准。
+Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已经产出可直接加载的 `model/huggingface/`，无需 merger。只有纯 Megatron distributed checkpoint 的 `model/dist_ckpt/` 才使用 `--backend megatron`，必要时加 `--tie-word-embedding`；超大模型可按 `docs/advance/checkpoint.rst` 使用多节点 `torchrun` 分布式 merge。实际以 manifest、`save_contents` 和 `use_mbridge` 为准。
 
 不要在未经确认时使用 `--hf_upload_path`：它会写远端 Hugging Face 仓库，属于单独的发布动作。
 
@@ -159,7 +160,7 @@ Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已�
 4. 跑独立 validation/benchmark，而不是只看训练 reward。
 5. 若使用 LoRA，确认导出的是 adapter、merged model，还是 base + adapter 组合。
 
-`verl.model_merger` 支持 FSDP/Megatron merge，并提供 test/验证相关入口；实现位于 [`verl/model_merger/`](https://github.com/verl-project/verl/tree/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/model_merger)，完整参数见 [`docs/advance/checkpoint.rst`](https://github.com/verl-project/verl/blob/18a55518540f92588111a0ee48dcf0abf8fe3172/docs/advance/checkpoint.rst)。
+`verl.model_merger` 支持 FSDP/Megatron merge，并提供 test/验证相关入口；2026-08 起还内置了输出校验（#7193，`verl/model_merger/output_validation.py`），merge 后会核对导出产物。实现位于 `verl/model_merger/`，完整参数见 `docs/advance/checkpoint.rst`。
 
 ## 面试中的项目叙述模板
 

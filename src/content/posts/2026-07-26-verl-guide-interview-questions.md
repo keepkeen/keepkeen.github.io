@@ -2,6 +2,7 @@
 title: "verl 高频面试题与回答框架"
 description: "覆盖定位、架构、算法、系统性能、数据奖励与落地场景的 40 道高频题。"
 date: 2026-07-26
+updatedDate: 2026-08-14
 tags:
   - verl
   - interview
@@ -13,7 +14,9 @@ series: verl-interview-guide
 seriesOrder: 11
 ---
 
-建议先遮住答案口述，每题控制在 1～3 分钟。回答架构题用“问题 → 抽象 → 数据流 → 取舍”，场景题用“约束 → 方案 → 指标 → 风险”。
+建议先遮住答案口述，每题控制在 1～3 分钟。回答架构题用"问题 → 抽象 → 数据流 → 取舍"，场景题用"约束 → 方案 → 指标 → 风险"。
+
+本篇是"框架内功"题；各公司真题、GRPO 变体对比、训推不一致/异步 RL/Agentic RL 三大热点见[真题热点篇](/blog/verl-guide-real-interview-questions/)。
 
 ## 基础与定位
 
@@ -25,13 +28,13 @@ seriesOrder: 11
 
 因为一轮 RL 同时包含变长大规模生成、规则/模型 reward、多个模型 forward、分布式优化和频繁权重同步。它们使用不同并行策略与显存状态，还可能跨节点异步。普通循环能做小实验，但很快遇到资源编排和吞吐瓶颈。
 
-### 3. HybridFlow 的“hybrid”体现在哪里？
+### 3. HybridFlow 的"hybrid"体现在哪里？
 
 一是 hybrid-controller：driver 的集中控制流与 worker 的分布式 SPMD 计算结合；二是 hybrid engine：actor 训练和 rollout 推理在同一 GPU 池分时复用，并在不同权重/显存布局间转换。
 
 ### 4. V0 与 V1 的关系？
 
-V0 `RayPPOTrainer` 是经典 DataProto 经过单 controller 的同步实现，容易读但已 deprecated。当前默认 V1 使用 TransferQueue/replay buffer，并提供 sync、colocate async、separate async。算法依赖基本相同，数据调度更细粒度。
+V0 `RayPPOTrainer` 是经典 DataProto 经过单 controller 的同步实现，容易读但已 deprecated（入口注明 v0.9.0 移除）。当前默认 V1 使用 TransferQueue/replay buffer，并提供 sync、colocate async、separate async。算法依赖基本相同，数据调度更细粒度。
 
 ## 架构
 
@@ -71,7 +74,7 @@ GAE 用 `V(s_t)` 和 `V(s_{t+1})` 构造 TD residual，再做 lambda-return 递�
 
 ### 13. GRPO 与 RLOO 的区别？
 
-GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样本 i 减“排除 i 后其余样本均值”。RLOO 不是简单关闭 GRPO 标准差归一。
+GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样本 i 减"排除 i 后其余样本均值"。RLOO 不是简单关闭 GRPO 标准差归一。
 
 ### 14. ReMax 的 baseline 是什么？
 
@@ -87,7 +90,7 @@ GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样�
 
 ### 17. 为什么 loss aggregation 影响长度偏置？
 
-严格说 `token-mean` 是全局每 token 等权，并非“每条长回答天然获得固定更大权重”的独立样本目标；`seq-mean-token-sum` 才明确让序列内 token 累加，`seq-mean-token-mean` 使非空序列近似等权，`sum-norm` 再用固定尺度归一。可变长任务中，分母就是目标的一部分。
+严格说 `token-mean` 是全局每 token 等权，并非"每条长回答天然获得固定更大权重"的独立样本目标；`seq-mean-token-sum` 才明确让序列内 token 累加，`seq-mean-token-mean` 使非空序列近似等权，`sum-norm` 再用固定尺度归一；2026-08 还新增了 `token-sum`（全局 token 求和、以全局 batch 信息定分母）。可变长任务中，分母就是目标的一部分。当前共五种模式，见 `core_algos.py` 的 `agg_loss`。
 
 ## 系统与性能
 
@@ -157,11 +160,11 @@ OOM 看峰值而非平均利用率。可能在权重 all-gather、optimizer step
 
 ### 33. Decoupled 与 Bypass rollout correction 有什么区别？
 
-Decoupled 保留 rollout、old、current 三策略：训练前重算 old anchor，并可对 rollout→old 偏移做 token/sequence IS 或 rejection sampling。Bypass 直接令 old=rollout，只保留 rollout/current 两策略，可用 PPO ratio 或显式 IS 的 REINFORCE loss；`separate_async` 当前强制 bypass。
+Decoupled 保留 rollout、old、current 三策略：训练前重算 old anchor，并可对 rollout→old 偏移做 token/sequence IS 或 rejection sampling。Bypass 直接令 old=rollout，只保留 rollout/current 两策略，可用 PPO ratio 或显式 IS 的 REINFORCE loss。默认 `bypass_mode=false`（decoupled）；自 #7188（2026-07）起 `separate_async` 也支持 decoupled（借助 DetachActorWorker 把旧权重 detach 到 CPU 再按需恢复重算 old），"separate_async 强制 bypass"是旧版事实。
 
 ### 34. V1 三种 mode 与 fully async 是什么关系？
 
-sync、colocate_async、separate_async 是 V1 的三个 trainer mode。[`experimental/fully_async_policy`](https://github.com/verl-project/verl/tree/18a55518540f92588111a0ee48dcf0abf8fe3172/verl/experimental/fully_async_policy) 是独立入口和架构，以 MessageQueue、Rollouter、Trainer、ParameterSynchronizer 支持 streaming/partial rollout；不能称为第四种 V1 mode。
+sync、colocate_async、separate_async 是 V1 的三个 trainer mode。`experimental/fully_async_policy` 是独立入口和架构，以 MessageQueue、Rollouter、Trainer、ParameterSynchronizer 支持 streaming/partial rollout；不能称为第四种 V1 mode。2026-08 更新：其 CI 已整体迁移到 V1 `separate_async`（#7357），官方注明准备将 fully_async 移入 recipe 仓库——回答时应把它定位成"正被 V1 吸收的历史实验路径"。
 
 ### 35. On-policy distillation 与 reference policy 有何区别？
 
@@ -181,7 +184,7 @@ seed 只控制部分随机源。continuous batching、请求路由、工具延�
 
 ### 39. RLOO 组大小为 1 会怎样？
 
-当前实现不会报错，而是保留原始 reward，静默偏离 leave-one-out 定义。因此必须在数据/采样配置层保证每组至少两条，并监控实际 group size。
+循环实现不会报错，而是保留原始 reward，静默偏离 leave-one-out 定义；向量化实现则把它清零，与循环版语义相反（该等价性 bug 由 [PR #7150](https://github.com/verl-project/verl/pull/7150) 修复中）。因此必须在数据/采样配置层保证每组至少两条，并监控实际 group size。
 
 ### 40. 为什么 DAPO 动态过滤不能直接依赖普通 colocated RM？
 
