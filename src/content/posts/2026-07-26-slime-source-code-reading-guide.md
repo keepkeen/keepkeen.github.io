@@ -2,6 +2,7 @@
 title: "源码阅读路线"
 description: "用一条 90 分钟最短路径，从 99 行训练入口追到 Ray 编排、数据调度、Megatron loss 和权重发布。"
 date: 2026-07-26
+updatedDate: 2026-08-14
 tags:
 - slime
 - code
@@ -12,25 +13,24 @@ draft: false
 series: slime-interview-guide
 seriesOrder: 10
 ---
-
-> 适用快照：`main@aaf5c209`。本篇的目标不是逐文件翻译，而是用最少的阅读量建立可验证的调用链。
+> 适用快照：`main@681b3adc`（v0.3.1 之后，扫描日期 2026-08-14）。本篇的目标不是逐文件翻译，而是用最少的阅读量建立可验证的调用链。
 
 ## 1. 先看仓库分层
 
 | 路径 | 职责 | 初读优先级 |
 |---|---|---:|
-| [`train.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/train.py) | 标准同步 round 的总控入口 | P0 |
-| [`train_async.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/train_async.py) | 生成 N+1 与训练 N 重叠的入口 | P0 |
-| [`slime/ray/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray) | Ray 资源布局、actor group、rollout 控制面 | P0 |
-| [`slime/rollout/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/rollout) | data source、SGLang 生成、reward/filter、fully async 等策略 | P0 |
-| [`slime/utils/types.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/types.py) | `Sample`、`RolloutBatch` 等跨模块数据契约 | P0 |
-| [`slime/utils/dp_schedule.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/dp_schedule.py) | step、micro-batch 和 DP rank 调度 | P0 |
-| [`slime/backends/megatron_utils/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/backends/megatron_utils) | Megatron 初始化、batch、前向、advantage/loss、checkpoint、权重转换 | P0/P1 |
-| [`slime/backends/sglang_utils/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/backends/sglang_utils) | SGLang engine、router、external engine 和 config | P1 |
-| [`slime_plugins/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime_plugins) | 新模型、mbridge、rollout buffer 等扩展 | P2 |
-| [`scripts/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/scripts) | 模型结构 recipe 与标准启动脚本 | P1 |
-| [`examples/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/examples) | agentic、VLM、async、OPD、delta sync 等场景 | P1/P2 |
-| [`tests/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests) | 最接近“可执行规范”的行为证据 | P0/P1 |
+| [`train.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train.py) | 标准同步 round 的总控入口 | P0 |
+| [`train_async.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train_async.py) | 生成 N+1 与训练 N 重叠的入口 | P0 |
+| [`slime/ray/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray) | Ray 资源布局、actor group、rollout 控制面 | P0 |
+| [`slime/rollout/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/rollout) | data source、SGLang 生成、reward/filter、fully async 等策略 | P0 |
+| [`slime/utils/types.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/types.py) | `Sample`、`RolloutBatch` 等跨模块数据契约 | P0 |
+| [`slime/utils/dp_schedule.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/dp_schedule.py) | step、micro-batch 和 DP rank 调度 | P0 |
+| [`slime/backends/megatron_utils/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils) | Megatron 初始化、batch、前向、advantage/loss、checkpoint、权重转换 | P0/P1 |
+| [`slime/backends/sglang_utils/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/sglang_utils) | SGLang engine、router、external engine 和 config | P1 |
+| [`slime_plugins/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime_plugins) | 新模型结构插件（如 qwen3_5_vl）、rollout buffer 等扩展；HF↔Megatron 权重映射已内部化到 `slime/backends/megatron_utils/hf_to_megatron/`（#2251） | P2 |
+| [`scripts/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/scripts) | 模型结构 recipe 与标准启动脚本 | P1 |
+| [`examples/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/examples) | agentic、VLM、async、OPD、delta sync 等场景 | P1/P2 |
+| [`tests/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests) | 最接近“可执行规范”的行为证据 | P0/P1 |
 
 不要从 2000 行的 `arguments.py` 或 1300 行的 `loss.py` 第一行顺序读起。先让入口告诉你“何时调用”，再到实现里回答“怎样调用”。
 
@@ -38,7 +38,7 @@ seriesOrder: 10
 
 ### 第 0—15 分钟：只读外层闭环
 
-打开 [`train.py:9-94`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/train.py#L9)，给每一段写一个动词：
+打开 [`train.py:10-99`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train.py#L10)，给每一段写一个动词：
 
 1. `create_placement_groups`：占资源。
 2. `create_rollout_manager`：起 serving 和数据源。
@@ -55,11 +55,11 @@ seriesOrder: 10
 
 依次读：
 
-- [`_get_placement_group_layout`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/placement_group.py#L100)：分离、colocate、external、debug 模式需要多少 GPU bundle。
-- [`_create_placement_group`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/placement_group.py#L42)：为什么使用 `PACK`，为什么还要按节点 IP/GPU id 重排 bundle。
-- [`create_training_models`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/placement_group.py#L186)：何时创建 critic，恢复的 rollout id 如何确定。
-- [`RayTrainGroup._allocate_gpus_for_actor`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/actor_group.py#L57)：为什么每个 rank 是一个 Ray actor，如何固定到 placement bundle。
-- [`TrainRayActor`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/train_actor.py)：actor 内怎样建立 torch distributed 环境。
+- [`_get_placement_group_layout`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/placement_group.py#L100)：分离、colocate、external、debug 模式需要多少 GPU bundle。
+- [`_create_placement_group`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/placement_group.py#L42)：为什么使用 `PACK`，为什么还要按节点 IP/GPU id 重排 bundle。
+- [`create_training_models`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/placement_group.py#L186)：何时创建 critic，恢复的 rollout id 如何确定。
+- [`RayTrainGroup._allocate_gpus_for_actor`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/actor_group.py#L57)：为什么每个 rank 是一个 Ray actor，如何固定到 placement bundle。
+- [`TrainRayActor`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/train_actor.py)：actor 内怎样建立 torch distributed 环境。
 
 阅读问题：Ray 负责的是调度还是张量并行计算？答案是前者；Megatron/torch distributed 才完成训练 collective。
 
@@ -67,12 +67,12 @@ seriesOrder: 10
 
 依次读：
 
-- [`Sample`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/types.py#L93)：先看字段，不看后续所有工具方法。
-- [`RolloutDataSource.get_samples`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/rollout/data_source.py#L90)：一个 prompt 怎样深拷贝成 sibling group。
-- [`generate_rollout`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/rollout/sglang_rollout.py)：定位默认函数，再跟到 per-group generate/reward。
-- [`RolloutManager.generate`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L552)：生成结果怎样进入转换与 DP 切分。
-- [`_convert_samples_to_train_data`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L709)：哪些字段真正跨到训练侧。
-- [`build_dp_schedule`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/dp_schedule.py#L82)：step 先按 `rollout_id` 组成，再 pack micro-batch，最后分给 DP rank。
+- [`Sample`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/types.py#L94)：先看字段，不看后续所有工具方法。
+- [`RolloutDataSource.get_samples`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/rollout/data_source.py#L90)：一个 prompt 怎样深拷贝成 sibling group。
+- [`generate_rollout`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/rollout/sglang_rollout.py)：定位默认函数，再跟到 per-group generate/reward。
+- [`RolloutManager.generate`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L590)：生成结果怎样进入转换与 DP 切分。
+- [`_convert_samples_to_train_data`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L749)：哪些字段真正跨到训练侧。
+- [`build_dp_schedule`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/dp_schedule.py#L82)：step 先按 `rollout_id` 组成，再 pack micro-batch，最后分给 DP rank。
 
 此时在纸上写出一个样本的形状变化：
 
@@ -87,7 +87,7 @@ dataset row
 
 ### 第 50—70 分钟：训练侧为什么要多次前向
 
-读 [`MegatronTrainRayActor.train_actor`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/backends/megatron_utils/actor.py#L414)，只跟五条分支：
+读 [`MegatronTrainRayActor.train_actor`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils/actor.py#L424)，只跟五条分支：
 
 1. reference 前向：需要 reward KL 或 KL loss 时产生 `ref_log_probs`。
 2. teacher 前向：OPD 场景产生 `teacher_log_probs`。
@@ -95,11 +95,11 @@ dataset row
 4. critic values：PPO 从 critic actor 的 Ray refs 传入。
 5. `compute_advantages_and_returns` 后进入 `train(...)`。
 
-然后读 [`compute_advantages_and_returns`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/backends/megatron_utils/loss.py#L674) 的 estimator 分派，不要先读整份 policy loss。先回答“输入是什么、输出是什么、哪条分支需要 values”。
+然后读 [`compute_advantages_and_returns`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils/loss.py#L704) 的 estimator 分派，不要先读整份 policy loss。先回答“输入是什么、输出是什么、哪条分支需要 values”。
 
 ### 第 70—90 分钟：权重怎样回到 serving
 
-从 [`RayTrainGroup.update_weights`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/actor_group.py#L161) 往下追，再看 [`MegatronTrainRayActor.init` 中的 updater 分派](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/backends/megatron_utils/actor.py#L150)：
+从 [`RayTrainGroup.update_weights`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/actor_group.py#L162) 往下追，再看 [`MegatronTrainRayActor.init` 中的 updater 分派](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils/actor.py#L164)：
 
 - 普通 full + NCCL/distributed；
 - colocate 下 tensor/CUDA IPC；
@@ -124,7 +124,7 @@ dataset row
 
 ### `train_async.py`：只有一轮 look-ahead
 
-重点看 [`31-73`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/train_async.py#L31)：future 何时提交、何时 `ray.get`、同步权重前为何 drain future、为何断言非 colocate。
+重点看 [`36-75`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train_async.py#L36)：future 何时提交、何时 `ray.get`、同步权重前为何 drain future、为何断言非 colocate。
 
 自测：画出 round 0、1、2 的 generation/train/weight-sync 时间条；说明 `update_weights_interval > 1` 会怎样改变采样策略版本。
 
@@ -143,12 +143,12 @@ dataset row
 
 按函数读，不要顺读全文件：
 
-1. [`RolloutManager.__init__`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L430)
-2. [`generate`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L552)
+1. [`RolloutManager.__init__`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L468)
+2. [`generate`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L590)
 3. `_get_rollout_data`
-4. [`_post_process_rewards`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L682)
-5. [`_convert_samples_to_train_data`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L709)
-6. [`_split_train_data_by_dp`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L828)
+4. [`_post_process_rewards`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L722)
+5. [`_convert_samples_to_train_data`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L749)
+6. [`_split_train_data_by_dp`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L871)
 
 把 server 启动、health monitor、多模型配置留到第二遍。
 
@@ -174,7 +174,7 @@ dataset row
 - `rollout_log_probs`：真实 serving behavior logprob；
 - `reward/status/metadata/train_metadata`：奖励、失败和扩展语义。
 
-再读 [`append_response_tokens`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/types.py#L253)，理解 agent/tool 轨迹为什么必须把环境 observation 标成 `trainable=False`。
+再读 [`append_response_tokens`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/types.py#L253)，理解 agent/tool 轨迹为什么必须把环境 observation 标成 `trainable=False`。
 
 ### `slime/utils/dp_schedule.py`：性能与正确性交界
 
@@ -216,18 +216,18 @@ dataset row
 
 | 想确认的行为 | 测试 |
 |---|---|
-| `Sample` token/mask/logprob 契约 | [`tests/test_sample.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_sample.py) |
-| rollout 输出校验 | [`tests/test_rollout_validation.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_rollout_validation.py) |
-| rollout id、step 与 DP 调度 | [`tests/test_dp_schedule.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_dp_schedule.py) |
-| CISPO 公式与梯度 | [`tests/test_cispo_loss.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_cispo_loss.py) |
-| CP 下 loss 不变量 | [`tests/test_loss_cp_invariance.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_loss_cp_invariance.py) |
-| plugin import path/contract | [`tests/plugin_contracts/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/plugin_contracts) |
-| full disk 权重更新 | [`tests/test_full_disk_weight_update.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_full_disk_weight_update.py) |
-| external engine | [`tests/test_external_sglang_engines.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_external_sglang_engines.py) |
-| placement 资源公式 | [`tests/test_placement_group.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_placement_group.py) |
-| rollout→train replay | [`tests/test_qwen2.5_0.5B_debug_rollout_then_train.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_qwen2.5_0.5B_debug_rollout_then_train.py) |
-| PPO actor/critic | [`tests/test_qwen3_4B_ppo.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_qwen3_4B_ppo.py) |
-| 流水异步/fully async | [`tests/test_qwen2.5_0.5B_async_short.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_qwen2.5_0.5B_async_short.py)、[`tests/test_qwen2.5_0.5B_fully_async_short.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/tests/test_qwen2.5_0.5B_fully_async_short.py) |
+| `Sample` token/mask/logprob 契约 | [`tests/test_sample.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_sample.py) |
+| rollout 输出校验 | [`tests/test_rollout_validation.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_rollout_validation.py) |
+| rollout id、step 与 DP 调度 | [`tests/test_dp_schedule.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_dp_schedule.py) |
+| CISPO 公式与梯度 | [`tests/test_cispo_loss.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_cispo_loss.py) |
+| CP 下 loss 不变量 | [`tests/test_loss_cp_invariance.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_loss_cp_invariance.py) |
+| plugin import path/contract | [`tests/plugin_contracts/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/plugin_contracts) |
+| full disk 权重更新 | [`tests/test_full_disk_weight_update.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_full_disk_weight_update.py) |
+| external engine | [`tests/test_external_sglang_engines.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_external_sglang_engines.py) |
+| placement 资源公式 | [`tests/test_placement_group.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_placement_group.py) |
+| rollout→train replay | [`tests/test_qwen2.5_0.5B_debug_rollout_then_train.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_qwen2.5_0.5B_debug_rollout_then_train.py) |
+| PPO actor/critic | [`tests/test_qwen3_4B_ppo.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_qwen3_4B_ppo.py) |
+| 流水异步/fully async | [`tests/test_qwen2.5_0.5B_async_short.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_qwen2.5_0.5B_async_short.py)、[`tests/test_qwen2.5_0.5B_fully_async_short.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/tests/test_qwen2.5_0.5B_fully_async_short.py) |
 
 本地环境允许时，优先跑最小 CPU 范围；GPU E2E 依赖项目镜像、模型、数据和卡数，不能把“pytest 命令启动了”当成功：
 
@@ -284,11 +284,11 @@ sglang_rollout asyncio group
   -> fully_async background worker + warm queue
 ```
 
-重点验证：P50/P95/P99 trajectory latency、队列深度、ABORTED 重试、权重版本、评估与 checkpoint 语义。当前 fully-async 一次 drain 若得到超过 target 的完成 group，会在切片时丢弃 excess；阅读时应把它列为实现限制而不是无损队列语义。
+重点验证：P50/P95/P99 trajectory latency、队列深度、ABORTED 重试、权重版本、评估与 checkpoint 语义。fully-async 自 [PR #2238](https://github.com/THUDM/slime/pull/2238) 起通过 `get_completed_groups(limit=...)` 按需取完成组，多余的留在队列供下一轮消费，并以 `qsize` 门限对新任务做背压；阅读时应把“queue stays warm”契约与 ABORTED 组回炉这两条分开验证。
 
 ## 7. 读启动脚本的方法
 
-以 [`scripts/run-glm4-9B.sh`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/scripts/run-glm4-9B.sh) 为例，不要逐参数背诵，按以下组拆：
+以 [`scripts/run-glm4-9B.sh`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/scripts/run-glm4-9B.sh) 为例，不要逐参数背诵，按以下组拆：
 
 1. `MODEL_ARGS`：模型结构和 Megatron 并行前提。
 2. `CKPT_ARGS`：HF config/tokenizer、reference、actor load/save。
@@ -306,15 +306,15 @@ sglang_rollout asyncio group
 
 ### GBS 口径
 
-[`arguments.py:692-703`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/arguments.py#L692) 和 quick start 把 GBS 笼统称为 training sample 数；[`dp_schedule.py:100-105`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/dp_schedule.py#L100) 与 [`rollout.py:833-838`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/ray/rollout.py#L833) 更精确地说它按 distinct rollout ID 组成 step。二者在标准路径并不冲突：默认每个生成响应获得唯一 ID，custom fan-out 的 siblings 共享原响应 ID，所以 ID 数都还是 `rollout_batch_size × n_samples_per_prompt`。真正的风险是把 fan-out 后每个物理片段都计入 GBS，或让完整自定义 rollout 改变逻辑 ID 数却仍盲用默认公式；mask 不参与 ID 计数。
+部分参数帮助文本仍把 GBS 笼统称为 training sample 数（[`arguments.py#L706`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/arguments.py#L706)，早期 quick-start 也有类似表述、现版已重写）；[`dp_schedule.py#L130`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/dp_schedule.py#L130) 与 [`rollout.py#L871`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L871) 更精确地说它按 distinct rollout ID 组成 step。二者在标准路径并不冲突：默认每个生成响应获得唯一 ID，custom fan-out 的 siblings 共享原响应 ID，所以 ID 数都还是 `rollout_batch_size × n_samples_per_prompt`。真正的风险是把 fan-out 后每个物理片段都计入 GBS，或让完整自定义 rollout 改变逻辑 ID 数却仍盲用默认公式；mask 不参与 ID 计数。
 
 ### 输入格式
 
-CLI/部分文档称主路径“currently only JSONL”，而 [`slime/utils/data.py`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/slime/utils/data.py) 已有 JSONL 与 Parquet 读取分支。准确说法是“标准 recipe 主要使用 JSONL；当前 Dataset 代码也能读 Parquet，具体字段 contract 仍需按场景测试”。
+CLI/部分文档称主路径“currently only JSONL”，而 [`slime/utils/data.py`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/data.py) 已有 JSONL 与 Parquet 读取分支。准确说法是“标准 recipe 主要使用 JSONL；当前 Dataset 代码也能读 Parquet，具体字段 contract 仍需按场景测试”。
 
 ### fully-async 示例引用
 
-[`examples/fully_async/README.md`](https://github.com/THUDM/slime/blob/aaf5c2092b01219fa0d5c2d323741d409086ca32/examples/fully_async/README.md) 提到一个当前目录树中不存在的 `examples/swe_codex/`；当前可见的 SWE/coding-agent 场景是 [`examples/coding_agent_rl/`](https://github.com/THUDM/slime/tree/aaf5c2092b01219fa0d5c2d323741d409086ca32/examples/coding_agent_rl)。把它当文档迁移问题，不据此推断功能缺失。
+这一类漂移会被逐步修掉：旧版 [`examples/fully_async/README.md`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/examples/fully_async/README.md) 曾指向一个不存在的 `examples/swe_codex/`，当前版本已改为指向 [`examples/coding_agent_rl/`](https://github.com/THUDM/slime/tree/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/examples/coding_agent_rl)。方法论不变：遇到文档与目录不一致时先当文档迁移问题核实，不据此推断功能缺失。
 
 ## 9. 阅读完成标准
 
