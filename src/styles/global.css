@@ -1038,6 +1038,46 @@ pre,
   border-bottom: 0;
 }
 
+.series-row[hidden] {
+  display: none;
+}
+
+.series-more {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  gap: 1rem 1.25rem;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 1.3rem 0 0.35rem;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.series-more[hidden] {
+  display: none;
+}
+
+.series-more .series-more-label {
+  justify-self: start;
+  font-weight: 600;
+}
+
+.series-more-hint {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.series-more:hover .series-more-hint,
+.series-more:focus-visible .series-more-hint {
+  color: inherit;
+}
+
 .series-row-body {
   display: grid;
   gap: 0.55rem;

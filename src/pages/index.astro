@@ -31,8 +31,15 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
     };
   })
   .filter((row) => row.count > 0)
-  .sort((left, right) => right.latestDate - left.latestDate)
-  .slice(0, 4);
+  .sort((left, right) => right.latestDate - left.latestDate);
+
+// 默认只展开前 4 个系列，其余折叠在“Show more”交互后面，而不是直接丢弃。
+const visibleSeriesCount = 4;
+const hiddenSeriesCount = Math.max(seriesRows.length - visibleSeriesCount, 0);
+const hiddenSeriesIndexLabel =
+  hiddenSeriesCount === 1
+    ? String(visibleSeriesCount + 1).padStart(2, '0')
+    : `${String(visibleSeriesCount + 1).padStart(2, '0')}–${String(seriesRows.length).padStart(2, '0')}`;
 ---
 
 <BaseLayout lang="zh-CN">
@@ -100,7 +107,10 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
         <div class="section-rail-body">
           <div class="series-list">
             {seriesRows.map((row, index) => (
-              <article class="series-row">
+              <article
+                class="series-row"
+                {...(index >= visibleSeriesCount ? { 'data-series-extra': '', hidden: true } : {})}
+              >
                 <p class="series-index">{String(index + 1).padStart(2, '0')}</p>
                 <div class="series-row-body">
                   <h3>
@@ -116,8 +126,35 @@ const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
               </article>
             ))}
           </div>
+          {hiddenSeriesCount > 0 && (
+            <button class="series-more" type="button" data-series-toggle aria-expanded="false">
+              <span class="series-index" aria-hidden="true">{hiddenSeriesIndexLabel}</span>
+              <span class="series-more-label text-link">
+                Show {hiddenSeriesCount} more series
+              </span>
+              <span class="series-more-hint" aria-hidden="true">+</span>
+            </button>
+          )}
         </div>
       </div>
     </section>
   )}
 </BaseLayout>
+
+<script>
+  const seriesToggle = document.querySelector('[data-series-toggle]');
+
+  if (seriesToggle instanceof HTMLElement) {
+    seriesToggle.addEventListener('click', () => {
+      const extraRows = document.querySelectorAll('[data-series-extra]');
+      extraRows.forEach((row) => row.removeAttribute('hidden'));
+      seriesToggle.setAttribute('aria-expanded', 'true');
+      seriesToggle.hidden = true;
+
+      const firstRevealedLink = extraRows[0]?.querySelector('a');
+      if (firstRevealedLink instanceof HTMLElement) {
+        firstRevealedLink.focus();
+      }
+    });
+  }
+</script>
