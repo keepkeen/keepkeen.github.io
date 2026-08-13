@@ -115,6 +115,9 @@ const jsonLd = [
       <p class="article-lead">{post.data.description}</p>
       <div class="meta-row">
         <span>{formatDate(post.data.date, lang)}</span>
+        {post.data.updatedDate && (
+          <span>{lang === 'en' ? 'Updated' : '更新于'} {formatDate(post.data.updatedDate, lang)}</span>
+        )}
         <span>{labels.readingTime}</span>
         <span class="article-tags">
           {post.data.tags.map((tag, index) => (

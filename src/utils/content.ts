@@ -12,6 +12,22 @@ export function sortPosts(posts: Post[]) {
   return [...posts].sort((left, right) => right.data.date.valueOf() - left.data.date.valueOf());
 }
 
+export function getPostUpdatedDate(post: Post) {
+  return post.data.updatedDate ?? post.data.date;
+}
+
+// 系列的“最后更新”取全部成员 updatedDate ?? date 的最大值，而不是最后一章的发布日。
+export function getSeriesUpdatedDate(seriesPosts: Post[]) {
+  let latest: Date | undefined;
+  for (const post of seriesPosts) {
+    const candidate = getPostUpdatedDate(post);
+    if (!latest || candidate.valueOf() > latest.valueOf()) {
+      latest = candidate;
+    }
+  }
+  return latest;
+}
+
 export function formatDate(date: Date, lang: PostLang | string = 'en') {
   const locale = lang === 'en' ? 'en' : 'zh-CN';
 

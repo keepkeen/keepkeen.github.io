@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../site.config';
-import { formatDate, getPostsInSeries, getSeriesPath, sortPosts, withBasePath } from '../../utils/content';
+import { formatDate, getPostsInSeries, getSeriesPath, getSeriesUpdatedDate, sortPosts, withBasePath } from '../../utils/content';
 import { getBreadcrumbJsonLd } from '../../utils/structured-data';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
@@ -10,13 +10,13 @@ const allSeries = await getCollection('series', ({ data }) => !data.draft);
 const seriesRows = allSeries
   .map((entry) => {
     const seriesPosts = getPostsInSeries(posts, entry.id);
-    const latest = seriesPosts[seriesPosts.length - 1];
+    const updatedAt = getSeriesUpdatedDate(seriesPosts);
 
     return {
       entry,
       count: seriesPosts.length,
       href: getSeriesPath(entry.id),
-      updatedLabel: latest ? formatDate(latest.data.date, 'en') : undefined
+      updatedLabel: updatedAt ? formatDate(updatedAt, 'en') : undefined
     };
   })
   .filter((row) => row.count > 0)

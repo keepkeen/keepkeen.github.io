@@ -2,6 +2,7 @@
 title: "CS336 Assignment 5：从 GRPO 到 DPO 的 Alignment 实战"
 description: "从 rollout、reward、group advantage 到 GRPO/GSPO，再到 packed SFT 与 DPO：结合公式、张量形状、数值例子和 18 个独立测试完整拆解 Assignment 5。"
 date: 2026-07-26
+updatedDate: 2026-08-13
 tags:
   - cs336
   - alignment

@@ -4,7 +4,7 @@ import BlogDirectory from '../../components/BlogDirectory.astro';
 import type { TimelineItem } from '../../components/ArchiveList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../site.config';
-import { formatDate, getPostsInSeries, sortPosts } from '../../utils/content';
+import { formatDate, getPostsInSeries, getSeriesUpdatedDate, sortPosts } from '../../utils/content';
 import { buildSearchDocument } from '../../utils/search';
 import { getBlogCollectionJsonLd, getBreadcrumbJsonLd } from '../../utils/structured-data';
 
@@ -31,14 +31,14 @@ for (const post of posts) {
 
     threadedSeries.add(seriesId);
     const seriesPosts = getPostsInSeries(posts, seriesId);
-    const latest = seriesPosts[seriesPosts.length - 1];
+    const updatedAt = getSeriesUpdatedDate(seriesPosts);
 
     items.push({
       kind: 'series',
       id: seriesId,
       title: seriesEntry.data.title,
       description: seriesEntry.data.description,
-      updatedLabel: latest ? formatDate(latest.data.date, 'en') : undefined,
+      updatedLabel: updatedAt ? formatDate(updatedAt, 'en') : undefined,
       documents: seriesPosts
         .map((seriesPost) => documentById.get(seriesPost.id))
         .filter((document): document is NonNullable<typeof document> => Boolean(document))

@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PostList from '../components/PostList.astro';
 import { siteConfig } from '../site.config';
 import { buildSearchDocument } from '../utils/search';
-import { collectTags, formatDate, getPostsInSeries, getSeriesPath, sortPosts, withBasePath } from '../utils/content';
+import { collectTags, formatDate, getPostsInSeries, getSeriesPath, getSeriesUpdatedDate, sortPosts, withBasePath } from '../utils/content';
 
 const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
 const featuredPosts = posts.filter((post) => post.data.featured);
@@ -20,14 +20,14 @@ const tags = collectTags(posts).slice(0, 8);
 const seriesRows = (await getCollection('series', ({ data }) => !data.draft))
   .map((entry) => {
     const seriesPosts = getPostsInSeries(posts, entry.id);
-    const latest = seriesPosts[seriesPosts.length - 1];
+    const updatedAt = getSeriesUpdatedDate(seriesPosts);
 
     return {
       entry,
       count: seriesPosts.length,
       href: getSeriesPath(entry.id),
-      updatedLabel: latest ? formatDate(latest.data.date, 'en') : undefined,
-      latestDate: latest?.data.date.valueOf() ?? 0
+      updatedLabel: updatedAt ? formatDate(updatedAt, 'en') : undefined,
+      latestDate: updatedAt?.valueOf() ?? 0
     };
   })
   .filter((row) => row.count > 0)
