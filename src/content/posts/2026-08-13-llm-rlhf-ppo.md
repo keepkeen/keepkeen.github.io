@@ -1,6 +1,6 @@
 ---
 title: "RLHF 与 PPO：从四模型数据流到训练指标"
-description: "拆解 actor、critic、reference 与 reward model，分优势正负解释 PPO clip，并覆盖 KL、entropy 与排障。"
+description: "拆解 actor、critic、reference 与 reward model，分优势正负解释 PPO clip，覆盖 KL 的 k1/k2/k3 估计器、“KL 能否换交叉熵”与训练排障。"
 date: 2026-08-13
 tags:
   - reinforcement-learning
@@ -83,6 +83,38 @@ KL 太弱：策略容易利用 RM 漏洞、风格漂移、重复或能力退化�
 - $\pi_\theta$ vs $\pi_{ref}$：KL 控制**整个后训练过程**不要远离参考分布。
 
 所以“已经有 clip，为什么还要 KL”的答案是：它们参照对象、时间尺度和目标都不同。
+
+### KL 的三种蒙特卡洛估计器：k1、k2、k3（2026 实录已点名）
+
+真 KL 是对整个词表的期望，逐 token 精确算太贵，工程上都用采样估计。我们要估计的是反向 KL：
+
+$$
+D_{KL}(\pi_\theta\|\pi_{ref})
+=\mathbb E_{a\sim\pi_\theta}\left[\log\frac{\pi_\theta(a\mid s)}{\pi_{ref}(a\mid s)}\right].
+$$
+
+对每个采到的 token 记 $r=\dfrac{\pi_{ref}(a\mid s)}{\pi_\theta(a\mid s)}$（注意：分子是“另一个分布”，分母是“采样分布”），三种估计器为：
+
+| 估计器 | 公式 | 无偏？ | 方差 | 取值 | 谁在用 |
+|---|---|---:|---|---|---|
+| $k_1$ | $-\log r=\log\frac{\pi_\theta}{\pi_{ref}}$ | 无偏 | 高（重尾，可为负） | 可正可负 | PPO 经典实现，作为逐 token reward 惩罚 |
+| $k_2$ | $\frac12(\log r)^2$ | 有偏（分布接近时近似 KL） | 低 | 恒 $\ge 0$ | 部分实现作为 loss |
+| $k_3$ | $(r-1)-\log r$ | 无偏 | 比 $k_1$ 低 | 恒 $\ge 0$ | GRPO 论文与主流实现，作为 loss 项 |
+
+三个可秒答的追问：
+
+1. **$k_3$ 为什么无偏且方差更低？** $k_3=k_1+(r-1)$，而 $\mathbb E_{a\sim\pi_\theta}[r-1]=\sum_a \pi_{ref}(a)-1=0$，所以 $r-1$ 是期望为零的控制变量：不改期望、抵消波动。又因 $\log x\le x-1$，$k_3$ 恒非负。
+2. **$k_1$ 的问题？** 单样本可为负、重尾；batch 小或两分布拉开后，KL 曲线剧烈抖动，自适应 KL 系数会被带偏。
+3. **“放进 reward”与“作为 loss 反传”一样吗？** 不一样。$k_1$ 作为 reward 时是 detach 的系数，梯度经 policy gradient 传播；$k_3$ 作为 loss 时梯度直接穿过 $r$。近期分析（[arXiv:2510.01555](https://arxiv.org/abs/2510.01555)）指出：on-policy 下 “$k_2$ as loss” 与 “$k_1$ in reward” 梯度等价，都是反向 KL 的严格实现，而 “$k_3$ as loss”（GRPO 用法）只是一阶近似。面试答到“k3 无偏指的是**值估计**，作为 **loss 的梯度**并不严格等于反向 KL 梯度”即为满分层。
+
+十分钟小实验（源自 [Schulman 原博客](http://joschu.net/blog/kl-approx.html)，[中文解读](https://huggingface.co/blog/NormalUhr/kl-divergence-estimator-rl-llm)）：取两个高斯分布采样 1e6 次，分别算 $k_1/k_2/k_3$ 的均值和标准差对照真 KL，亲眼看一遍“无偏但高方差”与“有偏但低方差”。
+
+### KL 与交叉熵：能互换吗（实录原题）
+
+恒等式：$H(P,Q)=H(P)+D_{KL}(P\|Q)$。
+
+- **分类任务**：label 分布 $P$ 固定（one-hot 时 $H(P)=0$），对 $Q$ 优化时 CE 与 KL 只差常数，梯度相同——所以“分类能不能用 KL”答案是能，且与 CE 等价。
+- **PPO 的 KL 惩罚换成 CE 行不行？** 不行。惩罚项是 $D_{KL}(\pi_\theta\|\pi_{ref})=H(\pi_\theta,\pi_{ref})-H(\pi_\theta)$，此时 $\pi_\theta$ 自己在变：最小化 KL 的最优点是 $\pi_\theta=\pi_{ref}$；而最小化 CE $H(\pi_\theta,\pi_{ref})$ 的最优点是把全部概率压到 $\pi_{ref}$ 的最高概率动作上——它额外奖励降熵，会推向模式坍缩、抹掉探索。方向也要说清：分类里常是 forward KL（真实分布在左），PPO 惩罚是 reverse KL（policy 在左），两者的 mode-seeking/covering 倾向不同。
 
 ## 5. PPO clipped objective
 
@@ -224,7 +256,9 @@ rollout 来自 $\pi_{old}$，随后只在这批数据上做有限次更新，并
 4. 解释 clip 与 reference KL 为何都需要；
 5. 写一条 rollout 到 update 的数据流；
 6. 说出五个训练指标和三个排障分支；
-7. 解释 PPO 为什么是近似 on-policy、何时出现 policy lag。
+7. 解释 PPO 为什么是近似 on-policy、何时出现 policy lag；
+8. 默写 $k_1/k_2/k_3$ 三个 KL 估计器，说明偏差—方差与各自被谁使用；
+9. 回答“PPO 的 KL 能否换成交叉熵”并给出模式坍缩论证。
 
 主要来源：[PPO 原论文](https://arxiv.org/abs/1707.06347)、[OpenAI Spinning Up PPO](https://spinningup.openai.com/en/latest/algorithms/ppo.html)、[InstructGPT](https://arxiv.org/abs/2203.02155)。
 ---

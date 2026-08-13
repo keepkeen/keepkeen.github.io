@@ -1,6 +1,6 @@
 ---
 title: "大模型 RL 训练系统、指标与排障"
-description: "梳理 rollout 与 trainer 数据流、并行和显存、TRL/verl/slime/OpenRLHF，以及八类高频故障诊断。"
+description: "梳理 rollout 与 trainer 数据流、并行和显存、TRL/verl/slime/OpenRLHF/AReaL/ROLL 选型，以及八类高频故障诊断。"
 date: 2026-08-13
 tags:
   - reinforcement-learning
@@ -87,6 +87,8 @@ rollout 与 trainer 独立运行。GPU 利用率更高，但旧样本增多。�
 - current/behavior policy ratio；
 - 样本被裁剪或丢弃的比例。
 
+量化参照（[AReaL 论文](https://arxiv.org/abs/2505.24298)，清华 IIIS+蚂蚁）：全异步系统靠"可中断 rollout worker + 版本号追踪 + staleness 上限 + staleness-aware PPO"实现同卡数下 2.57× 于最好同步系统的吞吐，且实验显示样本陈旧度控制在 **8 个版本以内**时性能无损。面试答"异步的代价"时给这三件套：版本差上限、current/behavior ratio 监控、超龄样本过滤。
+
 ### 4.3 Partial rollout
 
 长轨迹未结束时保存状态，之后继续，而不是让 worker 一直占着批次。恢复时必须保存 RNG、环境状态、上下文和 policy 语义；否则续跑轨迹不是同一分布。
@@ -99,6 +101,8 @@ rollout 与 trainer 独立运行。GPU 利用率更高，但旧样本增多。�
 | [verl](https://verl.readthedocs.io/) | 大规模 PPO/GRPO、系统研究 | rollout 与训练编排完整，配置丰富 | worker 角色、资源池、权重同步 |
 | [slime](https://thudm.github.io/slime/) | 大规模 RL、Agent rollout | 强调训练与推理解耦、可定制 rollout | 异步语义、样本版本与自定义环境 |
 | [OpenRLHF](https://openrlhf.readthedocs.io/) | 分布式 RLHF 工程 | Ray 编排、多种对齐算法 | actor/critic/reward/reference 如何放置 |
+| [AReaL](https://github.com/inclusionAI/AReaL) | 大规模异步 reasoning/Agent RL（清华+蚂蚁） | 全异步解耦、可中断 rollout、staleness-aware PPO；轻量版 AReaL-lite | 版本追踪与 `max_head_offpolicyness`、经验缓冲、权重同步协议 |
+| [ROLL](https://github.com/alibaba/ROLL) | 大规模多任务/Agentic RL（阿里） | Ray 多角色解耦、RewardWorker 奖励路由（verifier/沙盒/LLM-judge）、内置 GRPO/GSPO/REINFORCE++/GiGPO | 角色资源映射、异步语义、StarPO vs GiGPO 两种 Agent 范式 |
 | [Agent Lightning](https://microsoft.github.io/agent-lightning/stable/) | 已有 Agent 接入 RL | 把 Agent 执行与训练解耦 | 轨迹 schema、credit assignment、adapter |
 
 框架不是简历上的名词。面试官更关心：你改过哪一层、看过哪些中间张量、遇到过什么故障、如何证明修复有效。

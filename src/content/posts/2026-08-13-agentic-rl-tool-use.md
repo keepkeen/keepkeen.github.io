@@ -1,6 +1,6 @@
 ---
 title: "Agentic RL 与多轮工具调用"
-description: "从多轮 MDP、轨迹 schema、loss mask、奖励归因到异步 rollout、policy lag、环境设计和安全。"
+description: "从多轮 MDP、轨迹 schema、loss mask、六种信用分配（含 GiGPO 锚点状态分组）到异步 rollout、环境设计和安全。"
 date: 2026-08-13
 tags:
   - reinforcement-learning
@@ -168,7 +168,17 @@ R = w_sR_{success}+w_pR_{process}-w_cC-w_vP_{violation}
 
 任务结束后，让 critic 或规则定位决定成败的步骤，再构造 turn-level advantage。要避免让同一个模型既生成又无约束地自评。
 
-没有一种方法在所有任务上最优。回答时应说明环境是否可验证、能否分支采样、是否有稳定 critic，再选方案。
+### 方法 F：锚点状态分组（GiGPO，免 critic 的 step-level 信用）
+
+[GiGPO](https://arxiv.org/abs/2505.10978)（NeurIPS 2025）把 GRPO 的"组内对比"思想下沉到步级：
+
+- **episode 级宏观优势** $A_E$：与 GRPO 相同，同任务多条轨迹按总回报组内对比；
+- **step 级微观优势** $A_S$：用哈希识别**不同轨迹中重复出现的环境状态**（锚点状态），把从同一状态出发的动作聚成组，按各自后续 return 组内对比；
+- 最终 $A=A_E+\omega\cdot A_S$。
+
+卖点是"免费午餐"：不加 critic、不加额外 rollout，只靠哈希匹配就拿到步级信号（ALFWorld +12%、WebShop +9% 对比 GRPO）。前提是环境状态离散可哈希且会跨轨迹重复——网页、游戏、工具环境成立，开放式对话不成立。阿里 ROLL 框架已内置（`adv_estimator: gigpo`，与轨迹级 StarPO 并列两种范式）。
+
+没有一种方法在所有任务上最优。回答时应说明环境是否可验证、能否分支采样、是否有稳定 critic、状态是否可哈希重复，再选方案。
 
 ## 7. Group-relative 方法如何扩展到 Agent
 

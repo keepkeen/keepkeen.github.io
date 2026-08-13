@@ -45,6 +45,9 @@ seriesOrder: 1
 | [腾讯大模型算法二面](https://www.nowcoder.com/feed/main/detail/905343c9a3834f8d9d9bdc3790a59687) | PPO/GRPO/DAPO、critic baseline、rollout 与连续奖励 | 04、06 |
 | [蔚来 RL 实习一面，2026-03-16](https://www.nowcoder.com/discuss/863132498270695424) | PPO/GRPO 公式与流程、TRL/verl/Ray、Agentic RL 稀疏奖励和工具稳定性 | 04、06、07、08 |
 | [滴滴算法实习，页面 2026-06-21](https://www.nowcoder.com/feed/main/detail/3fd2957eb8274e0cb4afcac39ed182d3) | 全对全错 group、课程学习、reward/KL/clip fraction、trajectory-token gap、业务 reward | 06、07、08 |
+| [腾讯 WXG 大模型（单轮 2.5h）](https://www.nowcoder.com/discuss/891322059656052736) | 手撕 PPO 与 AdamW、MDP 折扣阈值计算、SFT 参数量与显卡利用率口算、Q-learning vs DQN、bf16/fp16/fp32 | 01、02、04、09、10 |
+| [阿里大模型一面 GRPO 深挖](https://yunpan.plus/t/23865-1-1) | GRPO loss 逐项解释、clip ε 取值来历、Reward Hacking 应对、组内信用分配 | 06、09 |
+| [AgentGuide 公司案例集（汇编级）](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md) | RM vs critic、KL 的 k1/k2/k3、交叉熵 vs KL、GRPO×MoE、SFT vs RL 选型、rollout 与卡数、拒绝采样、FC 过程奖励 | 04、05、06、08、09 |
 
 这批样本给出五个稳定的准备结论：
 
@@ -53,6 +56,8 @@ seriesOrder: 1
 3. **GRPO 必须讲失败**：零方差 group、长度偏置、reward hacking、policy lag、MoE 训推不一致。
 4. **Agent RL 是真正的序列决策**：状态转移、环境反馈和 credit assignment 不能用单轮偏好学习敷衍。
 5. **代码仍然存在**：除了 LeetCode，还可能手写 KL、DPO/GRPO 数据流、SFT mask 或训练循环。
+6. **追问已进深水区（2026-08 增量确认）**：KL 的 k1/k2/k3 估计器、DeepSeek R1 四阶段管线、MoE 训推不一致、现场算折扣阈值/参数量这类"计算层"问题开始成批出现，只背名词接不住第二轮追问。对应详解见 04/06 章增量小节与题库 46–70。
+7. **前沿方向已入题（第二轮扩检确认）**：多模态可验证奖励（Visual-RFT 类）、熵坍缩机制、"RLVR 是否扩展能力"开放题、异步 RL 系统与 RL Scaling 在头部团队面试中出现。CV/检测背景候选人重点读 [12 章](/blog/llm-rl-frontier-topics/) §1——它是把你原领域指标（IoU/PRO/AUROC）直接变成 RL 奖励叙事的桥。
 
 ## 3. 从经典 RL 到 LLM RL 的映射
 

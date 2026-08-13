@@ -9,7 +9,7 @@ tags:
 lang: zh-CN
 draft: false
 series: llm-reinforcement-learning-interview
-seriesOrder: 13
+seriesOrder: 14
 ---
 > 检索截止：2026-08-13。技术结论优先使用论文、官方博客和官方文档；面经只用于判断“考什么”，不作为算法事实的唯一依据。
 
@@ -55,6 +55,28 @@ seriesOrder: 13
 | [GSPO](https://arxiv.org/abs/2507.18071) | 原始论文 | sequence-level policy optimization |
 | [Qwen GSPO 官方解读](https://qwenlm.github.io/blog/gspo/) | 官方博客 | GSPO 动机与 MoE 稳定性 |
 | [On-Policy Distillation](https://thinkingmachines.ai/blog/on-policy-distillation/) | 研究机构官方博客 | 学生 on-policy 采样 + 教师稠密监督 |
+| [DeepSeek-R1 论文](https://arxiv.org/abs/2501.12948) | 原始论文 | R1-Zero 规则奖励、R1 四阶段管线、蒸馏 vs RL 结论 |
+| [R1 论文中文精译](https://arthurchiao.art/blog/deepseek-r1-paper-zh/) | 译文 | 四阶段细节中文对照 |
+| [Approximating KL Divergence（Schulman）](http://joschu.net/blog/kl-approx.html) | 原始博客 | k1/k2/k3 估计器与偏差—方差实验 |
+| [KL 估计器的 RL-for-LLM 解读](https://huggingface.co/blog/NormalUhr/kl-divergence-estimator-rl-llm) | 技术博客 | k1/k2/k3 映射到 PPO/GRPO 场景 |
+| [Rethinking KL Regularization in RLHF](https://arxiv.org/abs/2510.01555) | 原始论文 | "k_n in reward" 与 "k_n as loss" 的梯度等价性分析 |
+| [KL-Regularized Policy Gradient 设计](https://arxiv.org/abs/2505.17508) | 原始论文 | 正向/反向 KL、估计器与 surrogate 推导 |
+| [MiniMax-M1](https://arxiv.org/abs/2506.13585) | 原始论文 | CISPO：裁 IS 权重保 token 梯度 |
+| [ms-swift CISPO 文档](https://swift.readthedocs.io/zh-cn/v4.2/Instruction/GRPO/AdvancedResearch/CISPO.html) | 框架文档 | CISPO 损失与超参实现口径 |
+| [MoE RL 稳定性研究](https://arxiv.org/abs/2510.23027) | 原始论文 | router drift 与 off-policy 失配诊断 |
+| [MoE RL 训推不一致综述（长琴）](https://yam.gift/2026/01/17/NLP/LLM-Training/2026-01-17-RL-MoE-Stable/) | 技术博客 | GSPO/GMPO、TIS/IcePop、Routing Replay 三类修复对照 |
+| [DPO 家族取舍](https://quant67.com/post/rl-posttraining/11-dpo-family/11-dpo-family.html) | 技术博客 | IPO/KTO/ORPO/SimPO 改哪条假设 |
+| [SimPO 论文](https://openreview.net/attachment?id=3Tzcot1LKb&name=pdf) | 原始论文 | reference-free、长度归一化与目标 margin |
+| [Visual-RFT](https://arxiv.org/abs/2503.01785)（[官方仓库](https://github.com/liuziyu77/visual-rft)） | 原始论文/官方仓库 | 视觉可验证奖励（IoU/CLS）与多模态 GRPO |
+| [熵机制论文](https://arxiv.org/abs/2505.22617)（[verl 配方](https://verl.org.cn/en/latest/algo/entropy.html)） | 原始论文/框架配方 | 熵坍缩协方差机制、R=−a·e^H+b、Clip-Cov/KL-Cov |
+| [RLVR 边界研究](https://arxiv.org/abs/2504.13837) | 原始论文（NeurIPS 2025） | pass@k 反超、采样效率视角、蒸馏对照 |
+| [Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230) | 原始论文 | 负迁移与 winner-take-all 机制 |
+| [Spurious Rewards 解读](https://www.promptfoo.dev/blog/rlvr-explained/) | 技术博客 | 随机奖励增益、污染判别与验证方法 |
+| [DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495) | 原始论文 | 生成式 RM、原则-批评-分数、推理时投票扩展 |
+| [GiGPO](https://arxiv.org/abs/2505.10978)（[verl-agent](https://github.com/langfengQ/verl-agent)） | 原始论文/官方仓库 | 锚点状态分组的 step-level credit |
+| [AReaL](https://arxiv.org/abs/2505.24298)（[官方仓库](https://github.com/inclusionAI/AReaL)） | 原始论文/官方仓库 | 全异步系统、可中断 rollout、staleness-aware PPO |
+| [ROLL](https://github.com/alibaba/ROLL) | 官方仓库/文档 | Ray 多角色、RewardWorker 奖励路由、StarPO/GiGPO |
+| [ScaleRL](https://arxiv.org/abs/2510.13786) | 原始论文 | sigmoid 计算量—性能拟合、天花板/效率二分 |
 
 阅读新方法时不背“方法动物园”，统一比较：baseline/advantage、importance ratio 粒度、KL、reduction、采样分布、解决的失败模式和新增代价。
 
@@ -118,6 +140,11 @@ seriesOrder: 13
 | [携程大模型算法](https://www.nowcoder.com/discuss/868214571696152576) | 2026-03 | B | PPO/DPO/GRPO、critic、KL 发散排障 |
 | [荣耀大模型算法](https://www.nowcoder.com/feed/main/detail/b26abb2ad0b5495f84ac690cf4a99342) | 2026-04 | B | RL reward、GRPO/PPO、训练显存与并行 |
 | [小鹏多模态大模型](https://www.nowcoder.com/feed/main/detail/96f931642588471e8939e29028604499) | 2026-03 | B | PPO/GRPO/GSPO/DAPO、投机/拒绝采样、多模态 |
+| [腾讯 WXG 大模型暑期](https://www.nowcoder.com/discuss/891322059656052736) | 2026 | B（转载于汇总帖） | 手撕 PPO/AdamW、MDP 折扣阈值、SFT 参数量与显卡利用率、Q-learning vs DQN |
+| [阿里大模型一面 GRPO 深挖](https://yunpan.plus/t/23865-1-1) | 2026 | B- | GRPO loss 逐项、clip ε、reward hacking 应对、信用分配 |
+| [AgentGuide 公司案例集](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md) | 持续更新 | 线索（汇编） | RM vs critic、k1/k2/k3、GRPO×MoE、SFT vs RL、rollout 与卡数、FC 过程奖励 |
+| [美团 GRPO 面经解析（面试大师）](https://mianshidashi.cn/interview-questions/meituan/algorithm-engineer/meituan-algorithm-grpo-loss-data-organization) | 2026 | 线索（站方撰写答案） | GRPO loss 计算、训练数据组织字段、禁止跨 prompt 归一化 |
+| [MoonOut RL 八股问答（3）](https://www.cnblogs.com/moonout/p/19749191) | 2026 | 线索（个人整理） | PPO/DPO/GRPO 三方对比、在线 vs 离线 RL 归属 |
 
 ### 面经使用限制
 

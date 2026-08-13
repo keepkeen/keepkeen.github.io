@@ -1,6 +1,6 @@
 ---
 title: "Reward Model、DPO 与偏好学习"
-description: "从 Bradley–Terry 到 DPO 推导，解释 beta、reference、偏好数据分布、长度偏置与常见训练退化。"
+description: "从 Bradley–Terry 到 DPO 推导，解释 beta、reference、长度偏置与训练退化，附拒绝采样与 IPO/KTO/ORPO/SimPO 家族取舍。"
 date: 2026-08-13
 tags:
   - reinforcement-learning
@@ -187,6 +187,16 @@ DPO 是离线学习。若 preference pair 来自远强或远旧的模型：
 
 因此实务中常从当前或上一版 checkpoint 采候选，再由人工/规则/judge 排序，形成迭代数据飞轮。它不是严格要求，但能减小 distribution mismatch。
 
+### 拒绝采样：这条飞轮的标准形态（实录常单独追问）
+
+拒绝采样（rejection sampling / best-of-N）在后训练里有三个标准用法：
+
+1. **造 SFT 数据**：对每个 prompt 采 N 条，用 RM/规则/verifier 打分，只留最好或过阈值的回答再做 SFT。DeepSeek-R1 第三阶段就是典型：用 RL checkpoint 生成、规则+生成式 RM 过滤，得到约 60 万条推理样本；
+2. **造偏好对**：同组里取高分为 chosen、低分为 rejected，天然贴近当前策略分布；
+3. **Best-of-N 基线**：推理时采 N 选优，作为“不训练能到多少”的对照，衡量 RL 真正带来的增益。
+
+要会说的偏差：分数来自 RM 时，拒绝采样会**放大 RM 的偏置**（长度、格式偏好被反复选中），且保留分布比原分布更窄；所以过滤规则要审计，且周期性用人工/独立评测校准。
+
 ## 10. DPO 与 PPO/GRPO 怎样选
 
 | 条件 | 更适合 DPO | 更适合 PPO/GRPO |
@@ -200,7 +210,29 @@ DPO 是离线学习。若 preference pair 来自远强或远旧的模型：
 
 不要按流行度选。先问：反馈长什么样、能否验证、是否需要探索、是否有环境转移。
 
-## 11. RLAIF 与 judge 风险
+## 11. DPO 家族：IPO、KTO、ORPO、SimPO（面试问"DPO 有什么问题/改进"时的标准答案）
+
+答题框架：先说 DPO 的四个内置假设——**成对偏好数据、需要 reference model、用整段序列 log-prob、SFT 与偏好优化分两阶段**——每个变体各改其中一条，而不是"又一个新算法"。
+
+| 方法 | 改了哪条假设 | 核心机制 | 需要 ref | 数据形态 |
+|---|---|---|---:|---|
+| IPO | 损失形状 | 把偏好 logit 回归到固定目标（平方损失），防止 DPO 在确定性偏好上把 margin 无界推大导致过拟合 | 是 | 成对 |
+| KTO | 数据形态 | 前景理论式价值函数，直接学**非成对**的二元反馈（点赞/点踩） | 通常是 | 单条好/坏标签 |
+| ORPO | ref 与阶段 | 无 reference；SFT loss + odds-ratio 惩罚项（odds $=\frac{\pi}{1-\pi}$）合成**单阶段**训练 | 否 | 成对（chosen 兼作 SFT 目标） |
+| SimPO | ref 与长度口径 | 无 reference；用**长度归一化的平均 log-prob** 作隐式 reward，并加目标 margin $\gamma$ | 否 | 成对 |
+| cDPO | 标签可信度 | 对偏好标签做 label smoothing，容忍标注噪声 | 是 | 成对（含噪） |
+
+选型口径（社区共识，带争议）：只有点赞/点踩数据 → KTO；显存放不下 reference 或想单阶段 → ORPO/SimPO；chosen/rejected 长度差异大 → SimPO 的长度归一化最对症；担心在确定性偏好上过拟合、要训到收敛 → IPO。注意 SimPO 论文自报全面占优，但独立复现结论不一——面试别说"X 必然最强"，说"改哪条轴、代价是什么"。
+
+追问预演：
+
+- SimPO 去掉 reference 后靠什么防跑飞？（目标 margin + 长度归一化改变了隐式 reward 定义；没有 KL 锚，需要更小心的学习率与早停）
+- ORPO 的 odds-ratio 和 DPO 的 log-ratio 差在哪？（对象不同：ORPO 是 policy 自身的 odds 对比，不含 reference；且与 SFT 联合优化）
+- 为什么这些变体多数仍处理不了多轮 Agent 任务？（都是离线单轮偏好，没有环境转移与 credit assignment，见 07 章）
+
+来源：[DPO 家族取舍](https://quant67.com/post/rl-posttraining/11-dpo-family/11-dpo-family.html)、[后训练课程·DPO 变体](https://posttrain.gaozhijun.me/docs/lecture-3/dpo-variants/)、[SimPO 论文](https://openreview.net/attachment?id=3Tzcot1LKb&name=pdf)。
+
+## 12. RLAIF 与 judge 风险
 
 AI feedback 能扩展标注，但要防：
 
@@ -213,14 +245,16 @@ AI feedback 能扩展标注，但要防：
 
 最低防线：交换顺序、多 judge/规则交叉、人工校准集、置信度/弃权、按难度和领域切片。
 
-## 12. 本章验收
+## 13. 本章验收
 
 1. 写 Bradley–Terry RM loss；
 2. 从 KL-regularized optimum 推到 DPO loss；
 3. 解释四个 sequence log-prob 和 response mask；
 4. 解释 chosen/rejected 为什么可一起下降；
 5. 说出长度偏置与 distribution mismatch；
-6. 根据反馈形态在 SFT、DPO、PPO/GRPO 间做选择。
+6. 根据反馈形态在 SFT、DPO、PPO/GRPO 间做选择；
+7. 用"改哪条假设"的框架讲清 IPO/KTO/ORPO/SimPO 并给出选型；
+8. 说出拒绝采样的三个用法和它放大 RM 偏置的机制。
 
 主要来源：[DPO 原论文](https://proceedings.neurips.cc/paper_files/paper/2023/file/a85b405ed65c6477a4fe8302b5e06ce7-Paper-Conference.pdf)、[InstructGPT](https://arxiv.org/abs/2203.02155)、[TRL DPO 官方文档](https://huggingface.co/docs/trl/main/en/dpo_trainer)。
 ---

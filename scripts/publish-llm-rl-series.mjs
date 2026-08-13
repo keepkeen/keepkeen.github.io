@@ -51,42 +51,42 @@ const chapters = [
     slug: "llm-rlhf-ppo",
     title: "RLHF 与 PPO：从四模型数据流到训练指标",
     description:
-      "拆解 actor、critic、reference 与 reward model，分优势正负解释 PPO clip，并覆盖 KL、entropy 与排障。",
+      "拆解 actor、critic、reference 与 reward model，分优势正负解释 PPO clip，覆盖 KL 的 k1/k2/k3 估计器、“KL 能否换交叉熵”与训练排障。",
   },
   {
     file: "05_RewardModel_DPO与偏好学习.md",
     slug: "llm-reward-model-dpo",
     title: "Reward Model、DPO 与偏好学习",
     description:
-      "从 Bradley–Terry 到 DPO 推导，解释 beta、reference、偏好数据分布、长度偏置与常见训练退化。",
+      "从 Bradley–Terry 到 DPO 推导，解释 beta、reference、长度偏置与训练退化，附拒绝采样与 IPO/KTO/ORPO/SimPO 家族取舍。",
   },
   {
     file: "06_GRPO_RLVR与新方法.md",
     slug: "llm-grpo-rlvr",
     title: "GRPO、RLVR 与新方法坐标系",
     description:
-      "讲清组内相对优势、四种 policy、全同分退化、DAPO、GSPO、on-policy distillation 及方法选择。",
+      "组内相对优势、结构性失败、DeepSeek R1 四阶段管线、MoE 训推不一致机制，以及 DAPO/GSPO/CISPO/OPD 六轴坐标系。",
   },
   {
     file: "07_AgenticRL与多轮工具调用.md",
     slug: "agentic-rl-tool-use",
     title: "Agentic RL 与多轮工具调用",
     description:
-      "从多轮 MDP、轨迹 schema、loss mask、奖励归因到异步 rollout、policy lag、环境设计和安全。",
+      "从多轮 MDP、轨迹 schema、loss mask、六种信用分配（含 GiGPO 锚点状态分组）到异步 rollout、环境设计和安全。",
   },
   {
     file: "08_训练系统_框架_指标与排障.md",
     slug: "llm-rl-training-systems",
     title: "大模型 RL 训练系统、指标与排障",
     description:
-      "梳理 rollout 与 trainer 数据流、并行和显存、TRL/verl/slime/OpenRLHF，以及八类高频故障诊断。",
+      "梳理 rollout 与 trainer 数据流、并行和显存、TRL/verl/slime/OpenRLHF/AReaL/ROLL 选型，以及八类高频故障诊断。",
   },
   {
     file: "09_面经题库与答案卡.md",
     slug: "llm-rl-interview-cards",
-    title: "大模型强化学习面经：45 张答案卡",
+    title: "大模型强化学习面经：70 张答案卡",
     description:
-      "覆盖经典 RL、PPO、DPO、GRPO、Agentic RL、系统排障和项目表达，并配两轮追问与评分标准。",
+      "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与前沿，配两轮追问与评分标准。",
   },
   {
     file: "10_手写练习与实验.md",
@@ -101,6 +101,13 @@ const chapters = [
     title: "大模型强化学习 30 天学习与项目计划",
     description:
       "每天安排 RL 主线、公式手写、项目、面经口述和两道 LeetCode，月底形成可展示的训练闭环。",
+  },
+  {
+    file: "12_前沿专题_多模态RL_RM前沿与Scaling.md",
+    slug: "llm-rl-frontier-topics",
+    title: "多模态 RL、奖励模型前沿与 RL Scaling",
+    description:
+      "Visual-RFT 与 IoU 可验证奖励、DeepSeek-GRM/SPCT、RLVR 边界争议的答题模板，以及 ScaleRL 的天花板/效率二分。",
   },
   {
     file: path.join("sources", "来源索引.md"),

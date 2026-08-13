@@ -1,21 +1,16 @@
 ---
-title: "大模型强化学习从零到面试（12）：多模态 RL、RM 前沿与 Scaling"
-description: "Visual-RFT 与 IoU 可验证奖励、DeepSeek-GRM/SPCT、RLVR 边界争议答题模板与 ScaleRL 天花板/效率二分。"
+title: "多模态 RL、奖励模型前沿与 RL Scaling"
+description: "Visual-RFT 与 IoU 可验证奖励、DeepSeek-GRM/SPCT、RLVR 边界争议的答题模板，以及 ScaleRL 的天花板/效率二分。"
 date: 2026-08-13
 tags:
-  - ai
+  - reinforcement-learning
   - llm
-  - rl
   - interview
-featured: false
-draft: false
 lang: zh-CN
-series: llm-rl-interview
+draft: false
+series: llm-reinforcement-learning-interview
 seriesOrder: 13
 ---
-
-> 本文是《大模型强化学习：从零到面试》专题第 12 章的发布版，核验日期 2026-08-13。配套零依赖参考实现与自动测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
-
 > 建立日期：2026-08-13。本章收录已经进入面试但尚未沉淀成"标准八股"的四个前沿方向。对 CV/检测背景的候选人，§1 是把原领域经验翻译成 RL 叙事的桥梁，优先级等同 P0。
 
 ## 1. 多模态 RL：把可验证奖励搬到视觉任务
@@ -123,3 +118,6 @@ ScaleRL 配方本身：PipelineRL 式异步（8 步 off-policyness）+ 中断式
 4. 能用"天花板 vs 效率"二分评价一个 RL 改进，并说明 sigmoid 拟合外推的用法。
 
 主要来源：[Visual-RFT](https://arxiv.org/abs/2503.01785)、[DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495)、[RLVR 边界研究](https://arxiv.org/abs/2504.13837)、[Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230)、[ScaleRL](https://arxiv.org/abs/2510.13786)、[熵机制](https://arxiv.org/abs/2505.22617)。
+---
+
+原始讲义与可运行材料：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/12_%E5%89%8D%E6%B2%BF%E4%B8%93%E9%A2%98_%E5%A4%9A%E6%A8%A1%E6%80%81RL_RM%E5%89%8D%E6%B2%BF%E4%B8%8EScaling.md)。
