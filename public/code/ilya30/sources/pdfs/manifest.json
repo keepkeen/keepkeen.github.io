@@ -1,0 +1,177 @@
+[
+  {
+    "id": 5,
+    "file": "05-rnn-regularization.pdf",
+    "source": "https://arxiv.org/pdf/1409.2329",
+    "bytes": 117777,
+    "sha256": "fc75e2f390998d3990c6a8a9ba890571de7deb19bbe869a4aac1814850009612"
+  },
+  {
+    "id": 6,
+    "file": "06-keeping-networks-simple.pdf",
+    "source": "https://www.cs.toronto.edu/~hinton/absps/colt93.pdf",
+    "bytes": 164438,
+    "sha256": "13d496dbd59ce99a7eae9806a30c1e86dc6060a79a6d860a0a8da4c1bc02de7d"
+  },
+  {
+    "id": 7,
+    "file": "07-pointer-networks.pdf",
+    "source": "https://arxiv.org/pdf/1506.03134",
+    "bytes": 469544,
+    "sha256": "640bb2150dbc2d711538daf127003e960a3432b0330e22a0131d472891f76353"
+  },
+  {
+    "id": 8,
+    "file": "08-alexnet.pdf",
+    "source": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+    "bytes": 1418820,
+    "sha256": "90137160c57217953d5f61857e64ca58e85f06e1b13b4f475c918b1b582b9771"
+  },
+  {
+    "id": 9,
+    "file": "09-order-matters-set2set.pdf",
+    "source": "https://arxiv.org/pdf/1511.06391",
+    "bytes": 262627,
+    "sha256": "f2b9f55c96cfe1fd3ff00385d6327fce14cab5564b563a772f001315b7d3ab86"
+  },
+  {
+    "id": 10,
+    "file": "10-gpipe.pdf",
+    "source": "https://arxiv.org/pdf/1811.06965",
+    "bytes": 539195,
+    "sha256": "697f257e85667829053707594800447f3a75482226ddb6eb24374905c5af6d44"
+  },
+  {
+    "id": 11,
+    "file": "11-resnet.pdf",
+    "source": "https://arxiv.org/pdf/1512.03385",
+    "bytes": 819383,
+    "sha256": "1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a"
+  },
+  {
+    "id": 12,
+    "file": "12-dilated-convolutions.pdf",
+    "source": "https://arxiv.org/pdf/1511.07122",
+    "bytes": 3000738,
+    "sha256": "acac9b267cf8b2498d53fe9a9a5afcc51b3dc1cc677ae0ae82f8ca626869a8b1"
+  },
+  {
+    "id": 13,
+    "file": "13-neural-message-passing.pdf",
+    "source": "https://arxiv.org/pdf/1704.01212",
+    "bytes": 523413,
+    "sha256": "37dc4ad74bf3da3ee000474cc85cabfad9bc9daa47f1aced6e8b8eea71467741"
+  },
+  {
+    "id": 14,
+    "file": "14-attention-is-all-you-need.pdf",
+    "source": "https://arxiv.org/pdf/1706.03762",
+    "bytes": 2215244,
+    "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697"
+  },
+  {
+    "id": 15,
+    "file": "15-bahdanau-attention.pdf",
+    "source": "https://arxiv.org/pdf/1409.0473",
+    "bytes": 444482,
+    "sha256": "84801c8410da51b449d379d2fa4939a416123f2c93991077a680f863026022a7"
+  },
+  {
+    "id": 16,
+    "file": "16-identity-mappings-resnet.pdf",
+    "source": "https://arxiv.org/pdf/1603.05027",
+    "bytes": 1166414,
+    "sha256": "676113014c130991d3a1203b151e1f2d4596f08898440c72270934a88d006c32"
+  },
+  {
+    "id": 17,
+    "file": "17-relation-networks.pdf",
+    "source": "https://arxiv.org/pdf/1706.01427",
+    "bytes": 1438944,
+    "sha256": "c115123a511418ab46f04c4f9f78b6a569712960dbe9ca596d4edd6f0686d521"
+  },
+  {
+    "id": 18,
+    "file": "18-variational-lossy-autoencoder.pdf",
+    "source": "https://arxiv.org/pdf/1611.02731",
+    "bytes": 2392268,
+    "sha256": "717c685fdd7ed18cae250c226a3d25452f33d12f1aba857c2800aac622d38099"
+  },
+  {
+    "id": 19,
+    "file": "19-relational-rnns.pdf",
+    "source": "https://arxiv.org/pdf/1806.01822",
+    "bytes": 4105255,
+    "sha256": "097700e214454b345ae453d04062ce2997da0c14f60e2411f665e1410f18218f"
+  },
+  {
+    "id": 20,
+    "file": "20-coffee-automaton.pdf",
+    "source": "https://arxiv.org/pdf/1405.6903",
+    "bytes": 1330722,
+    "sha256": "e35b1fa18e6640289c327954f7e14743f140d8262c523f967921fe86aa30c63b"
+  },
+  {
+    "id": 21,
+    "file": "21-neural-turing-machines.pdf",
+    "source": "https://arxiv.org/pdf/1410.5401",
+    "bytes": 1357690,
+    "sha256": "b8d2939cd7c76097f2cc2e5061188ca824ef8cad12de4500dfbd014b60dd16a9"
+  },
+  {
+    "id": 22,
+    "file": "22-deep-speech-2.pdf",
+    "source": "https://arxiv.org/pdf/1512.02595",
+    "bytes": 877645,
+    "sha256": "e4ad30231a2e754e100d3681edc70be75831aced4482e184961f4d935e3333f8"
+  },
+  {
+    "id": 23,
+    "file": "23-scaling-laws.pdf",
+    "source": "https://arxiv.org/pdf/2001.08361",
+    "bytes": 2493004,
+    "sha256": "a41bd7877fd1a6bcbba096b2619618bd2f90e02488f2365644903eb2f7c6a494"
+  },
+  {
+    "id": 24,
+    "file": "24-mdl-tutorial.pdf",
+    "source": "https://arxiv.org/pdf/math/0406077",
+    "bytes": 774850,
+    "sha256": "f931f2855d9addc7ace62ddf20aea67c2d6f8f95982648da8d9ba2a06008b7e6"
+  },
+  {
+    "id": 25,
+    "file": "25-machine-super-intelligence.pdf",
+    "source": "https://pdf.stafforini.com/legg-2008-machine-super-intelligence.pdf",
+    "bytes": 1546703,
+    "sha256": "32105a6c1342d5fb4dfcb817341e9fa1649d27aa6b9986fd6321754884621594"
+  },
+  {
+    "id": 26,
+    "file": "26-kolmogorov-complexity.pdf",
+    "source": "https://www.lirmm.fr/~ashen/kolmbook-eng-scan.pdf",
+    "bytes": 18466413,
+    "sha256": "f3c681b47f2176e01cf59609667129607946f1325b540f17588177be2913548d"
+  },
+  {
+    "id": 28,
+    "file": "28-memory-augmented-meta-learning.pdf",
+    "source": "https://arxiv.org/pdf/1605.06065",
+    "bytes": 2250804,
+    "sha256": "a2f46f4cc6fc130ceb68d488c9059c83dd1596a83f05be221394be89013e271a"
+  },
+  {
+    "id": 29,
+    "file": "29-prototypical-networks.pdf",
+    "source": "https://arxiv.org/pdf/1703.05175",
+    "bytes": 584463,
+    "sha256": "c666e006cb450602a1b71d100766c21c970061ed6b3c2c7b2a7a6cdb85b32acc"
+  },
+  {
+    "id": 30,
+    "file": "30-maml.pdf",
+    "source": "https://arxiv.org/pdf/1703.03400",
+    "bytes": 4064212,
+    "sha256": "36e2130943089066456dc94b4af177f224a64506710a11dd35dd68b47a3acf5a"
+  }
+]

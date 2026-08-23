@@ -1,0 +1,69 @@
+---
+title: "02. The First Law of Complexodynamics：为什么“有趣”通常出现在秩序与随机之间"
+description: "熵可以单调增加，结构复杂度却常先升后降：一杯牛奶刚倒入咖啡时有清晰边界，完全混匀后近似随机，最丰富的涡流出现在中间。文章尝试用算法信息论刻画这个直觉。"
+date: 2026-08-23
+tags:
+  - deep-learning
+  - paper-reading
+  - ilya-reading-list
+  - complexity
+lang: zh-CN
+featured: false
+draft: false
+series: ilya-sutskever-reading-list
+seriesOrder: 2
+---
+> **材料类型：** 博客文章（Scott Aaronson，2011）　**出处状态：** 27 项保留清单　**原文：** [The First Law of Complexodynamics](https://scottaaronson.blog/?p=762)
+
+## 一句话定位
+
+熵可以单调增加，结构复杂度却常先升后降：一杯牛奶刚倒入咖啡时有清晰边界，完全混匀后近似随机，最丰富的涡流出现在中间。文章尝试用算法信息论刻画这个直觉。
+
+## 为什么会出现在清单中
+
+**已知**：文章在部分清单中，并与 Kolmogorov 复杂度、MDL、Coffee Automaton 连成一组。**合理推断**：它要求读者区分“难压缩”“结构丰富”和“适合学习的规律”。纯随机数据的 Kolmogorov 复杂度最高，却没有可利用模式；学习系统需要发现的是短规律与剩余噪声之间的分解。这条思想贯穿泛化、表示学习和生成建模。
+
+## 问题从哪里来
+
+热力学第二定律描述封闭系统向高熵宏观态演化。Sean Carroll 提出另一条曲线：早期低熵态简单，最终平衡态也无聊，星系、生命和咖啡纹理等“有趣结构”位于中间。难点不是画出这条曲线，而是给“有趣”一个不会把白噪声评为最复杂的定义。
+
+最直接的候选是 Kolmogorov 复杂度 `K(x)`，即输出字符串 `x` 的最短程序长度。但它遇到两个障碍：
+
+- 随机串不可压缩，所以 `K(x)` 很大，却没有有意义的结构。
+- 对确定性动力系统，给出简单初态、演化规则和时间 `t` 就能生成状态，故 `K(x_t) ≤ K(x_0)+K(t)+O(1)`，最多只随 `log t` 增长。这与视觉上迅速混合的直觉不符。
+
+文章因此引入资源受限复杂度、sophistication、Kolmogorov structure function 和 algorithmic statistics。共同思想是采用**两段式描述**：先编码一个解释数据的模型，再编码数据在模型内的索引或随机残差。简单晶格的模型短、残差短；白噪声可以用“均匀随机”这一短模型解释，残差长；真正有组织的中间态需要更丰富的模型。
+
+## 核心理论怎样理解
+
+可以把观测 `x` 的总描述分成 `L(M)+L(x|M)`。总长度对应压缩，模型部分 `L(M)` 对应可解释结构。若只最小化总长度，会把模型与噪声混在一起；sophistication 试图在近乎最短总描述的模型中，寻找模型自身需要多少信息。
+
+“第一定律”不是已证明的普遍物理定律，而是研究纲领：在自然封闭系统中，合适的结构复杂度可能从低值上升，在中间达到峰值，再向平衡态下降。文章明确把“找定义”和“对自然模型证明曲线”列为两个未完成任务。
+
+## 相关工作怎样解决同一问题
+
+- [Bennett 的 logical depth](https://doi.org/10.1007/978-3-642-14444-8_18) 用近最短程序运行多久来区分“随机但浅”与“由漫长计算生成的深结构”。
+- [Crutchfield 与 Young 的 statistical complexity](https://doi.org/10.1103/PhysRevLett.63.105) 用预测未来所需的最小因果状态衡量结构，强调预测而非文件长度。
+- [Gell-Mann 与 Lloyd 的 effective complexity](https://arxiv.org/abs/quant-ph/0301050) 把规律部分的描述长度视为有效复杂度。
+- 后续 [Coffee Automaton](/blog/ilya-reading-20-coffee-automaton/) 用粗粒化图像的压缩长度近似“表观复杂度”，试图把文章变成可计算实验。
+
+这些定义回答的问题不同。logical depth 看生成计算，statistical complexity 看预测状态，algorithmic statistics 看模型—噪声分解；不存在一个脱离任务的唯一“真正复杂度”。
+
+## 优点、缺点和重要修正
+
+文章的优点是把一个含混直觉拆成可反驳问题，并指出原始 Kolmogorov 复杂度为何不够。缺点也很根本：Kolmogorov 复杂度不可计算，有限样本只能用压缩器近似；结果依赖粗粒化尺度、容许偏差和参考机器。对可逆确定性系统，观察者丢弃微观信息才会看到宏观复杂度曲线，因此“观察接口”是定义的一部分。
+
+还应提前知道：Coffee Automaton 论文发布后，Aaronson 在[作者更正](https://scottaaronson.blog/?p=1818)中承认，论文采用的交互模型由于已有概率论结果，实际也不会产生所声称的大中期表观复杂度；数值峰值来自有限规模表现。这个失败没有否定问题，却否定了那一具体模型作为成功例证。
+
+## 如何实现和跨领域使用
+
+本项目的 [`src/ilya30/complexity.py`](https://github.com/keepkeen/keepkeen.github.io/blob/main/public/code/ilya30/src/ilya30/complexity.py) 用无损压缩长度近似粗粒化状态的表观复杂度，并同时报告熵，避免把两者混为一谈。它只能做有限分辨率实验，不能计算真正的 `K(x)`。
+
+同样思路可用于相变检测、生态系统演化、网络流量、训练过程和表示学习。使用时必须先回答：观察尺度是什么、哪些变化算噪声、模型需要预测什么。没有这三个选择，“复杂度”只是一个听起来精确的形容词。
+
+## 阅读检查
+
+- 为什么白噪声的 `K(x)` 高，却通常不算“有组织的复杂”？
+- 为什么确定性演化的原始 Kolmogorov 复杂度不会按直觉快速增长？
+- 两段式描述中模型长度和残差长度分别代表什么？
+- Coffee Automaton 的后续更正推翻了哪个具体主张，又没有推翻什么？

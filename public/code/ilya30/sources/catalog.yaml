@@ -1,0 +1,272 @@
+schema_version: 1
+scope_note: >-
+  Items 01-27 reproduce the consistent public partial list. Items 28-30 are
+  editorial meta-learning candidates, not confirmed Ilya Sutskever recommendations.
+items:
+  - id: 1
+    slug: annotated-transformer
+    title: The Annotated Transformer
+    year: 2018
+    type: code_tutorial
+    authors: [Alexander Rush, et al.]
+    source: https://nlp.seas.harvard.edu/annotated-transformer/
+    provenance: preserved_partial_list
+  - id: 2
+    slug: first-law-complexodynamics
+    title: The First Law of Complexodynamics
+    year: 2011
+    type: blog
+    authors: [Scott Aaronson]
+    source: https://scottaaronson.blog/?p=762
+    provenance: preserved_partial_list
+  - id: 3
+    slug: unreasonable-effectiveness-rnns
+    title: The Unreasonable Effectiveness of Recurrent Neural Networks
+    year: 2015
+    type: blog
+    authors: [Andrej Karpathy]
+    source: https://karpathy.github.io/2015/05/21/rnn-effectiveness/
+    provenance: preserved_partial_list
+  - id: 4
+    slug: understanding-lstm
+    title: Understanding LSTM Networks
+    year: 2015
+    type: blog
+    authors: [Christopher Olah]
+    source: https://colah.github.io/posts/2015-08-Understanding-LSTMs/
+    provenance: preserved_partial_list
+  - id: 5
+    slug: rnn-regularization
+    title: Recurrent Neural Network Regularization
+    year: 2014
+    type: paper
+    authors: [Wojciech Zaremba, Ilya Sutskever, Oriol Vinyals]
+    source: https://arxiv.org/abs/1409.2329
+    arxiv: "1409.2329"
+    provenance: preserved_partial_list
+  - id: 6
+    slug: keeping-networks-simple
+    title: Keeping Neural Networks Simple by Minimizing the Description Length of the Weights
+    year: 1993
+    type: paper
+    authors: [Geoffrey E. Hinton, Drew van Camp]
+    source: https://doi.org/10.1145/168304.168306
+    open_copy: https://www.cs.toronto.edu/~hinton/absps/colt93.pdf
+    provenance: preserved_partial_list
+  - id: 7
+    slug: pointer-networks
+    title: Pointer Networks
+    year: 2015
+    type: paper
+    authors: [Oriol Vinyals, Meire Fortunato, Navdeep Jaitly]
+    source: https://arxiv.org/abs/1506.03134
+    arxiv: "1506.03134"
+    provenance: preserved_partial_list
+  - id: 8
+    slug: alexnet
+    title: ImageNet Classification with Deep Convolutional Neural Networks
+    year: 2012
+    type: paper
+    authors: [Alex Krizhevsky, Ilya Sutskever, Geoffrey E. Hinton]
+    source: https://proceedings.neurips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html
+    provenance: preserved_partial_list
+  - id: 9
+    slug: order-matters-set2set
+    title: "Order Matters: Sequence to Sequence for Sets"
+    year: 2015
+    type: paper
+    authors: [Oriol Vinyals, Samy Bengio, Manjunath Kudlur]
+    source: https://arxiv.org/abs/1511.06391
+    arxiv: "1511.06391"
+    provenance: preserved_partial_list
+  - id: 10
+    slug: gpipe
+    title: "GPipe: Efficient Training of Giant Neural Networks using Pipeline Parallelism"
+    year: 2018
+    type: paper
+    authors: [Yanping Huang, et al.]
+    source: https://arxiv.org/abs/1811.06965
+    arxiv: "1811.06965"
+    provenance: preserved_partial_list
+  - id: 11
+    slug: resnet
+    title: Deep Residual Learning for Image Recognition
+    year: 2015
+    type: paper
+    authors: [Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun]
+    source: https://arxiv.org/abs/1512.03385
+    arxiv: "1512.03385"
+    provenance: preserved_partial_list
+  - id: 12
+    slug: dilated-convolutions
+    title: Multi-Scale Context Aggregation by Dilated Convolutions
+    year: 2015
+    type: paper
+    authors: [Fisher Yu, Vladlen Koltun]
+    source: https://arxiv.org/abs/1511.07122
+    arxiv: "1511.07122"
+    provenance: preserved_partial_list
+  - id: 13
+    slug: neural-message-passing
+    title: Neural Message Passing for Quantum Chemistry
+    year: 2017
+    type: paper
+    authors: [Justin Gilmer, Samuel S. Schoenholz, Patrick F. Riley, Oriol Vinyals, George E. Dahl]
+    source: https://arxiv.org/abs/1704.01212
+    arxiv: "1704.01212"
+    provenance: preserved_partial_list
+  - id: 14
+    slug: attention-is-all-you-need
+    title: Attention Is All You Need
+    year: 2017
+    type: paper
+    authors: [Ashish Vaswani, et al.]
+    source: https://arxiv.org/abs/1706.03762
+    arxiv: "1706.03762"
+    provenance: preserved_partial_list
+  - id: 15
+    slug: bahdanau-attention
+    title: Neural Machine Translation by Jointly Learning to Align and Translate
+    year: 2014
+    type: paper
+    authors: [Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio]
+    source: https://arxiv.org/abs/1409.0473
+    arxiv: "1409.0473"
+    provenance: preserved_partial_list
+  - id: 16
+    slug: identity-mappings-resnet
+    title: Identity Mappings in Deep Residual Networks
+    year: 2016
+    type: paper
+    authors: [Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun]
+    source: https://arxiv.org/abs/1603.05027
+    arxiv: "1603.05027"
+    provenance: preserved_partial_list
+  - id: 17
+    slug: relation-networks
+    title: A Simple Neural Network Module for Relational Reasoning
+    year: 2017
+    type: paper
+    authors: [Adam Santoro, et al.]
+    source: https://arxiv.org/abs/1706.01427
+    arxiv: "1706.01427"
+    provenance: preserved_partial_list
+  - id: 18
+    slug: variational-lossy-autoencoder
+    title: Variational Lossy Autoencoder
+    year: 2016
+    type: paper
+    authors: [Xi Chen, et al.]
+    source: https://arxiv.org/abs/1611.02731
+    arxiv: "1611.02731"
+    provenance: preserved_partial_list
+  - id: 19
+    slug: relational-rnns
+    title: Relational Recurrent Neural Networks
+    year: 2018
+    type: paper
+    authors: [Adam Santoro, et al.]
+    source: https://arxiv.org/abs/1806.01822
+    arxiv: "1806.01822"
+    provenance: preserved_partial_list
+  - id: 20
+    slug: coffee-automaton
+    title: "Quantifying the Rise and Fall of Complexity in Closed Systems: The Coffee Automaton"
+    year: 2014
+    type: paper
+    authors: [Scott Aaronson, Sean M. Carroll, Lauren Ouellette]
+    source: https://arxiv.org/abs/1405.6903
+    arxiv: "1405.6903"
+    provenance: preserved_partial_list
+  - id: 21
+    slug: neural-turing-machines
+    title: Neural Turing Machines
+    year: 2014
+    type: paper
+    authors: [Alex Graves, Greg Wayne, Ivo Danihelka]
+    source: https://arxiv.org/abs/1410.5401
+    arxiv: "1410.5401"
+    provenance: preserved_partial_list
+  - id: 22
+    slug: deep-speech-2
+    title: "Deep Speech 2: End-to-End Speech Recognition in English and Mandarin"
+    year: 2015
+    type: paper
+    authors: [Dario Amodei, et al.]
+    source: https://arxiv.org/abs/1512.02595
+    arxiv: "1512.02595"
+    provenance: preserved_partial_list
+  - id: 23
+    slug: scaling-laws
+    title: Scaling Laws for Neural Language Models
+    year: 2020
+    type: paper
+    authors: [Jared Kaplan, et al.]
+    source: https://arxiv.org/abs/2001.08361
+    arxiv: "2001.08361"
+    provenance: preserved_partial_list
+  - id: 24
+    slug: mdl-tutorial
+    title: A Tutorial Introduction to the Minimum Description Length Principle
+    year: 2004
+    type: book_chapter
+    authors: [Peter Grünwald]
+    source: https://arxiv.org/abs/math/0406077
+    arxiv: "math/0406077"
+    provenance: preserved_partial_list
+  - id: 25
+    slug: machine-super-intelligence
+    title: Machine Super Intelligence
+    year: 2008
+    type: dissertation
+    authors: [Shane Legg]
+    source: https://www.vetta.org/documents/Machine_Super_Intelligence.pdf
+    open_copy: https://pdf.stafforini.com/legg-2008-machine-super-intelligence.pdf
+    repository_record: https://sonar.ch/global/documents/317954
+    provenance: preserved_partial_list
+  - id: 26
+    slug: kolmogorov-complexity
+    title: Kolmogorov Complexity and Algorithmic Randomness
+    year: 2017
+    type: book_section
+    authors: [Alexander Shen, Vladimir A. Uspensky, Nikolay Vereshchagin]
+    source: https://www.ams.org/books/surv/220/
+    open_copy: https://www.lirmm.fr/~ashen/kolmbook-eng-scan.pdf
+    scope: "Public list points to page 434 onward; this project also explains prerequisite definitions."
+    provenance: preserved_partial_list
+  - id: 27
+    slug: cs231n
+    title: "CS231n: Convolutional Neural Networks for Visual Recognition"
+    year: 2016
+    type: course
+    authors: [Stanford Vision Lab, Andrej Karpathy, Fei-Fei Li, et al.]
+    source: https://cs231n.stanford.edu/
+    notes: https://cs231n.github.io/
+    provenance: preserved_partial_list
+  - id: 28
+    slug: memory-augmented-meta-learning
+    title: One-shot Learning with Memory-Augmented Neural Networks
+    year: 2016
+    type: paper
+    authors: [Adam Santoro, Sergey Bartunov, Matthew Botvinick, Daan Wierstra, Timothy Lillicrap]
+    source: https://arxiv.org/abs/1605.06065
+    arxiv: "1605.06065"
+    provenance: editorial_meta_learning_candidate
+  - id: 29
+    slug: prototypical-networks
+    title: Prototypical Networks for Few-shot Learning
+    year: 2017
+    type: paper
+    authors: [Jake Snell, Kevin Swersky, Richard S. Zemel]
+    source: https://arxiv.org/abs/1703.05175
+    arxiv: "1703.05175"
+    provenance: editorial_meta_learning_candidate
+  - id: 30
+    slug: maml
+    title: Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks
+    year: 2017
+    type: paper
+    authors: [Chelsea Finn, Pieter Abbeel, Sergey Levine]
+    source: https://arxiv.org/abs/1703.03400
+    arxiv: "1703.03400"
+    provenance: editorial_meta_learning_candidate

@@ -1,0 +1,65 @@
+---
+title: "07. Pointer Networks：让输出词表随输入一起变化"
+description: "普通 seq2seq 从固定词表生成符号；Pointer Network 把注意力分布直接当作输出分布，因此每一步输出的是“输入中的第几个元素”。输出类别数自然随输入长度变化。"
+date: 2026-08-23
+tags:
+  - deep-learning
+  - paper-reading
+  - ilya-reading-list
+  - attention
+lang: zh-CN
+featured: false
+draft: false
+series: ilya-sutskever-reading-list
+seriesOrder: 7
+---
+> **论文：** Vinyals, Fortunato & Jaitly，NeurIPS 2015　**出处状态：** 27 项保留清单　**原文：** [arXiv:1506.03134](https://arxiv.org/abs/1506.03134)
+
+## 一句话定位
+
+普通 seq2seq 从固定词表生成符号；Pointer Network 把注意力分布直接当作输出分布，因此每一步输出的是“输入中的第几个元素”。输出类别数自然随输入长度变化。
+
+## 为什么会被推荐
+
+**已知**：论文在保留清单中。**合理推断**：它展示注意力不只是内部加权平均，还能成为结构化决策接口。一个小的概率语义变化，把模型从翻译扩展到凸包、三角剖分、路径规划和抽取式任务。这类“改变输出空间表示”往往比堆叠更大网络更关键。
+
+## 原问题、核心贡献和其他方案
+
+标准 [seq2seq](https://arxiv.org/abs/1409.3215) 的 decoder softmax 维度等于固定词表大小。若输出是输入点的排列，输入有 `n` 个点就有 `n` 类，换一个 `n` 必须换输出层。[Bahdanau attention](/blog/ilya-reading-15-bahdanau-attention/) 已计算每个输出步对输入位置的分布，但随后把它加权成上下文向量，再从固定词表预测。Neural Turing Machine 也能对地址做软读写，却没有直接把地址作为监督输出。
+
+Pointer Network 保留 encoder 和 decoder RNN，只把注意力分数 `u_j^i` 的 softmax 解释为：
+
+`p(C_i=j | C_<i, P) = softmax_j(u_j^i)`。
+
+这里 `P` 是输入点序列，`C_i` 是第 `i` 个被选输入索引。参数量不依赖 `n`；掩码可禁止重复选择，终止符处理变长输出。
+
+## 怎样理解和实现
+
+把 encoder 输出看成一张内容可寻址表。decoder 状态形成查询，逐项打分后获得指针分布。训练有目标索引时直接用交叉熵；推理可贪心或 beam search。组合约束不能只靠概率学会：TSP 实验在 beam search 中显式禁止重复城市，否则 `n>20` 时至少 10% 样本找不到有效 tour。这说明神经打分器与符号约束求解可以分工。
+
+[`src/ilya30/sequence.py`](https://github.com/keepkeen/keepkeen.github.io/blob/main/public/code/ilya30/src/ilya30/sequence.py) 实现加性注意力与带 mask 的 pointer softmax，测试概率归一化和禁用位置为零。完整组合优化还需要 encoder/decoder、搜索和任务约束。
+
+## 实验说明什么
+
+凸包 `n=50` 时，普通 LSTM 精确率 1.9%，带 attention 的 LSTM 为 38.9%，Ptr-Net 为 72.6%，面积覆盖 99.9%。训练长度 5–50 的单模型可运行到 500 点，但精确率从 `n=50` 的 69.6% 降到 `n=500` 的 1.3%；面积仍约 99%，表明几何近似不错而离散序列常有细错。
+
+TSP 上，训练于 5–20 点的模型对 25、30 点尚可，40、50 点明显恶化；50 点平均 tour 长 7.66，传统启发式 A3 为 5.79。模型学到可迁移启发式，没有学到对规模外输入可靠的通用算法。Delaunay 三角剖分在 50 点时没有任何完全正确样本，三角覆盖为 52.8%。这些失败比“神经网络会解 NP-hard 问题”的标题式解读更重要。
+
+## 后续路线
+
+[Pointer-generator network](https://aclanthology.org/P17-1099/) 在固定词表生成与从原文复制之间做混合，缓解摘要中的事实和未登录词问题；[Attention Model for Routing Problems](https://openreview.net/forum?id=ByxBFsRqYm) 用强化学习训练 Transformer 式指针解决路由，不需要最优标签；现代代码生成、实体抽取和 span QA 也常用起止指针。
+
+## 优缺点
+
+优点是输出大小随输入变化、天然支持复制和排列、端到端可训练。缺点是每步对所有输入打分，解码约为 `O(n²)`；自回归错误累积，输出合法性和最优性无保证；训练分布外长度泛化脆弱。指针只能选已有元素，不能单独生成新符号，因此实际系统常使用生成—复制混合。
+
+## 跨领域应用
+
+可用于抽取式摘要、代码变量引用、实体链接、路径规划、调度、集合排序和从候选池选择动作。适用判据很简单：若答案元素大多来自当前输入且候选数每例不同，指针比固定分类头更自然。
+
+## 阅读检查
+
+- Bahdanau attention 与 pointer 输出在概率语义上差在哪里？
+- 为什么参数量可以与输入长度无关，计算量却仍随长度增长？
+- `n=500` 的面积覆盖高而精确率低说明什么？
+- 哪些合法性约束应该交给 mask/搜索，而不应期待模型自己发现？

@@ -1,0 +1,65 @@
+---
+title: "12. Dilated Convolutions：不降采样也能看见大范围上下文"
+description: "空洞卷积（dilated/atrous convolution）在卷积核采样点之间插入间隔，让感受野随层数指数扩大，同时保持特征图分辨率、参数量和每层采样点数。这解决了密集预测里“需要全局语义，却不能反复池化丢掉边界”的冲突。"
+date: 2026-08-23
+tags:
+  - deep-learning
+  - paper-reading
+  - ilya-reading-list
+  - computer-vision
+lang: zh-CN
+featured: false
+draft: false
+series: ilya-sutskever-reading-list
+seriesOrder: 12
+---
+> **论文：** Yu & Koltun，ICLR 2016　**出处状态：** 27 项保留清单　**原文：** [arXiv:1511.07122](https://arxiv.org/abs/1511.07122)　**作者代码：** [fyu/dilation](https://github.com/fyu/dilation)
+
+## 一句话定位
+
+空洞卷积（dilated/atrous convolution）在卷积核采样点之间插入间隔，让感受野随层数指数扩大，同时保持特征图分辨率、参数量和每层采样点数。这解决了密集预测里“需要全局语义，却不能反复池化丢掉边界”的冲突。
+
+## 为什么会被推荐
+
+**已知**：它在保留清单；没有公开逐篇理由。**合理推断**：这是一个把任务约束直接编码进算子的典范。分类网络通过下采样换取大感受野，但语义分割必须逐像素输出；dilation 复用同一组参数，以另一种几何布局扩大信息范围。它也和 Transformer 的全局感受野、WaveNet 的长序列建模形成有用对照。
+
+## 核心定义与直觉
+
+二维离散信号 `F`、卷积核 `k` 和 dilation `l` 的运算是：
+
+`(F *_l k)(p) = Σ_t F(p-lt) k(t)`。
+
+`l=1` 就是普通卷积。实现时不需要真的构造一个塞满零的大核，只改变输入索引或底层 kernel 的步距。连续堆叠 `3×3` 卷积并令 dilation 为 `1,2,4,...`，第 1、2、3 层感受野分别为 `3×3、7×7、15×15`；参数数目只随层数线性增长。
+
+关键区别是：stride/pooling 会减少输出位置，dilation 保留每个位置；大普通核参数按面积增长，dilation 仍只有原核的 9 个空间权重；反卷积只能事后上采样，无法恢复下采样已经抹掉的所有细节。
+
+## 架构和实现
+
+论文先修改 VGG-16：移除最后两次池化/stride，后续卷积的 dilation 分别乘 2，因而能载入分类预训练权重又输出更密的特征。随后接一个 8 层 context module：`3×3` 层的 dilation 为 `1,1,2,4,8,16,1`，最后用 `1×1` 输出，感受野到 `67×67`。
+
+作者发现标准随机初始化难以训练该模块，于是把每层中心位置、同通道权重初始化为 1，其余为 0 或微小噪声，使整个模块初始近似恒等。这与 ResNet 的共同原则是先提供稳定路径，再学习上下文修正。
+
+[`src/ilya30/vision.py`](https://github.com/keepkeen/keepkeen.github.io/blob/main/public/code/ilya30/src/ilya30/vision.py) 实现 NumPy 版 `conv2d`/`dilated_conv2d` 和感受野公式；测试验证 dilation=1 与普通卷积一致，并用脉冲输入显示非连续采样位置。工程项目应使用框架原生 `dilation` 参数，作者的 Caffe 仓库主要用于历史复现。
+
+## 当时其他路线怎么解决
+
+[FCN](https://arxiv.org/abs/1411.4038) 以跳连融合粗深层和细浅层特征，再上采样；[DeepLab](https://arxiv.org/abs/1412.7062) 已在分割网络中使用 atrous 算法，并借 dense CRF 精修边界。本文的贡献不是发明该数学算子——它来自 `algorithme à trous` 小波方法——而是系统设计指数 dilation 的多尺度上下文网络并解释其感受野。
+
+后来 [WaveNet](https://arxiv.org/abs/1609.03499) 把因果空洞卷积用于音频序列；[ASPP/DeepLab v3](https://arxiv.org/abs/1706.05587) 并行使用多种 dilation 抓取尺度；[Hybrid Dilated Convolution](https://arxiv.org/abs/1702.08502) 针对规则 dilation 的 gridding artifact 设计互质/混合间隔。U-Net/FPN 则通过多尺度下采样与跳连恢复局部细节，通常和 dilation 组合而不是互斥。
+
+## 证据、优缺点
+
+论文的 VOC 2012 前端在不加 CRF 时测试 mIoU 为 71.3%；在控制实验中，大 context module 把验证 mIoU 从 69.8% 提至 72.1%，与 CRF-RNN 组合到 73.9%。这些数字同时受 VGG 预训练、COCO 增补数据和当时评测协议影响，不能直接与今天模型横比。
+
+优点是高分辨率、大感受野、参数经济，且容易插入已有网络。缺点是稀疏栅格可能漏掉局部模式并产生棋盘/网格效应；大 dilation 的边界 padding 占比高；高分辨率全程计算耗显存；感受野理论覆盖不等于有效感受野中的信息真的均匀传播。
+
+## 跨领域应用
+
+一维可用于音频、时间序列和 DNA；二维用于分割、检测、去噪；三维用于医学体数据和点云体素。选择 dilation 应服从数据尺度和因果约束：序列预测还必须加 causal padding，不能让未来位置泄漏。
+
+## 阅读检查
+
+- dilation、stride 和大卷积核分别怎样改变输出分辨率、参数和感受野？
+- 为什么 `1,2,4` 的三层 `3×3` 卷积得到 `15×15` 感受野？
+- 理论感受野很大为什么仍可能出现 gridding artifact？
+- 论文何处使用了“近似恒等初始化”，它解决的是什么，而没有解决什么？
