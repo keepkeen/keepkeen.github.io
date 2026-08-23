@@ -2,6 +2,7 @@
 title: "强化学习数学地基与 MDP"
 description: "用概率、期望、log-derivative trick、return、value 与 Bellman 方程建立大模型 RL 的共同语言。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm

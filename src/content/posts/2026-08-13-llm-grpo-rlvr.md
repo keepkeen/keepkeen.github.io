@@ -2,6 +2,7 @@
 title: "GRPO、RLVR 与新方法坐标系"
 description: "组内相对优势、结构性失败、DeepSeek R1 四阶段管线、MoE 训推不一致机制，以及 DAPO/GSPO/CISPO/OPD 六轴坐标系。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm

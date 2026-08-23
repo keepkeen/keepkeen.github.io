@@ -2,6 +2,7 @@
 title: "强化学习手写练习与递进实验"
 description: "闭卷实现 return、GAE、PPO、DPO、GRPO，配数值题、自动测试和从 GridWorld 到小模型 RL 的项目设计。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm

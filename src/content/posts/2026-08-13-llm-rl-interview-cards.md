@@ -1,7 +1,8 @@
 ---
-title: "大模型强化学习面经：70 张答案卡"
-description: "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与前沿，配两轮追问与评分标准。"
+title: "大模型强化学习面经：76 张答案卡"
+description: "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与 8 月前沿，配两轮追问与评分标准。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm
@@ -15,7 +16,7 @@ seriesOrder: 10
 
 ## 0. 这份题库来自哪里
 
-检索窗口为 **2025-01-01 至 2026-08-13**。公开亲历面经显示，国内大模型 RL 岗的考察已经从“讲 PPO/GRPO”推进到：
+检索窗口为 **2025-01-01 至 2026-08-23**。公开亲历面经显示，国内大模型 RL 岗的考察已经从“讲 PPO/GRPO”推进到：
 
 - 公式与数值直觉：clip、GAE、importance ratio、DPO beta；
 - 策略角色：current、old、rollout/behavior、reference；
@@ -29,6 +30,8 @@ seriesOrder: 10
 **2026-08-13 增量（第 46–63 题）**：基于新一轮实录检索补齐——[腾讯 WXG 大模型面经](https://www.nowcoder.com/discuss/891322059656052736)（手撕 PPO/AdamW、MDP 折扣计算）、[阿里一面 GRPO 深挖复盘](https://yunpan.plus/t/23865-1-1)（loss 逐项、ε 取值、reward hacking）、[AgentGuide 公司案例集](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md)（汇编级：RM vs critic、KL 的 k1/k2/k3、GRPO×MoE、SFT vs RL、rollout 与卡数等在多家反复出现）。增量卡对应的正文详解见 04 章（KL 估计器、交叉熵）、05 章（DPO 家族、拒绝采样）、06 章（R1 管线、MoE、CISPO）。
 
 **2026-08-13 第二轮增量（第 64–70 题，K 组）**：前沿与跨界——多模态 RL（Visual-RFT/IoU 奖励，CV 背景候选人的主战场）、熵坍缩机制（Clip-Cov/KL-Cov）、RLVR 边界争议（pass@k/spurious rewards）、生成式 RM（DeepSeek-GRM/SPCT）、GiGPO 步级信用、AReaL 异步系统、RL Scaling（ScaleRL）。正文详解见 [12 章](/blog/llm-rl-frontier-topics/)与 06/07/08 章对应小节。
+
+**2026-08-23 增量（第 71–76 题，L 组）**：8.17–8.19 原始论文补齐多奖励饱和（SA-MRPO）、prompt 组梯度冲突（GUPO）、OPD 教师信号冲突（R2-OPD）、成功稀缺的 Agent 转移信用（TRCA）、只修错误后缀的拓扑蒸馏（DART-SD）；第 76 题来自[腾讯 27 秋招大模型一面](https://www.nowcoder.com/feed/main/detail/8bbd2725dda44957a3ba9e301b5a9533)的“Agent vs Pipeline”问法。论文卡是趋势题，不宣称已成为固定八股。
 
 ---
 
@@ -505,6 +508,44 @@ L_{DPO}=-\log\sigma\left(\beta\left[
 
 **追问：** 为什么用 sigmoid 不用幂律？（pass rate 有界饱和。）和熵定律什么关系？（$R=-a e^H+b$ 同为"可预测天花板"，熵耗尽即到顶，所以熵管理是 scaling 前提。）
 
+## L. 2026-08-23 奖励与 Agent 信用增量
+
+### 71. 多个 reward 固定加权后再做 GRPO，有什么问题？怎么处理？【P1，多奖励设计】
+
+**答：** 两个问题：不同 reward profile 可能加成同一个标量，丢失“正确但格式错”和“错误但格式对”的区别；格式/长度等简单目标饱和后仍按固定权重吃梯度，难的 correctness 得不到预算。SA-MRPO 的方向是每个目标先独立组内标准化，再按批级饱和度降权已掌握目标，把更新集中到剩余提升空间。工程上先监控各 reward 的均值、方差、饱和度及其与真实成功率的相关性，再决定退火，不要只盯总 reward。
+
+**追问：** 为什么这不只是改变梯度大小？（不同目标的标准化 advantage 可能符号相反，权重变化会翻转总 advantage 的符号。）格式 reward 能不能直接删？（不能一刀切；保留低权重作约束，并用独立格式失败率守门。）
+
+### 72. GRPO 已经做组内标准化，为什么 mini-batch 仍可能更新不好？【P2，优化开放题】
+
+**答：** 组内标准化只给每个 prompt 建 baseline；不同 prompt 的 group gradient 在聚合时仍可能方向冲突。GUPO 观察到高冲突 batch 的验证更新收益更差，把组梯度视为随机变量估计不确定性，聚合时降低高不确定组权重。落地应先看组梯度余弦分布、冲突率与任务/难度分桶；若根因是数据混杂，重采样可能比复杂优化器更便宜。
+
+**追问：** reward 方差大和 gradient conflict 是同一件事吗？（不是；前者是标量信号分散，后者是参数空间更新方向不一致。）
+
+### 73. On-policy distillation 的教师逐 token 信号很稠密，为什么仍可能伤推理？【P1，OPD 追问】
+
+**答：** 稠密不等于正确。教师相似度衡量“像不像教师”，不直接衡量该 span 是否增加最终解题概率；学生走不同但有效的路径时会被误罚。R2-OPD 分别按教师奖励与 reasoning progress 给 span 排序，局部排序冲突时屏蔽蒸馏奖励，用 progress 作可靠性门控，而不是把两个原始分数粗暴相加。
+
+**追问：** 屏蔽越多越好吗？（不是；过多会退化成稀疏 RL，要监控冲突率、mask 比例、teacher KL 与最终正确率。）
+
+### 74. Agent 训练早期几乎没有成功轨迹，怎么给失败轨迹中的好动作信用？【Agent 岗 P1】
+
+**答：** TRCA 不依赖成功锚点或已训练 critic，直接按状态转移评三类 rubric：Evidence（获得新证据）、Execution（有效改变环境）、Invalidity（无效/重复/回退）。Foundational Reward 评局部质量，Breakthrough Reward 奖励首次覆盖的新证据/执行条件，再与终局结果合并。这样整条轨迹失败时，关键中间动作仍有正信用。
+
+**追问：** 最大风险？（rubric/judge 偏差和被 hack；必须与纯终局、成功锚点、过程 judge 比较，并抽查高分失败轨迹。）
+
+### 75. 全轨迹蒸馏多轮工具 Agent 为什么会毁掉已经正确的探索？怎么只修错处？【Agent 岗 P1】
+
+**答：** 多子目标可按不同顺序完成，路径形成汇合的菱形拓扑；把教师一条线性轨迹当唯一答案，会对学生正确但不同序的前缀也算 loss。DART-SD 建交互状态图，定位 Critical Topological Breakpoint，只在断点后的恢复步骤做局部自蒸馏，并保护前缀不反传。它解决“有成功支持时只修错误后缀”，不是新的 PPO loss。
+
+**追问：** 与 TRCA 的区别？（TRCA 面向成功锚点稀缺，逐转移造 credit；DART-SD 利用成功支持与路径拓扑做局部 correction。）
+
+### 76. Agent 和固定 Pipeline/Workflow 的本质区别是什么？什么时候值得上 RL？【P0，腾讯 27 秋招实录】
+
+**答：** Pipeline 的步骤与分支主要由人预先写定，适合稳定、可枚举、强合规流程；Agent 让模型基于 observation 动态规划、选工具、执行、观察结果、反思并决定停止，能处理开放环境但不确定性、成本和安全风险更高。先用确定性 workflow 做 baseline；只有任务存在多步决策、策略会进入自己的错误状态、规则无法穷举，且有可验证终局/过程反馈时，RL 才有额外价值。状态是对话+环境，动作是模型/工具调用，reward 是成功、成本、安全与格式，工具返回只作 observation 通常不算 policy loss。
+
+**追问：** 为什么“用了 LangGraph/MCP”不自动等于 Agent？（它们提供编排/协议能力，决策是否由模型动态闭环决定才是边界。）如何证明 RL 比 workflow 好？（同预算比较成功率、成本、恢复率、越权率，做 SFT/无 RL 基线。）
+
 ---
 
 ## 口述评分标准
@@ -516,11 +557,11 @@ L_{DPO}=-\log\sigma\left(\beta\left[
 - **2 分**：定义、公式和基本直觉正确；
 - **3 分**：还能回答追问、做数值例子、联系指标与工程。
 
-70 题共 210 分。建议门槛：
+76 题共 228 分。建议门槛：
 
 - 第 10 天：105 分；
 - 第 20 天：155 分；
-- 第 28 天：180 分以上，且 P0 题无 0 分（P0 增量卡：46、49、51、52、55、57；多模态岗加 64，Agent 岗加 68，Seed RL Scaling 方向加 70）。
+- 第 28 天：195 分以上，且 P0 题无 0 分（P0 增量卡：46、49、51、52、55、57、76；多模态岗加 64，Agent 岗加 68/74/75，Seed RL Scaling 方向加 70）。
 ---
 
 原始讲义与可运行材料：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/09_%E9%9D%A2%E7%BB%8F%E9%A2%98%E5%BA%93%E4%B8%8E%E7%AD%94%E6%A1%88%E5%8D%A1.md)。

@@ -2,6 +2,7 @@
 title: "大模型强化学习资料与面经来源索引"
 description: "汇总经典论文、2025—2026 新方法、官方框架、岗位页面和候选人面经，并说明证据等级与使用边界。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm
@@ -11,11 +12,11 @@ draft: false
 series: llm-reinforcement-learning-interview
 seriesOrder: 14
 ---
-> 检索截止：2026-08-13。技术结论优先使用论文、官方博客和官方文档；面经只用于判断“考什么”，不作为算法事实的唯一依据。
+> 检索截止：2026-08-23。技术结论优先使用论文、官方博客和官方文档；面经只用于判断“考什么”，不作为算法事实的唯一依据。
 
 ## 1. 检索方法
 
-本专题按九条工作流检索：经典 RL、RLHF/PPO、偏好学习/DPO、GRPO/RLVR、新方法、Agentic RL、训练框架、官方岗位、候选人面经。深度检索共返回约 **427 条候选结果**（不同查询有重合），再按以下规则去重和筛选：
+本专题按九条工作流检索：经典 RL、RLHF/PPO、偏好学习/DPO、GRPO/RLVR、新方法、Agentic RL、训练框架、官方岗位、候选人面经。8.13 首轮返回约 **427 条候选结果**；8.14–8.23 增量按八条招聘/面经/笔试/技术工作流再返回 **423 条候选结果**。两轮结果大量重合，“约 850”只是检索返回量而非唯一来源数；正文必须去重后再按以下规则筛选：
 
 1. 同一论文优先论文主页/官方仓库；
 2. 技术实现优先框架官方文档；
@@ -77,6 +78,9 @@ seriesOrder: 14
 | [AReaL](https://arxiv.org/abs/2505.24298)（[官方仓库](https://github.com/inclusionAI/AReaL)） | 原始论文/官方仓库 | 全异步系统、可中断 rollout、staleness-aware PPO |
 | [ROLL](https://github.com/alibaba/ROLL) | 官方仓库/文档 | Ray 多角色、RewardWorker 奖励路由、StarPO/GiGPO |
 | [ScaleRL](https://arxiv.org/abs/2510.13786) | 原始论文 | sigmoid 计算量—性能拟合、天花板/效率二分 |
+| [SA-MRPO](https://arxiv.org/abs/2608.16072)（2026-08-17） | 原始论文 | 多奖励独立标准化、按目标饱和度重分配优化预算 |
+| [GUPO](https://arxiv.org/abs/2608.17411)（2026-08-18） | 原始论文 | prompt group gradient 冲突与不确定性加权聚合 |
+| [R2-OPD](https://arxiv.org/abs/2608.19408)（2026-08-19） | 原始论文 | 教师蒸馏奖励与 reasoning progress 冲突时的 span 级过滤 |
 
 阅读新方法时不背“方法动物园”，统一比较：baseline/advantage、importance ratio 粒度、KL、reduction、采样分布、解决的失败模式和新增代价。
 
@@ -92,6 +96,8 @@ seriesOrder: 14
 | [ARPO 官方仓库](https://github.com/RUC-NLPIR/ARPO) | 官方仓库 | 训练代码与配置 |
 | [Agent-R1](https://github.com/AgentR1/Agent-R1) | 官方仓库 | 端到端 Agent RL 训练参考 |
 | [Agent Lightning 教程](https://microsoft.github.io/agent-lightning/stable/how-to/train-first-agent/) | 官方文档 | 将已有 Agent 轨迹接入 RL |
+| [TRCA](https://arxiv.org/abs/2608.16156)（2026-08-17） | 原始论文 | 成功轨迹稀缺时，Evidence/Execution/Invalidity 转移 rubric 与 step credit |
+| [DART-SD](https://arxiv.org/abs/2608.18524)（2026-08-19） | 原始论文 | 交互状态图、关键拓扑断点、只蒸馏恢复后缀并保护有效前缀 |
 
 ## 5. 训练框架官方文档
 
@@ -121,6 +127,7 @@ seriesOrder: 14
 | [阿里大模型多模态后训练实习](https://campus-talent.alibaba.com/campus/position/199903480017) | 后训练/多模态方向 JD 样本 |
 | [小红书校园招聘职位](https://job.xiaohongshu.com/campus/position/20888) | 大模型算法相关官方职位样本 |
 | [滴滴社会招聘职位](https://talent.didiglobal.com/social/p/60879) | 大模型/Agent 相关职位样本 |
+| [快手 2027 秋招](https://zhaopin.kuaishou.cn/) | 大模型/音视频/推荐等岗位；部分技术岗明确增加 AI Coding |
 
 岗位页面可能下线或调整，因此专题正文只提炼能力维度，不硬编码长期有效的 HC、薪资或截止日期。
 
@@ -142,6 +149,7 @@ seriesOrder: 14
 | [小鹏多模态大模型](https://www.nowcoder.com/feed/main/detail/96f931642588471e8939e29028604499) | 2026-03 | B | PPO/GRPO/GSPO/DAPO、投机/拒绝采样、多模态 |
 | [腾讯 WXG 大模型暑期](https://www.nowcoder.com/discuss/891322059656052736) | 2026 | B（转载于汇总帖） | 手撕 PPO/AdamW、MDP 折扣阈值、SFT 参数量与显卡利用率、Q-learning vs DQN |
 | [阿里大模型一面 GRPO 深挖](https://yunpan.plus/t/23865-1-1) | 2026 | B- | GRPO loss 逐项、clip ε、reward hacking 应对、信用分配 |
+| [腾讯 27 秋招大模型算法一面](https://www.nowcoder.com/feed/main/detail/8bbd2725dda44957a3ba9e301b5a9533) | 2026-08（页面相对日期） | B-/日期弱 | Agent vs Pipeline、PPO/DPO/GRPO/DAPO、DPO/GRPO 公式、感知规划执行反思、LIS |
 | [AgentGuide 公司案例集](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md) | 持续更新 | 线索（汇编） | RM vs critic、k1/k2/k3、GRPO×MoE、SFT vs RL、rollout 与卡数、FC 过程奖励 |
 | [美团 GRPO 面经解析（面试大师）](https://mianshidashi.cn/interview-questions/meituan/algorithm-engineer/meituan-algorithm-grpo-loss-data-organization) | 2026 | 线索（站方撰写答案） | GRPO loss 计算、训练数据组织字段、禁止跨 prompt 归一化 |
 | [MoonOut RL 八股问答（3）](https://www.cnblogs.com/moonout/p/19749191) | 2026 | 线索（个人整理） | PPO/DPO/GRPO 三方对比、在线 vs 离线 RL 归属 |

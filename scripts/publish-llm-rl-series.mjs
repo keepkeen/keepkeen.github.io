@@ -84,9 +84,9 @@ const chapters = [
   {
     file: "09_面经题库与答案卡.md",
     slug: "llm-rl-interview-cards",
-    title: "大模型强化学习面经：70 张答案卡",
+    title: "大模型强化学习面经：76 张答案卡",
     description:
-      "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与前沿，配两轮追问与评分标准。",
+      "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与 8 月前沿，配两轮追问与评分标准。",
   },
   {
     file: "10_手写练习与实验.md",
@@ -107,7 +107,7 @@ const chapters = [
     slug: "llm-rl-frontier-topics",
     title: "多模态 RL、奖励模型前沿与 RL Scaling",
     description:
-      "Visual-RFT 与 IoU 可验证奖励、DeepSeek-GRM/SPCT、RLVR 边界争议的答题模板，以及 ScaleRL 的天花板/效率二分。",
+      "Visual-RFT、DeepSeek-GRM、RLVR 边界与 ScaleRL，并系统讲解多奖励饱和、组梯度冲突、OPD 过滤和 Agent 信用分配。",
   },
   {
     file: path.join("sources", "来源索引.md"),
@@ -169,6 +169,7 @@ for (const [index, chapter] of chapters.entries()) {
     `title: ${JSON.stringify(chapter.title)}`,
     `description: ${JSON.stringify(chapter.description)}`,
     "date: 2026-08-13",
+    "updatedDate: 2026-08-23",
     "tags:",
     "  - reinforcement-learning",
     "  - llm",

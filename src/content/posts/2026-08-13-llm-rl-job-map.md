@@ -2,6 +2,7 @@
 title: "大模型强化学习岗位地图与学习入口"
 description: "从 2025—2026 公开岗位和面经出发，区分后训练、Reasoning RL、Agentic RL 与 RL 系统岗位，并给出零基础优先级。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm
@@ -57,6 +58,7 @@ seriesOrder: 1
 4. **Agent RL 是真正的序列决策**：状态转移、环境反馈和 credit assignment 不能用单轮偏好学习敷衍。
 5. **代码仍然存在**：除了 LeetCode，还可能手写 KL、DPO/GRPO 数据流、SFT mask 或训练循环。
 6. **追问已进深水区（2026-08 增量确认）**：KL 的 k1/k2/k3 估计器、DeepSeek R1 四阶段管线、MoE 训推不一致、现场算折扣阈值/参数量这类"计算层"问题开始成批出现，只背名词接不住第二轮追问。对应详解见 04/06 章增量小节与题库 46–70。
+7. **8.23 新信号是“信用粒度继续变细”**：新论文分别处理多 reward 饱和、prompt 组梯度冲突、推理 span 的教师冲突、Agent transition 与路径拓扑；腾讯 27 秋招一面已直接问 Agent 与固定 Pipeline 的边界。对应 12 章 §5 与题库 71–76，优先学统一坐标，不背方法名。
 7. **前沿方向已入题（第二轮扩检确认）**：多模态可验证奖励（Visual-RFT 类）、熵坍缩机制、"RLVR 是否扩展能力"开放题、异步 RL 系统与 RL Scaling 在头部团队面试中出现。CV/检测背景候选人重点读 [12 章](/blog/llm-rl-frontier-topics/) §1——它是把你原领域指标（IoU/PRO/AUROC）直接变成 RL 奖励叙事的桥。
 
 ## 3. 从经典 RL 到 LLM RL 的映射

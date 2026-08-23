@@ -1,7 +1,8 @@
 ---
 title: "多模态 RL、奖励模型前沿与 RL Scaling"
-description: "Visual-RFT 与 IoU 可验证奖励、DeepSeek-GRM/SPCT、RLVR 边界争议的答题模板，以及 ScaleRL 的天花板/效率二分。"
+description: "Visual-RFT、DeepSeek-GRM、RLVR 边界与 ScaleRL，并系统讲解多奖励饱和、组梯度冲突、OPD 过滤和 Agent 信用分配。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm
@@ -11,7 +12,7 @@ draft: false
 series: llm-reinforcement-learning-interview
 seriesOrder: 13
 ---
-> 建立日期：2026-08-13。本章收录已经进入面试但尚未沉淀成"标准八股"的四个前沿方向。对 CV/检测背景的候选人，§1 是把原领域经验翻译成 RL 叙事的桥梁，优先级等同 P0。
+> 建立日期：2026-08-13；最后增量：2026-08-23。本章收录已经进入面试或直接解释当前训练故障、但尚未沉淀成“标准八股”的前沿方向。对 CV/检测背景的候选人，§1 是把原领域经验翻译成 RL 叙事的桥梁，优先级等同 P0；§5 为 8.17–8.19 原始论文增量，先学统一问题坐标系，不背缩写。
 
 ## 1. 多模态 RL：把可验证奖励搬到视觉任务
 
@@ -110,14 +111,95 @@ ScaleRL 配方本身：PipelineRL 式异步（8 步 off-policyness）+ 中断式
 - 面试题"你怎么判断一个 RL 改进值不值得上大规模"→ 小算力跑到拐点附近、拟合 sigmoid、看改动动的是 $A$ 还是 $B$，动 $A$ 才值得抢算力（字节 Seed JD 里的 "RL Scaling" 方向问的就是这类方法学）；
 - 与 06 章熵定律的呼应：$R=-a\,e^H+b$ 同样是"天花板可预测"的故事——熵耗尽即到顶，所以熵管理是 scaling 的前提之一。
 
-## 5. 本章验收
+## 5. 2026-08-23 增量：奖励、梯度、推理 span 与 Agent 转移的信用
+
+这批新工作看似是五个缩写，实际都在回答同一件事：**“一个总分或一条教师轨迹太粗，真正该更新的是哪一个目标、prompt 组、推理片段或 Agent 动作？”**
+
+### 5.1 多奖励为什么不能永远固定加权：SA-MRPO
+
+常见实现先把多个奖励合成标量，再做组内标准化：
+
+$$
+R_i=\sum_{j=1}^{m}w_j r_{ij},\qquad
+A_i=\frac{R_i-\mu_R}{\sigma_R+\epsilon}.
+$$
+
+这有两个问题：
+
+1. **reward profile 被压扁**：一个“答案正确但格式错”的 rollout，可能和“答案错但格式完美”的 rollout 得到相同总分，优势无法区分两种失败；
+2. **目标饱和后仍吃梯度**：格式正确率已经接近 100%，固定权重仍持续优化格式，难的 correctness 反而拿不到足够更新预算。
+
+[SA-MRPO](https://arxiv.org/abs/2608.16072)（2026-08-17）先对每个目标独立组内标准化，再按该目标的“剩余提升空间”动态加权：
+
+$$
+A_i^{(j)}=\frac{r_{ij}-\mu_j}{\sigma_j+\epsilon},\qquad
+\widetilde A_i=\sum_j \alpha_j A_i^{(j)},\quad
+\alpha_j\propto(1-s_j)^\gamma.
+$$
+
+$s_j$ 表示批级目标饱和度，越接近上限，权重越小；$\gamma$ 控制重分配强度。关键不只是缩放梯度——不同目标的标准化优势符号可能相反，动态权重甚至会改变某条 rollout 的最终更新方向。
+
+面试落地：正确性、格式、长度、安全、工具成本不要一开始永久固定权重。先记录每个 reward 的均值/方差/饱和度和与真实成功率的相关性；已饱和的格式项退火，始终保留终局正确性为主目标。SA-MRPO 是新预印本，适合回答设计题，不应说成行业标准。
+
+### 5.2 prompt 组之间梯度打架：GUPO
+
+GRPO 对每个 prompt 采样一组回答，先得到该 prompt 的 group gradient，再把一个 mini-batch 里不同 prompt 的 group gradient 直接平均。[GUPO](https://arxiv.org/abs/2608.17411)（2026-08-18）指出：不同 prompt 组的梯度可能余弦相似度为负；冲突越严重的 batch，验证集更新收益往往越差。
+
+GUPO 的思路是把每个 group gradient 当随机变量，用 Bayesian/Dirichlet evidential 形式估计不确定性；聚合时提高低不确定性、较可靠组的权重，压低高不确定性组，而不是一律等权平均。
+
+工程上先做更便宜的诊断：抽样计算组梯度余弦分布、按任务/难度看冲突率、对高冲突 batch 做独立验证更新。若冲突来自数据混杂，分桶采样或任务平衡可能比上复杂优化器更直接。GUPO 的核心考点是**组内标准化解决 prompt 内 baseline，不自动解决 prompt 间梯度冲突**。
+
+### 5.3 教师相似度不等于推理进展：R2-OPD
+
+On-policy distillation 用学生自己采样的轨迹作为状态，再让教师给逐 token 稠密信号，解决离线蒸馏的 exposure bias。但它隐含假设“越像教师，推理越有进展”。学生可能走一条不同但有效的路径，因此教师 divergence 会错误惩罚好步骤。
+
+[R2-OPD](https://arxiv.org/abs/2608.19408)（2026-08-19）对一条轨迹构造两种 span 排序：教师蒸馏奖励排序，以及通过后续成功概率估计的 reasoning-progress 排序。相邻且进展符号一致的 span 先合并以降噪；若两套排序局部冲突，就**屏蔽冲突 span 的蒸馏奖励**。它不是把 process reward 生硬加进总 reward，而是把 progress 当作教师信号的可靠性门控。
+
+面试一句话：OPD 的稠密不代表正确；先问“教师信号和任务进展是否一致”。监控应包含 teacher KL、progress estimate、冲突 span 比例、屏蔽率和最终正确率，避免屏蔽过多后退化成稀疏 RL。
+
+### 5.4 没有成功轨迹，长程 Agent 如何分 step credit：TRCA
+
+成功轨迹锚点法在训练早期会失效，因为长程任务的 success rate 可能接近 0。[TRCA](https://arxiv.org/abs/2608.16156)（2026-08-17）不训练 critic、不要求成功锚点，而是直接评价每个动作导致的状态转移：
+
+- **Evidence**：是否获得了与任务相关的新证据；
+- **Execution**：是否执行了有效、真正改变环境的动作；
+- **Invalidity**：是否无效、重复、回退或破坏状态。
+
+同一套 rubric 生成两种 credit：Foundational Reward 评价当前转移的局部好坏；Breakthrough Reward 只奖励新覆盖的 Evidence/Execution 条件；再与 terminal outcome 合并。这样失败轨迹里“虽然最终没完成，但找对证据/完成关键子任务”的动作仍能学习。
+
+风险是 rubric 本身也可能错、被模型钻空子，且 judge 推理有成本。最小实验必须和“只有终局 reward”“成功轨迹锚点”“过程 judge”比较，并单独报告早期低成功率阶段。
+
+### 5.5 不要覆盖已经走对的 Agent 前缀：DART-SD
+
+多工具任务常有多个顺序等价的子目标，成功路径形成汇合的“菱形”状态拓扑。全轨迹 SFT/蒸馏把教师的一条线性轨迹当唯一答案，会惩罚学生已经有效的探索；普通终局 GRPO 又把同一个分数粗略摊给整条轨迹。
+
+[DART-SD](https://arxiv.org/abs/2608.18524)（2026-08-19，ByteDance 等）把交互建成 Interaction-State Transition Graph，定位 **Critical Topological Breakpoint**：学生从哪一步开始偏离可恢复的成功结构。训练时检索成功支持的恢复参考，**只在断点后的恢复步骤计算蒸馏 loss，断点前有效前缀不反传**。
+
+它更接近拓扑感知的局部自蒸馏，不是新的 PPO loss。面试对比：TRCA 解决“没有成功锚点时如何评价每个转移”；DART-SD 解决“有成功支持时如何只修真正错的后缀并保护等价前缀”。
+
+### 5.6 五篇论文的统一坐标系
+
+| 信用粒度 | 典型失败 | 本轮方法 | 你先监控什么 |
+|---|---|---|---|
+| reward 目标 | 固定权重浪费在已饱和格式/长度 | SA-MRPO | 各 reward 均值、方差、饱和度、与真实成功率相关性 |
+| prompt 组 | 不同 query 的 group gradient 方向冲突 | GUPO | 组梯度余弦、冲突率、按任务/难度分桶 |
+| reasoning span | 教师相似度压制有效的不同思路 | R2-OPD | teacher/progress 排序冲突率、mask 比例 |
+| Agent transition | 终局失败但中间动作有价值 | TRCA | Evidence/Execution/Invalidity 分解、突破覆盖率 |
+| Agent 路径拓扑 | 全轨迹模仿覆盖正确前缀/等价顺序 | DART-SD | 断点位置、恢复成功率、被保护前缀比例 |
+
+答开放题时先定位粒度，再讲信号、估计偏差、额外成本和最小消融。这样比连续背五个缩写更像做过系统设计。
+
+## 6. 本章验收
 
 1. 能为一个视觉任务（检测/分割/异常检测）设计可验证奖励，主动说出两种被钻空子的方式和制衡项；
 2. 能讲清 SPCT 两阶段与 GRM 的推理时投票机制，并回答"为什么在线打分常仍用 scalar RM"；
 3. 能双面陈述 RLVR 边界争议，给出四件判别工具（pass@k 曲线、去污染复测、随机奖励对照、蒸馏基线）；
 4. 能用"天花板 vs 效率"二分评价一个 RL 改进，并说明 sigmoid 拟合外推的用法。
+5. 给定“正确性+格式+长度”三奖励，能指出固定加权的两个失败并设计逐目标监控；
+6. 能区分 prompt 组梯度冲突、span 级教师冲突、transition credit 和拓扑断点四个粒度；
+7. 能用 90 秒比较 TRCA 与 DART-SD：前者不依赖成功锚点做转移 rubric，后者利用成功支持只蒸馏错误后缀。
 
-主要来源：[Visual-RFT](https://arxiv.org/abs/2503.01785)、[DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495)、[RLVR 边界研究](https://arxiv.org/abs/2504.13837)、[Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230)、[ScaleRL](https://arxiv.org/abs/2510.13786)、[熵机制](https://arxiv.org/abs/2505.22617)。
+主要来源：[Visual-RFT](https://arxiv.org/abs/2503.01785)、[DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495)、[RLVR 边界研究](https://arxiv.org/abs/2504.13837)、[Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230)、[ScaleRL](https://arxiv.org/abs/2510.13786)、[熵机制](https://arxiv.org/abs/2505.22617)、[SA-MRPO](https://arxiv.org/abs/2608.16072)、[TRCA](https://arxiv.org/abs/2608.16156)、[GUPO](https://arxiv.org/abs/2608.17411)、[DART-SD](https://arxiv.org/abs/2608.18524)、[R2-OPD](https://arxiv.org/abs/2608.19408)。
 ---
 
 原始讲义与可运行材料：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/12_%E5%89%8D%E6%B2%BF%E4%B8%93%E9%A2%98_%E5%A4%9A%E6%A8%A1%E6%80%81RL_RM%E5%89%8D%E6%B2%BF%E4%B8%8EScaling.md)。

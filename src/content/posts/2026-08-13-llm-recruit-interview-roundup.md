@@ -1,7 +1,8 @@
 ---
 title: "2025—2026 国内大模型算法岗招聘、面经与笔试汇总"
-description: "年份与届别口径、公司覆盖矩阵、面试笔试信号、按岗位方向的准备矩阵、社交平台证据边界与 2026-08 增量。"
+description: "更新至 2026-08-23：招聘批次、候选人面经、正式批笔试、AI Coding 和后训练/Agent RL 前沿增量。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - ai
   - llm
@@ -13,10 +14,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 15
 ---
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-23。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
-> 本文是个人求职工作区文档的发布版，核验日期 2026-08-13。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；面经与组织情报均为公开来源转述，证据分级见正文说明。
-
-> 检索截止：2026-08-13（§12 为本轮增量；正文其余部分口径仍为 2026-07-30）
+> 检索截止：2026-08-23（§13 为 8.14–8.23 增量；§12 为 8.13 快照；正文其余部分口径仍为 2026-07-30）
 >
 > 范围：国内头部互联网/科技公司、代表性大模型公司、研究机构、车企与中型公司；覆盖公开可检索的实习、春招、秋招/提前批、补录、面经和笔试。
 >
@@ -273,7 +273,7 @@ seriesOrder: 15
 - [纯力扣算法路线](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/README.md)
 - [模型手写核心实现](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/llm_interview_coding.py)
 - [传统 ML、搜广推与 SQL 专项](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E7%9F%A5%E8%AF%86/%E4%BC%A0%E7%BB%9FML_%E6%90%9C%E5%B9%BF%E6%8E%A8_SQL%E4%B8%93%E9%A1%B9.md)
-- [LLM 题库与证据](/blog/llm-algo-interview-evidence/)
+- [LLM 题库与证据](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E9%A2%98%E5%BA%93/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E9%A2%98%E5%BA%93%E4%B8%8E%E8%AF%81%E6%8D%AE.md)
 
 ---
 
@@ -401,4 +401,65 @@ seriesOrder: 15
 
 ### 12.4 新增信息源
 
-GitHub 面试仓库（wdndev/llm_interview_note、laoshan-song/Awesome-LLM-Interview、MisterBooo/llm-interview-questions、Meko1/llm-interview-guide、adongwanai/AgentGuide、WeThinkIn/AIGC-Interview-Book 等）经核验真实活跃，已连同组织情报、薪资、技术跟进渠道一并整理进[《信息源清单与检索手册》](/blog/job-hunt-info-sources/)；使用纪律与本文 §1 证据分级一致。
+GitHub 面试仓库（wdndev/llm_interview_note、laoshan-song/Awesome-LLM-Interview、MisterBooo/llm-interview-questions、Meko1/llm-interview-guide、adongwanai/AgentGuide、WeThinkIn/AIGC-Interview-Book 等）经核验真实活跃，已连同组织情报、薪资、技术跟进渠道一并整理进[《信息源清单与检索手册》](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E6%8B%9B%E8%81%98%E6%83%85%E6%8A%A5/%E4%BF%A1%E6%81%AF%E6%BA%90%E6%B8%85%E5%8D%95%E4%B8%8E%E6%A3%80%E7%B4%A2%E6%89%8B%E5%86%8C.md)；使用纪律与本文 §1 证据分级一致。
+
+---
+
+## 13. 2026-08-23 增量刷新
+
+### 13.1 检索口径
+
+- 精确时间窗：**2026-08-14 00:00 至 2026-08-23 23:59（北京时间）**；另外回补上一快照漏掉但仍影响当前投递的 8.10–8.13 启动项。
+- 八条工作流：官方校招、专项/实习、候选人面经、笔试/AI Coding、Agent 岗、后训练/RL、多模态、训练系统与论文。Exa 深检索返回 **423 条候选结果**，去重后只把官方页、官号转发、候选人原帖和原始论文写入正文。
+- 本节是公开增量证据，不宣称覆盖企业内部题库、登录后岗位、私域群或已删除内容。二手题解只用于训练题型，不能标成“原题”。
+
+### 13.2 招聘窗口：8 月 10–20 日第二波集中开闸
+
+| 公司 | 已核验变化 | 当前动作 | 证据 |
+|---|---|---|---|
+| 华为 | 2027 应届生批 8.15 启动；国内本硕 2027.1–12 毕业，国内博士/海外本硕博放宽到 2026.1–2027.12 | 立即筛盘古/小艺/诺亚模型算法岗；不要把昇腾纯 Infra 当同一序列 | [官方入口](https://career.huawei.com/cn/campus-recruitment) |
+| 快手 | 8.12 网申、8.14 面试、8.17 起意向/Offer；快Star 全年开放；部分技术岗增设 AI Coding，所有岗位可提交 AI 应用经验 | 简历补一条“AI 如何完成真实交付”的证据；准备受监考约束的 AI Coding | [官方入口](https://zhaopin.kuaishou.cn/)、[启动信息](https://www.ikanchai.com/article/20260814/664776.shtml) |
+| 小米 | 8.10 启动，12.31 网申截止；AI 岗需求增长 50%，产研类占 70% | 筛 MiMo、Agent、机器人、多模态岗位 | [官方入口](https://campus.hr.xiaomi.com/)、[启动信息](https://www.ithome.com/0/987/799.htm) |
+| 美团 | 北斗之后，常规校招 8.17 正式启动；新增十余种 AI 原生岗，超过 80% JD 提及 AI 能力 | 北斗与常规批可并投；传统算法与 AI Coding 两线准备 | [启动信息](https://finance.sina.com.cn/jjxw/2026-08-17/doc-ininrqsh0124033.shtml) |
+| 网易 | 8.20 启动，网易互联网、互娱、雷火三条流程可同时投且互不冲突 | 分事业部建立三条投递记录，不只投一个入口 | [官方入口](https://campus.163.com/)、[启动信息](https://c.m.163.com/news/a/L4Q04Q480511A6N9.html) |
+| 荣耀 | 8.18 启动，9.30 截止；9 月起机考/面试，部分岗位有 AI Coding | 8 月内投；按算法岗通知准备 | [官方入口](https://www.honor.com/cn/career/)、[批次说明](https://www.163.com/dy/article/L4PERVGG051191D6.html) |
+| OPPO | 7.15 已启动且招满即止；官方职位页当前显示 2027 届应届/博士/实习岗位 200+ | 立刻筛 Agent 记忆/检索、多模态、端侧大模型 | [官方职位页](https://careers.oppo.com/university/oppo/campus/post) |
+| vivo / 滴滴 | vivo 8.11、滴滴 8.13 启动；均已进入当前批次 | vivo 研发岗 9.15 笔试；滴滴全渠道共 3 次主动投递 | [vivo 官号转发](https://jobs.niuqizp.com/schedule-7rkrNLZZN.html)、[滴滴官号转发](https://campus.niuqizp.com/job-vyr5aLLNC.html) |
+
+**今天的硬动作**：拼多多 2027 提前批和阿里星均标注 8.23 截止。当前仍按 `open · 今日截止` 处理，8.24 再打开官方页确认是否转 `ended`。
+
+### 13.3 8 月中旬新笔试：纯 ACM 与 AI Coding 同时存在
+
+| 场次 | 公开题目骨架 | 训练映射 | 证据 |
+|---|---|---|---|
+| [拼多多 8.16](https://www.nowcoder.com/discuss/918607796818436096) | ① 枚举/位运算三元组；② 栈/队列输出序列模拟；③ 带权区间调度；④ 按输入顺序且边权严格递增的最长路 | 枚举剪枝、栈模拟、排序+DP、每点离散化 Fenwick DP | `B-First`：考生题面与思路回忆 |
+| [京东算法 8.15](https://www.nowcoder.com/discuss/918655733200060416) | JSON 频繁项集（Apriori 剪枝）；选一半元素使两组和最接近（MITM） | 子集剪枝、折半枚举、稳定 JSON I/O | `C-Derived`：作者明确称“改编真题”，含 AI 辅助生成 |
+| [美团算法 8.18](https://www.nowcoder.com/discuss/919413802741821440) | 电商搜索排序 AI Coding（文本/品牌/价格/行为特征，NDCG@10）；ML/DL/大模型选择；GCD 区间编程 | 排序学习最小流水线、分组切分、NDCG@10、传统算法保分 | `B-Secondary`：题面整理，非候选人第一人称 |
+
+结论不是“算法题被 AI 取代”：拼多多仍是四道高强度 ACM；变化是**同一求职周期并存三种卷面**——经典算法、ML/LLM 可运行实现、受规则约束的 AI 辅助交付。对应训练已补进[笔试作战手册](/blog/algo-written-exam-playbook/)与[ML / AI Coding 补丁](/blog/ml-ai-coding-patch/)。
+
+### 13.4 新面经：Agent 系统边界与 RL 公式同时问
+
+| 样本 | 内容要点 | 分级 |
+|---|---|---|
+| [腾讯 27 秋招大模型算法一面](https://www.nowcoder.com/feed/main/detail/8bbd2725dda44957a3ba9e301b5a9533) | 表格 Agent；Agent 与固定 Pipeline 的区别；项目动机和业务价值；PPO/DPO/GRPO/DAPO、DPO/GRPO 公式；感知—规划—执行—反思；混合推理模式；游戏反作弊场景；手撕 LIS | `B-First / Date-Weak`：第一人称且问题具体；页面只给相对时间，按 8.22 左右记录，不把日期写死 |
+| [多家公司 Agent 实习复盘](https://www.nowcoder.com/feed/main/detail/da2993b11f7b478bb4105e2b980fbeb3) | context vs prompt、幻觉与异步上下文污染、RAG/MCP/Tool、SFT/PPO/DPO/GRPO、Redis/HTTPS 和经典算法；说明 Agent 岗并非只问框架 | `B-Weak`：第一人称汇总但未逐题映射公司/轮次 |
+
+准备口径因此升级为：先回答“为什么不用确定性 Workflow/Pipeline”，再讲 Agent 的状态、动作、环境反馈、停止条件和评测；只有存在长程决策、策略自己的错误状态和可用反馈时，才进一步引出 RL。强化学习题库新增第 76 题覆盖这一问法。
+
+### 13.5 8.17–8.19 后训练/Agent RL 原始论文增量
+
+这些论文都很新，属于**趋势与开放题材料**，不是已经在国内面经中稳定出现的八股。优先理解共同问题，不背缩写排行榜。
+
+| 论文 | 它修的故障 | 一句话方法 | 备考级别 |
+|---|---|---|---|
+| [SA-MRPO](https://arxiv.org/abs/2608.16072)（8.17） | 多奖励先固定加权再标准化，会丢失 reward profile，并把梯度浪费在已饱和目标 | 每个目标独立标准化，再按剩余提升空间动态降权已饱和目标 | P1：多奖励设计题 |
+| [TRCA](https://arxiv.org/abs/2608.16156)（8.17） | Agent 早期几乎没有成功轨迹，无法拿成功轨迹做 step credit 锚点 | 用 Evidence/Execution/Invalidity rubric 直接评价状态转移，合并局部、突破与终局奖励 | P1：Agent 信用分配 |
+| [GUPO](https://arxiv.org/abs/2608.17411)（8.18） | 一个 mini-batch 内不同 prompt 组的梯度方向冲突 | 把组梯度当随机变量估计不确定性，降低不可靠组的聚合权重 | P2：GRPO 优化开放题 |
+| [DART-SD](https://arxiv.org/abs/2608.18524)（8.19） | 全轨迹模仿会覆盖 Agent 已经走对的前缀，并惩罚等价的工具顺序 | 建交互状态图，找关键拓扑断点，只对恢复步骤蒸馏，保护有效前缀 | P1：多轮工具学习 |
+| [R2-OPD](https://arxiv.org/abs/2608.19408)（8.19） | 教师相似度不等于推理进展，OPD 可能惩罚有效但不同于教师的思路 | 比较教师奖励与进展奖励的 span 排序，冲突时屏蔽蒸馏奖励 | P1：OPD/蒸馏追问 |
+
+详细讲解、统一坐标系和第 71–75 题已写入[强化学习前沿专题](/blog/llm-rl-frontier-topics/)与[答案卡](/blog/llm-rl-interview-cards/)。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E6%8B%9B%E8%81%98%E6%83%85%E6%8A%A5/2025-2026%E5%9B%BD%E5%86%85%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%AE%97%E6%B3%95%E5%B2%97%E6%8B%9B%E8%81%98%E9%9D%A2%E7%BB%8F%E7%AC%94%E8%AF%95%E6%B1%87%E6%80%BB.md)。

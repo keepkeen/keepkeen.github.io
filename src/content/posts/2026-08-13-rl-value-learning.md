@@ -2,6 +2,7 @@
 title: "从 Monte Carlo、TD 到 Q-learning"
 description: "系统理解 bootstrap、TD error、SARSA、Q-learning、探索与价值学习，再连接到 LLM 的 critic 和 advantage。"
 date: 2026-08-13
+updatedDate: 2026-08-23
 tags:
   - reinforcement-learning
   - llm
