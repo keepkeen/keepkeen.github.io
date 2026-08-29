@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Code as Policies 从语言到机器人闭环的机制图</title>
+  <desc id="desc">自然语言指令和少样本提示进入代码语言模型，生成的 Python 策略经安全检查和递归函数补全后执行，读取感知 API 并调用控制 API；机器人改变环境，新的观测通过感知 API 回到策略循环。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/>
+    </marker>
+    <marker id="arrowFeedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#00796b"/>
+    </marker>
+    <style>
+      .title { font: 700 27px -apple-system, BlinkMacSystemFont, "Noto Sans CJK SC", sans-serif; fill: #17242b; }
+      .label { font: 700 20px -apple-system, BlinkMacSystemFont, "Noto Sans CJK SC", sans-serif; fill: #17242b; }
+      .body { font: 16px -apple-system, BlinkMacSystemFont, "Noto Sans CJK SC", sans-serif; fill: #37474f; }
+      .small { font: 14px -apple-system, BlinkMacSystemFont, "Noto Sans CJK SC", sans-serif; fill: #455a64; }
+      .box { stroke: #455a64; stroke-width: 2; rx: 16; }
+      .flow { fill: none; stroke: #263238; stroke-width: 3; marker-end: url(#arrow); }
+      .feedback { fill: none; stroke: #00796b; stroke-width: 3; stroke-dasharray: 9 7; marker-end: url(#arrowFeedback); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="650" fill="#fbfcfd"/>
+  <text x="600" y="48" text-anchor="middle" class="title">语言模型生成可执行策略代码：生成链与运行时闭环</text>
+
+  <rect x="45" y="105" width="210" height="140" class="box" fill="#e8eaf6"/>
+  <text x="150" y="143" text-anchor="middle" class="label">语言与提示</text>
+  <text x="150" y="177" text-anchor="middle" class="body">自然语言指令</text>
+  <text x="150" y="203" text-anchor="middle" class="body">Hints：API / 类型</text>
+  <text x="150" y="229" text-anchor="middle" class="body">Examples：指令→代码</text>
+
+  <rect x="315" y="105" width="245" height="140" class="box" fill="#fff3e0"/>
+  <text x="438" y="143" text-anchor="middle" class="label">代码语言模型</text>
+  <text x="438" y="177" text-anchor="middle" class="body">自回归生成 Python</text>
+  <text x="438" y="203" text-anchor="middle" class="body">if / for / while / 算术</text>
+  <text x="438" y="229" text-anchor="middle" class="body">组合已有函数</text>
+
+  <rect x="620" y="82" width="275" height="186" class="box" fill="#f3e5f5"/>
+  <text x="758" y="120" text-anchor="middle" class="label">检查与递归补全</text>
+  <text x="758" y="154" text-anchor="middle" class="body">过滤 import / __ / exec / eval</text>
+  <text x="758" y="184" text-anchor="middle" class="body">AST 查找未定义函数</text>
+  <text x="758" y="214" text-anchor="middle" class="body">专用 LMP 生成函数体</text>
+  <text x="758" y="244" text-anchor="middle" class="body">深度优先，直到依赖闭合</text>
+
+  <rect x="955" y="105" width="200" height="140" class="box" fill="#e3f2fd"/>
+  <text x="1055" y="143" text-anchor="middle" class="label">Python 执行</text>
+  <text x="1055" y="177" text-anchor="middle" class="body">exec(code, globals,</text>
+  <text x="1055" y="202" text-anchor="middle" class="body">locals)</text>
+  <text x="1055" y="230" text-anchor="middle" class="small">globals 暴露允许的 API</text>
+
+  <path d="M255 175 H305" class="flow"/>
+  <path d="M560 175 H610" class="flow"/>
+  <path d="M895 175 H945" class="flow"/>
+
+  <rect x="150" y="370" width="260" height="135" class="box" fill="#e0f2f1"/>
+  <text x="280" y="409" text-anchor="middle" class="label">感知 API</text>
+  <text x="280" y="444" text-anchor="middle" class="body">get_pos / detect_object</text>
+  <text x="280" y="472" text-anchor="middle" class="body">状态 → 名称、坐标、框</text>
+
+  <rect x="470" y="370" width="260" height="135" class="box" fill="#fff8e1"/>
+  <text x="600" y="409" text-anchor="middle" class="label">控制 API</text>
+  <text x="600" y="444" text-anchor="middle" class="body">set_velocity</text>
+  <text x="600" y="472" text-anchor="middle" class="body">put_first_on_second</text>
+
+  <rect x="790" y="370" width="260" height="135" class="box" fill="#fbe9e7"/>
+  <text x="920" y="409" text-anchor="middle" class="label">机器人与环境</text>
+  <text x="920" y="444" text-anchor="middle" class="body">动作改变物体 / 位姿</text>
+  <text x="920" y="472" text-anchor="middle" class="body">产生下一时刻真实状态</text>
+
+  <path d="M1015 245 C1005 312 875 325 720 370" class="flow"/>
+  <text x="862" y="314" text-anchor="middle" class="small">策略代码调用动作</text>
+  <path d="M730 438 H780" class="flow"/>
+  <path d="M410 438 H460" class="flow"/>
+  <text x="435" y="423" text-anchor="middle" class="small">读观测</text>
+  <path d="M915 505 C850 585 305 585 278 515" class="feedback"/>
+  <text x="600" y="584" text-anchor="middle" class="body" fill="#00796b">虚线：环境变化 → 新观测 → while / if 再决策</text>
+  <path d="M280 370 C305 310 800 320 992 245" class="feedback"/>
+  <text x="575" y="328" text-anchor="middle" class="small" fill="#00796b">感知结果返回正在运行的策略</text>
+
+  <rect x="42" y="606" width="1115" height="28" rx="8" fill="#eceff1"/>
+  <text x="600" y="626" text-anchor="middle" class="small">实线表示生成或动作调用；虚线表示运行时反馈。LLM 不直接输出电机信号，而是写出如何调用已提供接口的程序。</text>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Magentic-One 双账本与重规划闭环</title>
+  <desc id="desc">Orchestrator 在外循环维护任务账本，在内循环维护进度账本，选择网页、文件、编码或终端代理。环境反馈进入进度判断，连续停滞超过二触发反思、更新计划和状态重置。</desc>
+  <defs>
+    <marker id="a" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#344054"/></marker>
+    <marker id="g" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#168166"/></marker>
+    <marker id="r" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#b42318"/></marker>
+    <style>.h{font:700 27px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#172033}.t{font:600 20px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#172033}.s{font:16px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#344054}.tiny{font:14px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#475467}.box{stroke:#344054;stroke-width:2}.flow{fill:none;stroke:#344054;stroke-width:3;marker-end:url(#a)}.fb{fill:none;stroke:#168166;stroke-width:3;stroke-dasharray:10 8;marker-end:url(#g)}.reset{fill:none;stroke:#b42318;stroke-width:3;stroke-dasharray:5 7;marker-end:url(#r)}</style>
+  </defs>
+  <rect width="1400" height="900" fill="#fbfcfe"/>
+  <text x="700" y="46" text-anchor="middle" class="h">Orchestrator：外层重写任务假设，内层推进一个可观测动作</text>
+
+  <rect x="40" y="80" width="1320" height="330" rx="28" fill="#eef4ff" stroke="#4a6fa5" stroke-width="3"/>
+  <text x="75" y="118" class="t" fill="#244b7a">外循环｜任务账本（跨步骤的短期工作记忆）</text>
+
+  <rect x="75" y="155" width="210" height="190" rx="18" class="box" fill="#eee9ff"/>
+  <text x="180" y="195" text-anchor="middle" class="t">用户任务</text>
+  <text x="180" y="230" text-anchor="middle" class="s">文字描述</text><text x="180" y="257" text-anchor="middle" class="s">可选附件</text><text x="180" y="284" text-anchor="middle" class="s">期望答案 / 环境状态</text>
+
+  <rect x="350" y="138" width="340" height="225" rx="18" class="box" fill="#dceeff"/>
+  <text x="520" y="177" text-anchor="middle" class="t">任务账本</text>
+  <text x="385" y="215" class="s">✓ 已给定 / 已验证事实</text><text x="385" y="245" class="s">? 待查询事实</text><text x="385" y="275" class="s">∑ 待推导事实</text><text x="385" y="305" class="s">≈ 谨慎标记的猜测</text><text x="385" y="335" class="s">→ 全局步骤计划</text>
+
+  <rect x="755" y="155" width="270" height="190" rx="18" class="box" fill="#dff6ec"/>
+  <text x="890" y="195" text-anchor="middle" class="t">Orchestrator 外层</text>
+  <text x="890" y="230" text-anchor="middle" class="s">读取团队能力</text><text x="890" y="257" text-anchor="middle" class="s">任务分解与代理预分派</text><text x="890" y="284" text-anchor="middle" class="s">反思失败原因</text><text x="890" y="311" text-anchor="middle" class="s">修订事实 / 猜测 / 计划</text>
+
+  <rect x="1080" y="155" width="235" height="190" rx="18" class="box" fill="#fff0f1"/>
+  <text x="1197" y="195" text-anchor="middle" class="t">重规划门</text>
+  <text x="1197" y="230" text-anchor="middle" class="s">停滞计数 &gt; 2</text><text x="1197" y="257" text-anchor="middle" class="s">或计划需要升级</text><text x="1197" y="289" text-anchor="middle" class="s">更新任务账本</text><text x="1197" y="316" text-anchor="middle" class="s">清空所有代理状态</text>
+
+  <path d="M285 250H350" class="flow"/><path d="M690 250H755" class="flow"/><path d="M1025 250H1080" class="reset"/><path d="M1080 185C990 105 710 100 650 138" class="reset"/>
+
+  <rect x="40" y="445" width="1320" height="350" rx="28" fill="#eefbf7" stroke="#168166" stroke-width="3" stroke-dasharray="12 8"/>
+  <text x="75" y="483" class="t" fill="#08775d">内循环｜进度账本（每一动作后的控制判断）</text>
+
+  <rect x="75" y="520" width="285" height="210" rx="18" class="box" fill="#e6f7e9"/>
+  <text x="217" y="558" text-anchor="middle" class="t">五个控制问题</text>
+  <text x="105" y="592" class="s">1. 任务完成了吗？</text><text x="105" y="620" class="s">2. 是否循环 / 重复？</text><text x="105" y="648" class="s">3. 是否在前进？</text><text x="105" y="676" class="s">4. 下一位代理是谁？</text><text x="105" y="704" class="s">5. 给它什么指令？</text>
+
+  <rect x="420" y="505" width="230" height="240" rx="18" class="box" fill="#fff"/>
+  <text x="535" y="543" text-anchor="middle" class="t">能力路由</text>
+  <rect x="450" y="568" width="170" height="34" rx="9" fill="#dceeff"/><text x="535" y="591" text-anchor="middle" class="s">WebSurfer</text>
+  <rect x="450" y="613" width="170" height="34" rx="9" fill="#eee9ff"/><text x="535" y="636" text-anchor="middle" class="s">FileSurfer</text>
+  <rect x="450" y="658" width="80" height="34" rx="9" fill="#fff0cf"/><text x="490" y="681" text-anchor="middle" class="s">Coder</text>
+  <rect x="540" y="658" width="80" height="34" rx="9" fill="#ffe2c6"/><text x="580" y="681" text-anchor="middle" class="tiny">Terminal</text>
+  <text x="535" y="723" text-anchor="middle" class="tiny">一次只选一个能力域</text>
+
+  <rect x="710" y="520" width="260" height="210" rx="18" class="box" fill="#fff8e8"/>
+  <text x="840" y="558" text-anchor="middle" class="t">专用动作</text>
+  <text x="840" y="594" text-anchor="middle" class="s">点击 / 输入 / 滚动</text><text x="840" y="622" text-anchor="middle" class="s">读 PDF / Office / 目录</text><text x="840" y="650" text-anchor="middle" class="s">写程序 / 分析数据</text><text x="840" y="678" text-anchor="middle" class="s">执行代码 / shell</text><text x="840" y="710" text-anchor="middle" class="tiny">动作改变网页、文件或终端状态</text>
+
+  <rect x="1030" y="520" width="280" height="210" rx="18" class="box" fill="#f2f4f7"/>
+  <text x="1170" y="558" text-anchor="middle" class="t">环境反馈</text>
+  <text x="1170" y="594" text-anchor="middle" class="s">截图 + 页面描述</text><text x="1170" y="622" text-anchor="middle" class="s">文件内容 / 目录</text><text x="1170" y="650" text-anchor="middle" class="s">stdout / 报错</text><text x="1170" y="678" text-anchor="middle" class="s">新事实或新的不确定性</text><text x="1170" y="710" text-anchor="middle" class="tiny">反馈不保证真实，须验证来源</text>
+
+  <path d="M360 625H420" class="flow"/><path d="M650 625H710" class="flow"/><path d="M970 625H1030" class="flow"/>
+  <path d="M1030 705C870 820 370 820 250 730" class="fb"/>
+  <text x="690" y="825" text-anchor="middle" class="s" fill="#08775d">新观测 → 更新进度判断；有进展则继续，重复 / 无进展则停滞计数 +1</text>
+  <path d="M1170 520C1170 455 1197 430 1197 345" class="reset"/>
+  <text x="1222" y="438" class="tiny" fill="#9f1239">连续停滞超过 2</text>
+
+  <path d="M75 755C30 755 30 855 180 855H1210C1335 855 1350 755 1310 730" fill="none" stroke="#b42318" stroke-width="3" marker-end="url(#r)"/>
+  <text x="700" y="875" text-anchor="middle" class="s" fill="#9f1239">完成 / 超时 / 最大尝试 → Orchestrator 读完整轨迹与账本 → 最终答案或明确标记的最佳猜测</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">WebArena 网站状态、动作、反馈与终态验证机制</title>
+  <desc id="desc">高层意图和页面观察进入智能体，智能体发出网页动作，自托管网站更新状态并返回观察；停止后验证器查询页面、接口或数据库并给出功能成功或失败。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#34495e"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#23856d"/></marker>
+    <style>
+      text{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#203040}.h{font-size:27px;font-weight:700}.t{font-size:20px}.s{font-size:17px}.box{stroke-width:2.5;rx:16}.flow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}.audit{fill:none;stroke:#23856d;stroke-width:3;stroke-dasharray:10 8;marker-end:url(#arrow-green)}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="#fbfcfe"/>
+  <text x="55" y="52" class="h">WebArena：从自然语言意图到可审计的功能结果</text>
+  <rect x="55" y="105" width="235" height="110" class="box" fill="#e8f2ff" stroke="#3976b8"/>
+  <text x="172" y="145" text-anchor="middle" class="h">高层意图</text><text x="172" y="181" text-anchor="middle" class="s">目标与约束，不给点击脚本</text>
+  <rect x="360" y="90" width="300" height="145" class="box" fill="#e8f2ff" stroke="#3976b8"/>
+  <text x="510" y="132" text-anchor="middle" class="h">LLM 网页 agent</text><text x="510" y="170" text-anchor="middle" class="s">意图＋当前观察＋历史</text><text x="510" y="201" text-anchor="middle" class="s">推理 → 选择一个动作</text>
+  <rect x="735" y="78" width="405" height="178" class="box" fill="#fff1df" stroke="#d17a22"/>
+  <text x="938" y="119" text-anchor="middle" class="h">自托管网站状态 sₜ</text><text x="938" y="156" text-anchor="middle" class="s">页面・数据库・登录身份・多标签页</text><text x="938" y="188" text-anchor="middle" class="s">click / type / tab / goto 改变状态</text><text x="938" y="220" text-anchor="middle" class="s">确定性转移  sₜ₊₁ = 𝒯(sₜ,aₜ)</text>
+  <path d="M290 160 L355 160" class="flow"/><text x="323" y="145" text-anchor="middle" class="s">输入</text>
+  <path d="M660 145 L730 145" class="flow"/><text x="695" y="127" text-anchor="middle" class="s">动作 aₜ</text>
+  <path d="M855 260 C790 340 630 350 565 240" class="flow"/><text x="710" y="325" text-anchor="middle" class="t">反馈：URL＋页面观察 oₜ₊₁</text>
+  <rect x="75" y="338" width="325" height="145" class="box" fill="#fde9e7" stroke="#c44b43"/>
+  <text x="238" y="377" text-anchor="middle" class="h">可观察失败</text><text x="238" y="414" text-anchor="middle" class="s">抓住首个相关信息／忽略细节</text><text x="238" y="447" text-anchor="middle" class="s">错误停止／重复动作／耗尽步数</text>
+  <path d="M426 240 C390 290 335 316 285 335" class="flow"/>
+  <rect x="480" y="410" width="300" height="115" class="box" fill="#f4f6f8" stroke="#697786"/>
+  <text x="630" y="450" text-anchor="middle" class="h">停止条件</text><text x="630" y="486" text-anchor="middle" class="s">完成／认为不可达／30 步／循环</text>
+  <path d="M938 258 C930 360 790 390 720 408" class="audit"/><text x="897" y="350" text-anchor="middle" class="s">状态轨迹 s₁:T</text>
+  <rect x="850" y="404" width="290" height="150" class="box" fill="#e6f6ef" stroke="#23856d"/>
+  <text x="995" y="445" text-anchor="middle" class="h">结果型验证器</text><text x="995" y="483" text-anchor="middle" class="s">locator 查询 URL / API / DB</text><text x="995" y="517" text-anchor="middle" class="s">exact / include / fuzzy / 程序断言</text>
+  <path d="M780 468 L845 468" class="audit"/>
+  <rect x="850" y="604" width="130" height="65" class="box" fill="#e6f6ef" stroke="#23856d"/><text x="915" y="645" text-anchor="middle" class="t">功能成功</text>
+  <rect x="1010" y="604" width="130" height="65" class="box" fill="#fde9e7" stroke="#c44b43"/><text x="1075" y="645" text-anchor="middle" class="t">功能失败</text>
+  <path d="M960 554 L930 599" class="audit"/><path d="M1030 554 L1060 599" class="audit"/>
+  <text x="60" y="681" class="s">实线＝执行数据流　虚线＝终态审计流　评分允许不同动作路径得到同一正确结果</text>
+</svg>

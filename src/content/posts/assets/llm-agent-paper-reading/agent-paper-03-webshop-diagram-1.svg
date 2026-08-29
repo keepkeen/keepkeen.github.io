@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">WebShop 从用户目标到网页动作与奖励的闭环</title>
+  <desc id="desc">用户指令经搜索策略转为查询，网页环境返回局部可见的页面文本和候选动作，选择策略执行翻页、选商品、选规格或购买，终止后奖励器比较属性、选项、价格和商品类型。</desc>
+  <defs>
+    <style>
+      .title { font: 700 28px system-ui, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #17233c; }
+      .box-title { font: 700 20px system-ui, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #17233c; }
+      .body { font: 16px system-ui, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #25324b; }
+      .small { font: 14px system-ui, -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #46536b; }
+      .flow { fill: none; stroke: #315b9a; stroke-width: 3; marker-end: url(#arrow-blue); }
+      .feedback { fill: none; stroke: #b65b28; stroke-width: 3; stroke-dasharray: 9 7; marker-end: url(#arrow-orange); }
+      .internal { fill: none; stroke: #65748d; stroke-width: 2.5; marker-end: url(#arrow-gray); }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#315b9a"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b65b28"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#65748d"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="650" rx="24" fill="#fbfcff"/>
+  <text x="60" y="56" class="title">WebShop 的交互与评测闭环</text>
+
+  <rect x="60" y="105" width="235" height="150" rx="18" fill="#e7f0ff" stroke="#315b9a" stroke-width="2"/>
+  <text x="82" y="139" class="box-title">① 用户目标</text>
+  <text x="82" y="174" class="body">自然语言指令</text>
+  <text x="82" y="202" class="small">属性：防水、软底</text>
+  <text x="82" y="227" class="small">选项：黑蓝色；预算：≤ $90</text>
+
+  <rect x="370" y="92" width="310" height="176" rx="18" fill="#eef8f3" stroke="#317a5b" stroke-width="2"/>
+  <text x="392" y="127" class="box-title">② 策略：搜索 + 选择</text>
+  <rect x="395" y="150" width="115" height="83" rx="12" fill="#ffffff" stroke="#77a58f"/>
+  <text x="415" y="180" class="body">BART</text>
+  <text x="407" y="207" class="small">生成查询</text>
+  <rect x="535" y="150" width="120" height="83" rx="12" fill="#ffffff" stroke="#77a58f"/>
+  <text x="566" y="180" class="body">BERT</text>
+  <text x="548" y="207" class="small">给按钮打分</text>
+  <path d="M 510 192 L 532 192" class="internal"/>
+
+  <rect x="760" y="92" width="365" height="176" rx="18" fill="#fff5df" stroke="#a97621" stroke-width="2"/>
+  <text x="782" y="127" class="box-title">③ 网页环境（局部可见）</text>
+  <text x="782" y="163" class="body">页面状态：搜索 → 结果 → 商品</text>
+  <text x="782" y="193" class="body">可选动作：查询、翻页、点击</text>
+  <text x="782" y="223" class="small">选规格 / 看详情 / 返回 / 购买</text>
+
+  <path d="M 295 180 L 366 180" class="flow"/>
+  <text x="307" y="164" class="small">指令</text>
+  <path d="M 680 164 L 756 164" class="flow"/>
+  <text x="700" y="147" class="small">动作</text>
+  <path d="M 760 224 C 710 292, 646 305, 580 267" class="flow"/>
+  <text x="654" y="302" class="small">新页面文本 + 候选按钮</text>
+
+  <rect x="760" y="360" width="365" height="175" rx="18" fill="#fff0e8" stroke="#b65b28" stroke-width="2"/>
+  <text x="782" y="395" class="box-title">④ 购买后自动评估</text>
+  <text x="782" y="431" class="body">完成度 = 属性匹配 + 选项匹配</text>
+  <text x="782" y="461" class="body">+ 价格合规，再乘类型门控</text>
+  <text x="782" y="496" class="small">Task Score = 100 × 平均奖励</text>
+  <text x="782" y="519" class="small">Success Rate = 奖励等于 1 的比例</text>
+
+  <path d="M 945 268 L 945 356" class="flow"/>
+  <text x="962" y="321" class="small">购买终止</text>
+
+  <rect x="60" y="373" width="620" height="150" rx="18" fill="#f3f0fb" stroke="#7562a8" stroke-width="2"/>
+  <text x="82" y="409" class="box-title">⑤ 学习信号</text>
+  <text x="82" y="444" class="body">模仿学习：复现人类查询与点击</text>
+  <text x="82" y="476" class="body">强化学习：用终局奖励调整选择策略</text>
+  <text x="82" y="504" class="small">奖励是事后评分，不是每步都给出正确答案</text>
+
+  <path d="M 760 450 C 710 575, 515 578, 446 527" class="feedback"/>
+  <text x="582" y="586" class="small" fill="#8f431d">奖励反馈（虚线）</text>
+  <path d="M 374 373 C 400 323, 468 302, 520 271" class="feedback"/>
+
+  <line x1="65" y1="608" x2="113" y2="608" class="flow"/>
+  <text x="126" y="614" class="small">交互 / 观测数据流</text>
+  <line x1="335" y1="608" x2="383" y2="608" class="feedback"/>
+  <text x="396" y="614" class="small">训练时的评估反馈</text>
+  <text x="750" y="614" class="small">注：商品隐藏属性仅供评分器使用，agent 看不到。</text>
+</svg>

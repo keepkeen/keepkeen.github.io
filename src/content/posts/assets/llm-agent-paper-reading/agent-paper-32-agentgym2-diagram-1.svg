@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">AgentGym2 把被基准预处理的中间步骤放回 agent 闭环</title>
+  <desc id="desc">上方对比理想化基准与 AgentGym2 的任务流，下方列出复杂工具使用、数据分析和深搜索的正常路径及失败点。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0 0L11 5.5L0 11Z" fill="#334155"/>
+    </marker>
+    <marker id="blueArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0 0L11 5.5L0 11Z" fill="#2563eb"/>
+    </marker>
+    <marker id="redArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0 0L11 5.5L0 11Z" fill="#dc2626"/>
+    </marker>
+    <style>
+      .title{font:700 31px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#0f172a}
+      .lane{font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#0f172a}
+      .head{font:700 20px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#0f172a}
+      .body{font:16px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#334155}
+      .small{font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#475569}
+      .box{stroke:#64748b;stroke-width:2;rx:16}
+      .flow{fill:none;stroke:#334155;stroke-width:3.2;marker-end:url(#arrow)}
+      .feedback{fill:none;stroke:#2563eb;stroke-width:3.2;stroke-dasharray:9 7;marker-end:url(#blueArrow)}
+      .risk{fill:none;stroke:#dc2626;stroke-width:3;stroke-dasharray:8 7;marker-end:url(#redArrow)}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1040" fill="#f8fafc"/>
+  <text x="60" y="58" class="title">AgentGym2：撤掉“题目已经替 agent 做完脏活”的假设</text>
+  <text x="60" y="91" class="body">对照的变量是环境中间步骤，不是给模型加了一种新思考模块</text>
+
+  <!-- Idealized lane -->
+  <rect x="45" y="122" width="1510" height="192" rx="24" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2.5"/>
+  <text x="70" y="159" class="lane">A. 理想化路径：评测器先把中间步骤做完</text>
+  <rect x="75" y="184" width="235" height="96" class="box" fill="#ffffff"/>
+  <text x="193" y="218" text-anchor="middle" class="head">用户请求</text>
+  <text x="193" y="248" text-anchor="middle" class="body">干净、完整、无错记</text>
+  <rect x="380" y="184" width="250" height="96" class="box" fill="#e2e8f0"/>
+  <text x="505" y="218" text-anchor="middle" class="head">预选专用工具</text>
+  <text x="505" y="248" text-anchor="middle" class="body">已知该用哪个 API</text>
+  <rect x="700" y="184" width="250" height="96" class="box" fill="#e2e8f0"/>
+  <text x="825" y="218" text-anchor="middle" class="head">预处理输入</text>
+  <text x="825" y="248" text-anchor="middle" class="body">干净表 / 直给线索</text>
+  <rect x="1020" y="184" width="230" height="96" class="box" fill="#dbeafe"/>
+  <text x="1135" y="218" text-anchor="middle" class="head">agent 推理执行</text>
+  <text x="1135" y="248" text-anchor="middle" class="body">只跑后半条链</text>
+  <rect x="1320" y="184" width="190" height="96" class="box" fill="#dcfce7"/>
+  <text x="1415" y="218" text-anchor="middle" class="head">最终得分</text>
+  <text x="1415" y="248" text-anchor="middle" class="body">成功 / 失败</text>
+  <path d="M310 232H380" class="flow"/><path d="M630 232H700" class="flow"/><path d="M950 232H1020" class="flow"/><path d="M1250 232H1320" class="flow"/>
+
+  <!-- AgentGym2 lane -->
+  <rect x="45" y="340" width="1510" height="328" rx="24" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+  <text x="70" y="379" class="lane">B. AgentGym2 路径：必要中间步骤也是被测能力</text>
+  <rect x="70" y="409" width="240" height="124" class="box" fill="#fef3c7"/>
+  <text x="190" y="443" text-anchor="middle" class="head">非理想请求</text>
+  <text x="190" y="474" text-anchor="middle" class="body">附件 / 模糊 / 错记</text>
+  <text x="190" y="503" text-anchor="middle" class="body">隐藏线索和干扰项</text>
+  <rect x="370" y="409" width="235" height="124" class="box" fill="#e0f2fe"/>
+  <text x="487" y="443" text-anchor="middle" class="head">通用基础工具</text>
+  <text x="487" y="474" text-anchor="middle" class="body">浏览 / 检索 / 文件</text>
+  <text x="487" y="503" text-anchor="middle" class="body">多模态 / 代码执行</text>
+  <rect x="665" y="409" width="235" height="124" class="box" fill="#ede9fe"/>
+  <text x="782" y="443" text-anchor="middle" class="head">探索与发现</text>
+  <text x="782" y="474" text-anchor="middle" class="body">找工具、读数据结构</text>
+  <text x="782" y="503" text-anchor="middle" class="body">生成反假设查询</text>
+  <rect x="960" y="409" width="275" height="124" class="box" fill="#dcfce7"/>
+  <text x="1097" y="443" text-anchor="middle" class="head">组合、清洗、核验</text>
+  <text x="1097" y="474" text-anchor="middle" class="body">执行工作流并读反馈</text>
+  <text x="1097" y="503" text-anchor="middle" class="body">有疑点则返回探索</text>
+  <rect x="1300" y="409" width="210" height="124" class="box" fill="#bbf7d0"/>
+  <text x="1405" y="443" text-anchor="middle" class="head">短答案验收</text>
+  <text x="1405" y="474" text-anchor="middle" class="body">LLM judge</text>
+  <text x="1405" y="503" text-anchor="middle" class="body">语义匹配</text>
+  <path d="M310 471H370" class="flow"/><path d="M605 471H665" class="flow"/><path d="M900 471H960" class="flow"/><path d="M1235 471H1300" class="flow"/>
+  <path d="M1097 533C1097 620 790 621 790 535" class="feedback"/>
+  <text x="943" y="627" text-anchor="middle" class="small">页面 / 文件 / 报错 / 新线索 → 更新下一步</text>
+  <rect x="70" y="560" width="510" height="72" rx="14" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="92" y="589" class="head">评测不只看“最后会不会答”</text>
+  <text x="92" y="617" class="body">还把发现、数据整理、消除偏差和跨工具组合纳入轨迹</text>
+  <rect x="1280" y="558" width="250" height="82" rx="14" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+  <text x="1302" y="586" class="head">三种成功口径</text>
+  <text x="1302" y="612" class="small">Avg@3：三次平均</text>
+  <text x="1420" y="612" class="small">Pass@3：至少一次</text>
+  <text x="1302" y="635" class="small">Pass^3：三次全成</text>
+
+  <!-- Scenario failure panels -->
+  <text x="60" y="710" class="lane">三个场景在不同环节暴露同一问题：流程中任一必要步骤失败，终态就失败</text>
+  <rect x="60" y="738" width="465" height="216" rx="18" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+  <text x="88" y="776" class="head">① 复杂工具使用</text>
+  <text x="88" y="810" class="body">正常：找专用站点 → 学参数 → 下载/解析</text>
+  <text x="88" y="841" class="body">被测核心：工具发现 + 未见组合</text>
+  <path d="M90 875H485" class="risk"/>
+  <text x="88" y="907" class="body" fill="#b91c1c">失败：猜文件/学期，没直接证据却确认</text>
+  <text x="88" y="934" class="small">“会调 API” 不等于 “知道应调哪个”</text>
+
+  <rect x="568" y="738" width="465" height="216" rx="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="596" y="776" class="head">② 端到端数据分析</text>
+  <text x="596" y="810" class="body">正常：读 README → EDA → 清洗 → 分析</text>
+  <text x="596" y="841" class="body">被测核心：先建正确数据状态，再计算</text>
+  <path d="M598 875H993" class="risk"/>
+  <text x="596" y="907" class="body" fill="#b91c1c">失败：没探索字段，把所有空值直接删掉</text>
+  <text x="596" y="934" class="small">后续代码可完全无报错，但回答的已是错问题</text>
+
+  <rect x="1076" y="738" width="465" height="216" rx="18" fill="#fff7ed" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="1104" y="776" class="head">③ 含模糊/记忆偏差的深搜索</text>
+  <text x="1104" y="810" class="body">正常：拆约束 → 多源搜索 → 反例核验</text>
+  <text x="1104" y="841" class="body">被测核心：把用户描述当待验假设</text>
+  <path d="M1106 875H1501" class="risk"/>
+  <text x="1104" y="907" class="body" fill="#b91c1c">失败：停在首个候选，强行解释冲突线索</text>
+  <text x="1104" y="934" class="small">搜到一个“像答案”的页面不等于已核实</text>
+
+  <line x1="60" y1="987" x2="1540" y2="987" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="60" y="1018" class="small">实线：任务/数据流　蓝色虚线：环境反馈后继续探索　红色虚线：可观测失败路径　颜色同时有文字标签，不单独承载含义。</text>
+</svg>

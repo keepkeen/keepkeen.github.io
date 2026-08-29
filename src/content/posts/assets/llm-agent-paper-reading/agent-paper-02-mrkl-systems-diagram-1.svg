@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">MRKL 系统的路由器、专家模块与外部环境</title>
+  <desc id="desc">自然语言请求进入路由器，路由器选择专家并抽取模块所需参数。神经模块直接生成内容，符号模块执行确定计算，API 和数据库读取外部环境。结果回到路由器整合为最终回答。论文实验只覆盖路由器到计算器的参数抽取路径。</desc>
+  <defs>
+    <style>
+      .bg { fill: #fbfcfe; }
+      .title { font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #172033; }
+      .subtitle { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #536176; }
+      .label { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #172033; }
+      .text { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #344056; }
+      .small { font: 400 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #536176; }
+      .step { font: 700 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; fill: #ffffff; }
+      .node { stroke-width: 2; rx: 16; }
+      .flow { fill: none; stroke: #395a86; stroke-width: 3; marker-end: url(#arrow); }
+      .return { fill: none; stroke: #6a7688; stroke-width: 2.5; stroke-dasharray: 8 7; marker-end: url(#arrowGray); }
+      .tested { fill: none; stroke: #c53b3b; stroke-width: 4; marker-end: url(#arrowRed); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#395a86"/>
+    </marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6a7688"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c53b3b"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="760"/>
+  <text class="title" x="60" y="52">MRKL 的核心：让语言模型负责“听懂并交接”</text>
+  <text class="subtitle" x="60" y="80">实线表示请求/控制流；虚线表示模块结果和环境反馈；红线是论文实际评测的狭窄路径。</text>
+
+  <!-- input and router -->
+  <rect class="node" x="60" y="125" width="240" height="90" fill="#e8f1ff" stroke="#3977bf"/>
+  <circle cx="88" cy="150" r="15" fill="#3977bf"/>
+  <text class="step" x="84" y="155">1</text>
+  <text class="label" x="118" y="160">用户请求</text>
+  <text class="text" x="88" y="190">自然语言 x</text>
+
+  <path class="flow" d="M 300 170 L 382 170"/>
+
+  <rect class="node" x="395" y="112" width="330" height="130" fill="#fff1d6" stroke="#d88b17"/>
+  <circle cx="427" cy="140" r="15" fill="#d88b17"/>
+  <text class="step" x="423" y="145">2</text>
+  <text class="label" x="458" y="148">路由器 Router</text>
+  <text class="text" x="425" y="180">决策：选哪个专家</text>
+  <text class="text" x="425" y="207">接口：抽取该模块需要的参数</text>
+
+  <!-- fan-out -->
+  <path class="flow" d="M 560 242 L 560 292 L 225 292 L 225 335"/>
+  <path class="tested" d="M 560 242 L 560 335"/>
+  <path class="flow" d="M 560 242 L 560 292 L 895 292 L 895 335"/>
+
+  <!-- modules -->
+  <rect class="node" x="80" y="340" width="290" height="118" fill="#e8f7ec" stroke="#3d9460"/>
+  <circle cx="112" cy="369" r="15" fill="#3d9460"/>
+  <text class="step" x="108" y="374">3</text>
+  <text class="label" x="142" y="377">神经专家</text>
+  <text class="text" x="110" y="408">通用 LM 或小型任务 LM</text>
+  <text class="small" x="110" y="435">未匹配专家时可回退到通用 LM</text>
+
+  <rect class="node" x="415" y="340" width="290" height="118" fill="#f7eafe" stroke="#8e52b4"/>
+  <circle cx="447" cy="369" r="15" fill="#8e52b4"/>
+  <text class="step" x="443" y="374">3</text>
+  <text class="label" x="477" y="377">符号专家</text>
+  <text class="text" x="445" y="408">计算器、规则系统、离散推理器</text>
+  <text class="small" x="445" y="435">输入必须满足离散参数接口</text>
+
+  <rect class="node" x="750" y="340" width="290" height="118" fill="#e4f7f7" stroke="#238b8b"/>
+  <circle cx="782" cy="369" r="15" fill="#238b8b"/>
+  <text class="step" x="778" y="374">3</text>
+  <text class="label" x="812" y="377">API / 数据库专家</text>
+  <text class="text" x="780" y="408">当前信息、私有数据、业务状态</text>
+  <text class="small" x="780" y="435">通过查询参数读取外部环境</text>
+
+  <!-- external environments -->
+  <path class="flow" d="M 560 458 L 560 516"/>
+  <path class="flow" d="M 895 458 L 895 516"/>
+  <rect class="node" x="415" y="520" width="290" height="82" fill="#ffffff" stroke="#8e52b4" stroke-dasharray="7 5"/>
+  <text class="label" x="465" y="553">确定性执行环境</text>
+  <text class="small" x="462" y="578">例： calculator(27, +, 13) → 40</text>
+
+  <rect class="node" x="750" y="520" width="290" height="82" fill="#ffffff" stroke="#238b8b" stroke-dasharray="7 5"/>
+  <text class="label" x="802" y="553">可变的外部环境</text>
+  <text class="small" x="794" y="578">例：天气、汇率、内部数据库</text>
+
+  <!-- returns and composition -->
+  <path class="return" d="M 415 561 L 344 561 L 344 640 L 477 640"/>
+  <path class="return" d="M 750 561 L 724 561 L 724 640 L 644 640"/>
+  <path class="return" d="M 225 458 L 225 640 L 477 640"/>
+
+  <rect class="node" x="480" y="618" width="310" height="82" fill="#eef1f5" stroke="#596579"/>
+  <circle cx="512" cy="646" r="15" fill="#596579"/>
+  <text class="step" x="508" y="651">4</text>
+  <text class="label" x="542" y="654">结果整合与回答</text>
+  <text class="small" x="527" y="680">可直接输出，也可再路由到下一模块</text>
+
+  <!-- experimental scope callout -->
+  <rect x="430" y="270" width="260" height="48" rx="24" fill="#fff4f4" stroke="#c53b3b" stroke-width="2"/>
+  <text x="454" y="300" style="font: 700 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', sans-serif; fill:#a72e2e;">论文实验：算术参数抽取</text>
+</svg>

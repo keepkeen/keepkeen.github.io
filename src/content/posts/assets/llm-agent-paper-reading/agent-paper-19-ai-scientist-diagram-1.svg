@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">The AI Scientist 端到端科研与评审闭环</title>
+  <desc id="desc">研究方向和模板进入选题、代码修改、实验执行、论文写作与自动评审。实验错误回到代码修改，实验日志进入论文，评审进入想法档案。评审边界与安全边界分离。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#334155"/></marker>
+    <marker id="greenArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#168166"/></marker>
+    <style>
+      .h{font:700 27px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#172033}.t{font:600 21px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#172033}.s{font:16px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#344054}.tiny{font:14px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC",sans-serif;fill:#475467}.box{stroke:#334155;stroke-width:2;rx:18}.flow{fill:none;stroke:#334155;stroke-width:3;marker-end:url(#arrow)}.feedback{fill:none;stroke:#168166;stroke-width:3;stroke-dasharray:10 8;marker-end:url(#greenArrow)}
+    </style>
+  </defs>
+  <rect width="1400" height="820" fill="#fbfcfe"/>
+  <text x="700" y="48" text-anchor="middle" class="h">从“研究工序闭环”到“可相信知识”之间还有两道边界</text>
+
+  <rect x="45" y="105" width="210" height="145" class="box" fill="#eee9ff"/>
+  <text x="150" y="143" text-anchor="middle" class="t">输入模板</text>
+  <text x="150" y="178" text-anchor="middle" class="s">研究方向</text><text x="150" y="204" text-anchor="middle" class="s">轻量基线代码</text><text x="150" y="230" text-anchor="middle" class="s">绘图 / LaTeX 框架</text>
+
+  <rect x="300" y="90" width="220" height="175" class="box" fill="#dceeff"/>
+  <text x="410" y="130" text-anchor="middle" class="t">① 选题</text>
+  <text x="410" y="164" text-anchor="middle" class="s">档案条件生成</text><text x="410" y="190" text-anchor="middle" class="s">自评：趣味 / 可行</text><text x="410" y="216" text-anchor="middle" class="s">Semantic Scholar</text><text x="410" y="242" text-anchor="middle" class="s">新颖性过滤</text>
+
+  <rect x="565" y="105" width="190" height="145" class="box" fill="#dceeff"/>
+  <text x="660" y="145" text-anchor="middle" class="t">② 实验代码</text>
+  <text x="660" y="181" text-anchor="middle" class="s">Aider 规划</text><text x="660" y="207" text-anchor="middle" class="s">编辑代码 / 绘图</text><text x="660" y="233" text-anchor="middle" class="s">保留执行历史</text>
+
+  <rect x="805" y="105" width="190" height="145" class="box" fill="#fff0cf"/>
+  <text x="900" y="145" text-anchor="middle" class="t">③ 运行</text>
+  <text x="900" y="181" text-anchor="middle" class="s">错误：最多重试 4 次</text><text x="900" y="207" text-anchor="middle" class="s">实验：最多 5 轮</text><text x="900" y="233" text-anchor="middle" class="s">数值 + 日志 + 图</text>
+
+  <rect x="1040" y="105" width="185" height="145" class="box" fill="#dff6ec"/>
+  <text x="1132" y="145" text-anchor="middle" class="t">④ 论文</text>
+  <text x="1132" y="181" text-anchor="middle" class="s">分节写作 / 引文检索</text><text x="1132" y="207" text-anchor="middle" class="s">自我精简</text><text x="1132" y="233" text-anchor="middle" class="s">编译错误回传</text>
+
+  <path d="M255 178 H300" class="flow"/><path d="M520 178 H565" class="flow"/><path d="M755 178 H805" class="flow"/><path d="M995 178 H1040" class="flow"/>
+
+  <rect x="1010" y="325" width="245" height="160" class="box" fill="#e6f7e9"/>
+  <text x="1132" y="366" text-anchor="middle" class="t">⑤ 自动评审</text>
+  <text x="1132" y="401" text-anchor="middle" class="s">只读 PDF 文本</text><text x="1132" y="427" text-anchor="middle" class="s">总分 / 优缺点</text><text x="1132" y="453" text-anchor="middle" class="s">接收 / 拒绝建议</text>
+  <path d="M1132 250 V325" class="flow"/>
+
+  <rect x="335" y="355" width="250" height="130" class="box" fill="#f1edff"/>
+  <text x="460" y="397" text-anchor="middle" class="t">想法与评审档案</text>
+  <text x="460" y="433" text-anchor="middle" class="s">完成论文 + 评语</text><text x="460" y="459" text-anchor="middle" class="s">原则上影响下一代选题</text>
+  <path d="M1010 420 H585" class="feedback"/><path d="M460 355 V300 Q460 285 430 265" class="feedback"/>
+
+  <path d="M900 250 V300 Q900 330 830 330 H660 Q630 330 630 250" class="feedback"/>
+  <text x="770" y="320" text-anchor="middle" class="tiny">报错 / 超时 → 修代码；结果 → 重规划</text>
+  <path d="M900 250 C900 285 1040 285 1080 250" class="feedback"/>
+  <text x="1000" y="303" text-anchor="middle" class="tiny">可追溯实验日志</text>
+
+  <rect x="60" y="555" width="600" height="190" rx="22" fill="#fff8e8" stroke="#b7791f" stroke-width="3" stroke-dasharray="12 8"/>
+  <text x="360" y="596" text-anchor="middle" class="t" fill="#8a4b08">安全边界（执行前授权）</text>
+  <text x="95" y="635" class="s">容器隔离 · 网络白名单 · 进程 / 时间 / 存储配额 · 无凭据</text>
+  <text x="95" y="670" class="s">拦截：自我重启、绕过超时、海量写盘、陌生依赖与外部副作用</text>
+  <text x="95" y="705" class="tiny">原实现“minimal direct sandboxing”，因此此边界不能由评审分数替代。</text>
+
+  <rect x="735" y="555" width="600" height="190" rx="22" fill="#fff0f1" stroke="#c24156" stroke-width="3"/>
+  <text x="1035" y="596" text-anchor="middle" class="t" fill="#9f1239">评审边界（只评价稿件）</text>
+  <text x="770" y="635" class="s">高分 ≠ 代码实现正确 ≠ 对照公平 ≠ 结论独立复现</text>
+  <text x="770" y="670" class="s">必须另查：代码—日志—表格映射、数据泄漏、指标方向、外部复现</text>
+  <text x="770" y="705" class="tiny">评审反馈可用于排序候选，但不能给危险动作授权，也不能充当事实验证器。</text>
+
+  <text x="70" y="790" class="tiny">实线：前向产物流　　绿色虚线：错误 / 结果 / 评审反馈　　红、黄边界：不同责任，不可互相替代</text>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="redarrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#c2413a"/></marker>
+    <style>
+      .title{font:700 26px sans-serif;fill:#172033}.sub{font:700 17px sans-serif;fill:#172033}.txt{font:14px sans-serif;fill:#283548}.small{font:12px sans-serif;fill:#465468}.box{stroke:#334155;stroke-width:1.6;rx:12}.line{fill:none;stroke:#334155;stroke-width:2;marker-end:url(#arrow)}.bad{fill:none;stroke:#c2413a;stroke-width:2.5;marker-end:url(#redarrow)}.dash{stroke-dasharray:7 6}.tag{font:700 12px sans-serif}
+    </style>
+  </defs>
+  <rect width="1200" height="760" fill="#fbfcfe"/>
+  <text x="600" y="38" text-anchor="middle" class="title">AgentLAB：可信任务如何在长程交互中被不可信输入改写</text>
+
+  <text x="28" y="78" class="sub">1  威胁入口</text>
+  <rect x="28" y="92" width="210" height="102" class="box" fill="#e8f2ff"/>
+  <text x="45" y="120" class="txt">可信目标 T</text><text x="45" y="145" class="small">用户提示 p / 工具观测 o</text><text x="45" y="170" class="small">正常轨迹应完成 T</text>
+  <rect x="28" y="220" width="210" height="140" class="box" fill="#fff0ed" stroke="#c2413a"/>
+  <text x="45" y="248" class="txt">攻击者的恶意目标 T*</text>
+  <text x="45" y="276" class="small">用户侧：p → p*</text><text x="45" y="299" class="small">环境侧：o → o*</text>
+  <text x="45" y="326" class="small">黑盒：只见动作/回复</text><text x="45" y="347" class="small">白盒：还见内部推理</text>
+
+  <text x="282" y="78" class="sub">2  多轮适应循环</text>
+  <rect x="276" y="92" width="320" height="268" class="box" fill="#fff8e7"/>
+  <rect x="300" y="118" width="126" height="58" class="box" fill="#ffe5ad"/><text x="363" y="143" text-anchor="middle" class="txt">攻击规划器</text><text x="363" y="162" text-anchor="middle" class="small">分解 T*</text>
+  <rect x="446" y="118" width="126" height="58" class="box" fill="#ffd4cc"/><text x="509" y="143" text-anchor="middle" class="txt">攻击生成器</text><text x="509" y="162" text-anchor="middle" class="small">构造 p* / o*</text>
+  <rect x="300" y="267" width="126" height="58" class="box" fill="#e9ddff"/><text x="363" y="292" text-anchor="middle" class="txt">裁判 / 验证器</text><text x="363" y="311" text-anchor="middle" class="small">桥接？T* 成功？</text>
+  <path d="M426 147 H446" class="line"/><path d="M509 176 V215" class="bad"/>
+  <path d="M446 296 H426" class="line"/><path d="M363 267 V205 H480" class="bad dash"/>
+  <text x="452" y="199" class="tag" fill="#c2413a">改写后再试</text>
+  <text x="298" y="337" class="small">用户侧：意图劫持、工具链</text>
+  <text x="298" y="353" class="small">环境侧：目标漂移、任务注入、记忆投毒</text>
+
+  <text x="636" y="78" class="sub">3  目标代理与世界</text>
+  <rect x="630" y="92" width="252" height="108" class="box" fill="#e9f8ef"/>
+  <text x="756" y="122" text-anchor="middle" class="txt">目标代理</text>
+  <text x="756" y="148" text-anchor="middle" class="small">观察 → 推理 → 工具动作 aᵢ</text><text x="756" y="172" text-anchor="middle" class="small">长程轨迹 τ = ⟨pᵢ,aᵢ,oᵢ,rᵢ⟩</text>
+  <rect x="630" y="248" width="252" height="112" class="box" fill="#eef3f7"/>
+  <text x="756" y="278" text-anchor="middle" class="txt">可变环境 / 工具 / 记忆</text>
+  <text x="756" y="304" text-anchor="middle" class="small">返回工具结果 oᵢ 与奖励/状态 rᵢ</text><text x="756" y="329" text-anchor="middle" class="small">污染可留到后续任务被检索</text>
+  <path d="M756 200 V248" class="line"/><path d="M630 304 C590 304 592 146 630 146" class="line"/>
+  <path d="M572 147 C600 147 602 147 630 147" class="bad"/><path d="M572 236 C605 236 603 277 630 277" class="bad"/>
+
+  <text x="930" y="78" class="sub">4  联合审计</text>
+  <rect x="924" y="92" width="248" height="124" class="box" fill="#f2efff"/>
+  <text x="1048" y="122" text-anchor="middle" class="txt">安全结果</text><text x="1048" y="149" text-anchor="middle" class="small">ASR：T* 是否完整实现</text><text x="1048" y="174" text-anchor="middle" class="small">T2S：成功样本用了几轮</text><text x="1048" y="198" text-anchor="middle" class="small">访问权限与攻击预算需分层</text>
+  <rect x="924" y="244" width="248" height="116" class="box" fill="#e8f2ff"/>
+  <text x="1048" y="274" text-anchor="middle" class="txt">效用对照（论文主表缺口）</text><text x="1048" y="301" text-anchor="middle" class="small">正常任务成功率 / 拒绝率</text><text x="1048" y="326" text-anchor="middle" class="small">防御后是否仍能完成 T？</text><text x="1048" y="348" text-anchor="middle" class="small">只降 ASR 不能排除“全拒绝”</text>
+  <path d="M882 146 H924" class="line"/><path d="M882 304 H924" class="line"/>
+
+  <rect x="28" y="408" width="1144" height="202" rx="14" fill="#fff" stroke="#b6c0ce" stroke-width="1.5"/>
+  <text x="48" y="439" class="sub">对照与失败路径：为什么“每一轮看起来无害”仍可能失守</text>
+  <circle cx="90" cy="492" r="24" fill="#e8f2ff" stroke="#334155"/><text x="90" y="497" text-anchor="middle" class="txt">T</text>
+  <rect x="150" y="467" width="150" height="50" class="box" fill="#fff8e7"/><text x="225" y="488" text-anchor="middle" class="small">桥接动作 1</text><text x="225" y="506" text-anchor="middle" class="small">单独看似正常</text>
+  <rect x="352" y="467" width="150" height="50" class="box" fill="#fff8e7"/><text x="427" y="488" text-anchor="middle" class="small">桥接动作 2</text><text x="427" y="506" text-anchor="middle" class="small">根据反馈调整</text>
+  <rect x="554" y="467" width="150" height="50" class="box" fill="#fff0ed" stroke="#c2413a"/><text x="629" y="488" text-anchor="middle" class="small">恶意载荷</text><text x="629" y="506" text-anchor="middle" class="small">完成 T*</text>
+  <path d="M114 492 H150 M300 492 H352 M502 492 H554" class="line"/>
+  <rect x="758" y="457" width="180" height="70" class="box" fill="#edf9f1"/><text x="848" y="481" text-anchor="middle" class="small">逐轮静态检测器</text><text x="848" y="503" text-anchor="middle" class="small">✓ ✓ ？</text><text x="848" y="521" text-anchor="middle" class="small">忽略组合语义</text>
+  <path d="M629 517 C690 570 760 551 799 527" class="bad dash"/>
+  <rect x="976" y="457" width="170" height="70" class="box" fill="#f2efff"/><text x="1061" y="481" text-anchor="middle" class="small">轨迹级防御</text><text x="1061" y="503" text-anchor="middle" class="small">检查 T → T* 的漂移</text><text x="1061" y="521" text-anchor="middle" class="small">并保留正常效用</text>
+  <path d="M938 492 H976" class="line"/>
+
+  <text x="30" y="654" class="sub">图例</text>
+  <rect x="95" y="636" width="24" height="18" fill="#e8f2ff" stroke="#334155"/><text x="128" y="650" class="small">可信任务 / 正常对照</text>
+  <rect x="292" y="636" width="24" height="18" fill="#fff0ed" stroke="#c2413a"/><text x="325" y="650" class="small">不可信输入 / 失败路径</text>
+  <rect x="509" y="636" width="24" height="18" fill="#fff8e7" stroke="#334155"/><text x="542" y="650" class="small">攻击控制器</text>
+  <line x1="690" y1="646" x2="744" y2="646" class="bad dash"/><text x="756" y="650" class="small">反馈驱动的适应</text>
+  <line x1="914" y1="646" x2="968" y2="646" class="line"/><text x="981" y="650" class="small">正常数据/控制流</text>
+  <text x="30" y="704" class="small">审计要点：长轨迹、更多尝试与真正“根据目标代理反馈改写攻击”是三个不同变量；比较时须固定预算并分别报告。</text>
+</svg>

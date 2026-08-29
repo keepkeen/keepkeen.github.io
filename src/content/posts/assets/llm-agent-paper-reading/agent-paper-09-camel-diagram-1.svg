@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">CAMEL 角色扮演的信息流与控制流</title>
+  <desc id="desc">人类提供想法与角色，任务具体化代理生成具体任务，两组 inception prompt 分别初始化 AI 用户和 AI 助手。AI 用户生成指令，AI 助手返回解决方案，两者写入共享对话历史。角色锁定、格式协议和终止条件控制循环。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#24324a"/></marker>
+    <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#b45309"/></marker>
+    <style>
+      .title{font:700 28px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#172033}
+      .h{font:700 19px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#172033}
+      .t{font:15px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#26364d}
+      .small{font:13px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#44546a}
+      .box{stroke:#43536b;stroke-width:2;rx:14}
+      .data{fill:none;stroke:#24324a;stroke-width:3;marker-end:url(#arrow)}
+      .control{fill:none;stroke:#b45309;stroke-width:2.5;stroke-dasharray:8 6;marker-end:url(#arrowOrange)}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="#fbfcfe"/>
+  <text x="48" y="52" class="title">CAMEL：从初步想法到受协议约束的双代理循环</text>
+
+  <rect x="48" y="90" width="205" height="110" class="box" fill="#e8f1ff"/>
+  <text x="68" y="122" class="h">1  人类输入</text>
+  <text x="68" y="151" class="t">初步想法</text><text x="68" y="177" class="t">助手角色／用户角色</text>
+
+  <rect x="312" y="90" width="220" height="110" class="box" fill="#e8f1ff"/>
+  <text x="332" y="122" class="h">2  任务具体化</text>
+  <text x="332" y="151" class="t">task-specifier agent</text><text x="332" y="177" class="t">生成可对话执行的任务</text>
+
+  <rect x="590" y="90" width="255" height="110" class="box" fill="#fff2cf"/>
+  <text x="610" y="122" class="h">3  Inception prompts</text>
+  <text x="610" y="151" class="t">角色、任务、消息格式</text><text x="610" y="177" class="t">拒绝条件、终止令牌</text>
+
+  <path d="M253 145 H302" class="data"/><path d="M532 145 H580" class="data"/>
+
+  <rect x="100" y="294" width="280" height="140" class="box" fill="#e8f7ee"/>
+  <text x="122" y="329" class="h">AI 用户 U：交互式规划者</text>
+  <text x="122" y="360" class="t">读取历史 M<tspan baseline-shift="sub">t</tspan></text>
+  <text x="122" y="387" class="t">只生成下一条指令 I<tspan baseline-shift="sub">t+1</tspan></text>
+  <text x="122" y="414" class="small">判断任务完成时输出终止令牌</text>
+
+  <rect x="820" y="294" width="280" height="140" class="box" fill="#e8f7ee"/>
+  <text x="842" y="329" class="h">AI 助手 A：执行者</text>
+  <text x="842" y="360" class="t">读取 M<tspan baseline-shift="sub">t</tspan> 与 I<tspan baseline-shift="sub">t+1</tspan></text>
+  <text x="842" y="387" class="t">生成具体解决方案 S<tspan baseline-shift="sub">t+1</tspan></text>
+  <text x="842" y="414" class="small">以“Solution”开始，以“Next request”结束</text>
+
+  <rect x="446" y="502" width="308" height="112" class="box" fill="#f1edff"/>
+  <text x="470" y="538" class="h">共享对话历史 M<tspan baseline-shift="sub">t+1</tspan></text>
+  <text x="470" y="570" class="t">M<tspan baseline-shift="sub">t</tspan> ∪ {(I<tspan baseline-shift="sub">t+1</tspan>, S<tspan baseline-shift="sub">t+1</tspan>)}</text>
+  <text x="470" y="596" class="small">下一轮的唯一动态状态</text>
+
+  <path d="M380 350 C525 260 680 260 810 350" class="data"/>
+  <text x="507" y="275" class="t">指令 I<tspan baseline-shift="sub">t+1</tspan></text>
+  <path d="M820 405 C730 470 690 480 650 496" class="data"/>
+  <text x="726" y="469" class="t">方案 S<tspan baseline-shift="sub">t+1</tspan></text>
+  <path d="M500 502 C390 474 300 456 270 440" class="data"/>
+  <text x="335" y="481" class="t">更新后历史</text>
+
+  <path d="M655 204 C560 238 360 242 300 286" class="control"/>
+  <path d="M780 204 C870 234 920 252 948 286" class="control"/>
+  <text x="505" y="228" class="small">角色锁定与通信协议</text>
+
+  <rect x="890" y="535" width="260" height="104" rx="14" fill="#fff4f2" stroke="#b45309" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="910" y="566" class="h">论文系统边界</text>
+  <text x="910" y="594" class="t">没有外部环境执行反馈</text>
+  <text x="910" y="619" class="t">没有独立正确性验证器</text>
+  <path d="M884 535 C828 500 785 480 740 447" class="control"/>
+
+  <line x1="58" y1="677" x2="108" y2="677" class="data"/><text x="120" y="683" class="small">实线：数据／消息流</text>
+  <line x1="320" y1="677" x2="370" y2="677" class="control"/><text x="382" y="683" class="small">虚线：控制约束／边界</text>
+  <text x="670" y="683" class="small">原创重绘；结构依据论文方法，非原图复制</text>
+</svg>

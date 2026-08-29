@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">PaperBench 的任务、失败路径与分层评分机制</title>
+  <desc id="desc">实线表示从论文输入到独立复现和分层评分的数据流，虚线表示过早停止或只写代码不运行的失败路径。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#315b7d"/></marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#b74343"/></marker>
+    <style>
+      .title{font:700 27px sans-serif;fill:#17324d}.sub{font:600 18px sans-serif;fill:#17324d}.txt{font:16px sans-serif;fill:#203040}.small{font:14px sans-serif;fill:#405064}
+      .box{fill:#f6f9fc;stroke:#315b7d;stroke-width:2;rx:14}.env{fill:#eef8f0;stroke:#3c7a55;stroke-width:2;rx:14}.judge{fill:#fff7df;stroke:#9a6c17;stroke-width:2;rx:14}.fail{fill:#fff0f0;stroke:#b74343;stroke-width:2;rx:12}
+      .flow{fill:none;stroke:#315b7d;stroke-width:3;marker-end:url(#arrow)}.bad{fill:none;stroke:#b74343;stroke-width:3;stroke-dasharray:9 7;marker-end:url(#arrowRed)}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="white"/>
+  <text x="600" y="44" text-anchor="middle" class="title">PaperBench：把“复现整篇论文”拆成可执行、可分层评分的长程任务</text>
+
+  <rect x="45" y="105" width="205" height="125" class="box"/>
+  <text x="147" y="137" text-anchor="middle" class="sub">1. 候选 agent 的输入</text>
+  <text x="147" y="171" text-anchor="middle" class="txt">论文 + 作者澄清</text>
+  <text x="147" y="198" text-anchor="middle" class="txt">不可见的评分 rubric</text>
+
+  <rect x="315" y="85" width="250" height="165" class="box"/>
+  <text x="440" y="120" text-anchor="middle" class="sub">2. 工具循环</text>
+  <text x="440" y="153" text-anchor="middle" class="txt">读文→规划→写代码</text>
+  <text x="440" y="181" text-anchor="middle" class="txt">运行→检查→修复</text>
+  <text x="440" y="216" text-anchor="middle" class="small">产出代码库与 reproduce.sh</text>
+
+  <rect x="635" y="105" width="220" height="125" class="env"/>
+  <text x="745" y="137" text-anchor="middle" class="sub">3. 独立复现</text>
+  <text x="745" y="171" text-anchor="middle" class="txt">新 Ubuntu VM + A10</text>
+  <text x="745" y="198" text-anchor="middle" class="txt">从清洁环境执行脚本</text>
+
+  <rect x="925" y="105" width="225" height="125" class="env"/>
+  <text x="1037" y="137" text-anchor="middle" class="sub">4. 执行后提交</text>
+  <text x="1037" y="171" text-anchor="middle" class="txt">源码、日志、表格/图</text>
+  <text x="1037" y="198" text-anchor="middle" class="txt">可分辨实际运行与硬编码</text>
+
+  <path d="M250 168 H315" class="flow"/><path d="M565 168 H635" class="flow"/><path d="M855 168 H925" class="flow"/>
+
+  <rect x="248" y="335" width="704" height="222" class="judge"/>
+  <text x="600" y="371" text-anchor="middle" class="sub">5. SimpleJudge 逐个检查 rubric 叶节，再自底向上加权聚合</text>
+  <rect x="290" y="405" width="180" height="100" class="box"/>
+  <text x="380" y="438" text-anchor="middle" class="txt">代码开发</text><text x="380" y="468" text-anchor="middle" class="small">实现是否正确？</text>
+  <rect x="510" y="405" width="180" height="100" class="env"/>
+  <text x="600" y="438" text-anchor="middle" class="txt">执行</text><text x="600" y="468" text-anchor="middle" class="small">必需步骤是否真跑？</text>
+  <rect x="730" y="405" width="180" height="100" class="judge"/>
+  <text x="820" y="438" text-anchor="middle" class="txt">结果匹配</text><text x="820" y="468" text-anchor="middle" class="small">输出是否复现论文？</text>
+  <path d="M380 505 V532 H590" class="flow"/><path d="M600 505 V532" class="flow"/><path d="M820 505 V532 H610" class="flow"/>
+  <text x="600" y="548" text-anchor="middle" class="small">叶节 0/1 → 兄弟权重加权平均 → 整篇 Replication Score</text>
+  <path d="M1037 230 V292 H600 V335" class="flow"/>
+
+  <rect x="40" y="595" width="430" height="78" class="fail"/>
+  <text x="255" y="625" text-anchor="middle" class="sub">失败路径 A：过早结束</text>
+  <text x="255" y="653" text-anchor="middle" class="small">有计划或大量代码，却未持续运行、排错与收敛</text>
+  <path d="M440 250 C420 315 330 355 260 595" class="bad"/>
+  <rect x="730" y="595" width="430" height="78" class="fail"/>
+  <text x="945" y="625" text-anchor="middle" class="sub">失败路径 B：只有代码</text>
+  <text x="945" y="653" text-anchor="middle" class="small">代码开发可得部分分，但执行与结果匹配接近零</text>
+  <path d="M745 230 C800 300 885 375 945 595" class="bad"/>
+
+  <line x1="475" y1="692" x2="525" y2="692" class="flow"/><text x="540" y="698" class="small">正常数据/评分流</text>
+  <line x1="690" y1="692" x2="740" y2="692" class="bad"/><text x="755" y="698" class="small">观察到的失败路径</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="880" viewBox="0 0 1500 880" role="img" aria-labelledby="title desc">
+  <title id="title">Reflexion 试次级口语强化闭环</title>
+  <desc id="desc">Actor 在试次内与环境交互生成轨迹，Evaluator 评分，Self-Reflection 将轨迹与分数压缩成文本经验，更新有限记忆并影响下一次试次，LLM 权重不变。</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L10,5.5 L0,11 Z" fill="#2864a8"/></marker>
+    <marker id="arrow-green" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L10,5.5 L0,11 Z" fill="#31866b"/></marker>
+    <marker id="arrow-orange" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L10,5.5 L0,11 Z" fill="#c96a28"/></marker>
+    <style>
+      .title{font:700 32px -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans CJK SC",sans-serif;fill:#17233b}.sub{font:500 19px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#526078}.h{font:700 23px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.t{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#26344d}.small{font:500 16px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#526078}.mono{font:600 18px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#233a66}.box{fill:#fff;stroke:#aebad0;stroke-width:2}.trial{fill:#eef5ff;stroke:#5c83be;stroke-width:2}.eval{fill:#fff4e9;stroke:#d28a4b;stroke-width:2}.reflect{fill:#edf9f4;stroke:#4e9b7e;stroke-width:2}.memory{fill:#f5efff;stroke:#8669b7;stroke-width:2}.danger{fill:#fff0f0;stroke:#d26363;stroke-width:2}.label{fill:#fff;stroke:#cad3e2;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect width="1500" height="880" fill="#f7f9fc"/>
+  <text x="750" y="56" text-anchor="middle" class="title">Reflexion：从“失败了”到“下次怎么改”</text>
+  <text x="750" y="88" text-anchor="middle" class="sub">蓝色：试次内交互　橙色：评价　绿色：语义压缩　紫色：跨试次记忆</text>
+
+  <rect x="55" y="130" width="1390" height="278" rx="24" class="trial"/>
+  <text x="90" y="171" class="h">试次 t 内：Actor 还是同一个 LLM</text>
+  <rect x="110" y="212" width="270" height="132" rx="18" class="box"/>
+  <text x="245" y="255" text-anchor="middle" class="h">Actor  Mₐ</text>
+  <text x="245" y="291" text-anchor="middle" class="t">读状态 + memₜ</text>
+  <text x="245" y="321" text-anchor="middle" class="small">生成思考与动作 aᵢ</text>
+  <rect x="565" y="212" width="270" height="132" rx="18" class="box"/>
+  <text x="700" y="255" text-anchor="middle" class="h">环境</text>
+  <text x="700" y="291" text-anchor="middle" class="t">执行动作</text>
+  <text x="700" y="321" text-anchor="middle" class="small">返回观测 oᵢ</text>
+  <path d="M380 252 H550" fill="none" stroke="#2864a8" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <text x="465" y="238" text-anchor="middle" class="mono">aᵢ</text>
+  <path d="M565 315 H395" fill="none" stroke="#2864a8" stroke-width="4" marker-end="url(#arrow-blue)"/>
+  <text x="480" y="346" text-anchor="middle" class="mono">oᵢ</text>
+  <rect x="1025" y="212" width="330" height="132" rx="18" class="label"/>
+  <text x="1190" y="253" text-anchor="middle" class="h">轨迹 τₜ</text>
+  <text x="1190" y="291" text-anchor="middle" class="mono">[a₀,o₀,…,aᵢ,oᵢ]</text>
+  <text x="1190" y="321" text-anchor="middle" class="small">短期、细节多、可能很长</text>
+  <path d="M835 278 H1010" fill="none" stroke="#2864a8" stroke-width="4" marker-end="url(#arrow-blue)"/>
+
+  <rect x="55" y="456" width="350" height="172" rx="20" class="eval"/>
+  <text x="230" y="500" text-anchor="middle" class="h">Evaluator  Mₑ</text>
+  <text x="230" y="541" text-anchor="middle" class="t">精确匹配 / 规则 / LLM / 测试</text>
+  <text x="230" y="586" text-anchor="middle" class="mono">rₜ = Mₑ(τₜ)</text>
+  <path d="M1160 344 C1125 430 425 420 360 452" fill="none" stroke="#c96a28" stroke-width="4" marker-end="url(#arrow-orange)"/>
+
+  <rect x="480" y="456" width="430" height="172" rx="20" class="reflect"/>
+  <text x="695" y="500" text-anchor="middle" class="h">Self-Reflection  Mₛᵣ</text>
+  <text x="695" y="538" text-anchor="middle" class="t">轨迹 + 成败 + 旧经验</text>
+  <text x="695" y="575" text-anchor="middle" class="t">↓ 压缩为可操作诊断</text>
+  <text x="695" y="606" text-anchor="middle" class="mono">srₜ = Mₛᵣ(τₜ,rₜ,memₜ)</text>
+  <path d="M405 542 H465" fill="none" stroke="#31866b" stroke-width="4" marker-end="url(#arrow-green)"/>
+
+  <rect x="985" y="456" width="460" height="172" rx="20" class="memory"/>
+  <text x="1215" y="500" text-anchor="middle" class="h">有限反思记忆 memₜ₊₁</text>
+  <text x="1215" y="541" text-anchor="middle" class="t">追加 srₜ，只保留最近 Ω 条</text>
+  <text x="1215" y="583" text-anchor="middle" class="small">“下次先定位台灯，再去找杯子”</text>
+  <path d="M910 542 H970" fill="none" stroke="#31866b" stroke-width="4" marker-end="url(#arrow-green)"/>
+
+  <path d="M1215 628 C1215 758 250 758 250 360" fill="none" stroke="#8669b7" stroke-width="5" stroke-dasharray="11 8" marker-end="url(#arrow-blue)"/>
+  <rect x="525" y="708" width="450" height="52" rx="16" class="label"/>
+  <text x="750" y="741" text-anchor="middle" class="t">下一试次：反思文字进入 Actor 上下文</text>
+
+  <rect x="250" y="793" width="1000" height="58" rx="16" class="danger"/>
+  <text x="750" y="830" text-anchor="middle" class="h">不更新 LLM 权重 ≠ 传统梯度 RL；评价错了，反思也可能把错经验写进记忆</text>
+</svg>

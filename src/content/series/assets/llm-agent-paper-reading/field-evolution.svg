@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="860" viewBox="0 0 1600 860" role="img" aria-labelledby="title desc">
+  <title id="title">2022–2026 LLM agent 研究重心变化</title>
+  <desc id="desc">五个年份的研究重心从形成观察推理行动闭环，扩展到记忆和多智能体，再进入真实环境评测、长程自改进和非理想通用环境。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#334155"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .year { font: 700 32px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .headline { font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .body { font: 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+      .paper { font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+      .small { font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="860" fill="#f8fafc"/>
+  <text x="80" y="70" class="year">LLM agent 的问题重心：从“会行动”到“在现实中可靠地长期行动”</text>
+  <text x="80" y="108" class="body">每一列表示当年核心论文共同提出的新问题；箭头表示前一阶段的能力成为下一阶段的前提。</text>
+
+  <path d="M230 205 H1370" fill="none" stroke="#334155" stroke-width="5" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="55" y="245" rx="22" ry="22" width="280" height="505" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+    <rect x="360" y="245" rx="22" ry="22" width="280" height="505" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="665" y="245" rx="22" ry="22" width="280" height="505" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+    <rect x="970" y="245" rx="22" ry="22" width="280" height="505" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="1275" y="245" rx="22" ry="22" width="270" height="505" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  </g>
+
+  <g text-anchor="middle">
+    <circle cx="195" cy="205" r="52" fill="#0284c7" stroke="#fff" stroke-width="6"/>
+    <text x="195" y="216" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="700" font-size="26" fill="#fff">2022</text>
+    <circle cx="500" cy="205" r="52" fill="#059669" stroke="#fff" stroke-width="6"/>
+    <text x="500" y="216" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="700" font-size="26" fill="#fff">2023</text>
+    <circle cx="805" cy="205" r="52" fill="#ea580c" stroke="#fff" stroke-width="6"/>
+    <text x="805" y="216" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="700" font-size="26" fill="#fff">2024</text>
+    <circle cx="1110" cy="205" r="52" fill="#7c3aed" stroke="#fff" stroke-width="6"/>
+    <text x="1110" y="216" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="700" font-size="26" fill="#fff">2025</text>
+    <circle cx="1410" cy="205" r="52" fill="#dc2626" stroke="#fff" stroke-width="6"/>
+    <text x="1410" y="216" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-weight="700" font-size="26" fill="#fff">2026*</text>
+  </g>
+
+  <g>
+    <text x="85" y="300" class="headline">形成闭环</text>
+    <text x="85" y="340" class="body">语言模型怎样把“想”</text>
+    <text x="85" y="368" class="body">变成可执行动作？</text>
+    <line x1="85" y1="392" x2="305" y2="392" stroke="#7dd3fc" stroke-width="3"/>
+    <text x="85" y="430" class="paper">MRKL：路由外部模块</text>
+    <text x="85" y="463" class="paper">SayCan：语义 × 可供性</text>
+    <text x="85" y="496" class="paper">Inner Monologue：反馈入上下文</text>
+    <text x="85" y="529" class="paper">ReAct：思考—动作交替</text>
+    <text x="85" y="583" class="small">关键变量</text>
+    <text x="85" y="615" class="body">动作是否可执行？</text>
+    <text x="85" y="647" class="body">反馈能否改计划？</text>
+
+    <text x="390" y="300" class="headline">增加内部状态与协作</text>
+    <text x="390" y="340" class="body">一次提示不够时，agent</text>
+    <text x="390" y="368" class="body">怎样积累经验、分工？</text>
+    <line x1="390" y1="392" x2="610" y2="392" stroke="#6ee7b7" stroke-width="3"/>
+    <text x="390" y="430" class="paper">Toolformer：自学习工具调用</text>
+    <text x="390" y="463" class="paper">Reflexion：语言反思记忆</text>
+    <text x="390" y="496" class="paper">Generative Agents：记忆—反思—规划</text>
+    <text x="390" y="529" class="paper">Voyager：课程与技能库</text>
+    <text x="390" y="562" class="paper">CAMEL：角色协作</text>
+    <text x="390" y="615" class="small">关键变量</text>
+    <text x="390" y="647" class="body">什么值得写入/取回？</text>
+    <text x="390" y="679" class="body">多 agent 是否真有增益？</text>
+
+    <text x="695" y="300" class="headline">进入真实系统</text>
+    <text x="695" y="340" class="body">网页、桌面、代码和 API</text>
+    <text x="695" y="368" class="body">如何可重复、可判分？</text>
+    <line x1="695" y1="392" x2="915" y2="392" stroke="#fdba74" stroke-width="3"/>
+    <text x="695" y="430" class="paper">OSWorld：真实计算机</text>
+    <text x="695" y="463" class="paper">SWE-agent：接口是变量</text>
+    <text x="695" y="496" class="paper">τ-bench：用户—政策—状态</text>
+    <text x="695" y="529" class="paper">AppWorld：状态单测与副作用</text>
+    <text x="695" y="562" class="paper">AgentDojo：间接提示注入</text>
+    <text x="695" y="615" class="small">关键变量</text>
+    <text x="695" y="647" class="body">终态正确且安全吗？</text>
+    <text x="695" y="679" class="body">重复运行是否仍成功？</text>
+
+    <text x="1000" y="300" class="headline">检验长期价值与自改进</text>
+    <text x="1000" y="340" class="body">更长任务和经验积累能否</text>
+    <text x="1000" y="368" class="body">转化为真实、可验证成果？</text>
+    <line x1="1000" y1="392" x2="1220" y2="392" stroke="#c4b5fd" stroke-width="3"/>
+    <text x="1000" y="430" class="paper">SWE-Lancer：真实经济任务</text>
+    <text x="1000" y="463" class="paper">PaperBench：从零复现实验</text>
+    <text x="1000" y="496" class="paper">A-MEM：记忆自组织</text>
+    <text x="1000" y="529" class="paper">MAST：多智能体失败谱系</text>
+    <text x="1000" y="562" class="paper">DGM / ACE：代码与上下文演化</text>
+    <text x="1000" y="615" class="small">关键变量</text>
+    <text x="1000" y="647" class="body">改善来自何种机制？</text>
+    <text x="1000" y="679" class="body">结果能否外部验证？</text>
+
+    <text x="1305" y="300" class="headline">去理想化与统一评测</text>
+    <text x="1305" y="340" class="body">上下文有限、输入含噪、</text>
+    <text x="1305" y="368" class="body">攻击会适应时还可靠吗？</text>
+    <line x1="1305" y1="392" x2="1515" y2="392" stroke="#fca5a5" stroke-width="3"/>
+    <text x="1305" y="430" class="paper">General AgentBench：scaling 缺口</text>
+    <text x="1305" y="463" class="paper">GenericAgent：信息密度</text>
+    <text x="1305" y="496" class="paper">AgentLAB：长程自适应攻击</text>
+    <text x="1305" y="529" class="paper">AgentGym2：发现工具与噪声</text>
+    <text x="1305" y="562" class="paper">GroupMemBench：多方记忆</text>
+    <text x="1305" y="615" class="small">关键变量</text>
+    <text x="1305" y="647" class="body">验证能否随计算扩展？</text>
+    <text x="1305" y="679" class="body">简单基线是否更可靠？</text>
+  </g>
+
+  <rect x="80" y="790" width="1440" height="2" fill="#cbd5e1"/>
+  <text x="80" y="825" class="small">* 2026 只覆盖到 8 月 29 日；该列表示早期问题信号，不是成熟影响力排序。颜色只区分年份，所有含义均有文字标签。</text>
+</svg>

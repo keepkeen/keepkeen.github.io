@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="850" viewBox="0 0 1250 850" role="img" aria-labelledby="title desc">
+  <title id="title">MAST 多智能体信息流、失败点与归因流程</title>
+  <desc id="desc">图上半部是任务经过编排器、专业代理、工具与验证器的信息和反馈循环，并标出系统设计、跨代理失配与验证失败；下半部是从执行轨迹经人类扎根理论、分类体系、LLM 标注器到失败画像和受控干预的归因流程。</desc>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#334155"/></marker>
+    <marker id="r" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#b91c1c"/></marker>
+    <style>.h{font:700 24px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#0f172a}.t{font:17px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#1e293b}.s{font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#475569}.box{rx:14;stroke:#64748b;stroke-width:2}.f{fill:none;stroke:#334155;stroke-width:3;marker-end:url(#a)}.bad{fill:none;stroke:#b91c1c;stroke-width:3;stroke-dasharray:8 6;marker-end:url(#r)}</style>
+  </defs>
+  <rect width="1250" height="850" fill="#f8fafc"/>
+  <text x="45" y="44" class="h">A. 被观察系统：信息在多个 agent 间怎样流动、又会在哪里断裂</text>
+  <rect x="45" y="78" width="180" height="86" class="box" fill="#e0f2fe"/><text x="70" y="112" class="t">用户任务/约束</text><text x="70" y="140" class="s">成功标准与环境</text>
+  <rect x="290" y="70" width="220" height="110" class="box" fill="#fef3c7"/><text x="315" y="106" class="t">编排器 / workflow</text><text x="315" y="136" class="s">分工 · 路由 · 停止条件</text><text x="315" y="160" class="s">共享/截断的对话状态</text>
+  <path d="M225 121H290" class="f"/>
+  <rect x="585" y="64" width="185" height="92" class="box" fill="#ecfdf5"/><text x="613" y="102" class="t">规划/开发 agent</text><text x="613" y="132" class="s">推理 → 消息/动作</text>
+  <rect x="585" y="206" width="185" height="92" class="box" fill="#ecfdf5"/><text x="613" y="244" class="t">执行/工具 agent</text><text x="613" y="274" class="s">代码 · API · 环境</text>
+  <path d="M510 111H585" class="f"/><path d="M510 140C545 140 545 252 585 252" class="f"/>
+  <path d="M677 156V206" class="f"/><path d="M585 272C535 272 535 165 510 165" class="f"/>
+  <rect x="845" y="106" width="180" height="120" class="box" fill="#ede9fe"/><text x="875" y="144" class="t">验证 agent</text><text x="875" y="174" class="s">低层：能否运行</text><text x="875" y="200" class="s">高层：是否满足目标</text>
+  <path d="M770 110C810 110 810 145 845 145" class="f"/><path d="M770 252C810 252 810 196 845 196" class="f"/>
+  <rect x="1090" y="119" width="120" height="90" class="box" fill="#dcfce7"/><text x="1114" y="155" class="t">最终输出</text><text x="1114" y="184" class="s">成功/失败</text><path d="M1025 166H1090" class="f"/>
+  <rect x="265" y="335" width="280" height="92" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="290" y="370" class="t">FC1 系统设计问题（5 类）</text><text x="290" y="399" class="s">规格/角色 · 重复 · 历史 · 停止条件</text>
+  <rect x="585" y="335" width="300" height="92" rx="14" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/><text x="610" y="370" class="t">FC2 agent 间失配（6 类）</text><text x="610" y="399" class="s">重置 · 不澄清 · 偏航 · 信息流/行动错位</text>
+  <rect x="925" y="335" width="280" height="92" rx="14" fill="#fce7f3" stroke="#be185d" stroke-width="2"/><text x="950" y="370" class="t">FC3 任务验证（3 类）</text><text x="950" y="399" class="s">过早终止 · 漏验 · 错验</text>
+  <path d="M400 335V180" class="bad"/><path d="M735 335V294" class="bad"/><path d="M1065 335C1065 285 975 285 975 226" class="bad"/>
+  <text x="45" y="486" class="h">B. MAST 归因流程：不是只判错，而是给失败轨迹建立可复核词汇</text>
+  <rect x="45" y="525" width="190" height="126" class="box" fill="#e0f2fe"/><text x="70" y="561" class="t">执行轨迹</text><text x="70" y="590" class="s">消息 · 状态 · 工具动作</text><text x="70" y="616" class="s">任务是否完成</text>
+  <rect x="285" y="513" width="230" height="150" class="box" fill="#fef3c7"/><text x="310" y="549" class="t">人类扎根理论</text><text x="310" y="579" class="s">150 traces / 6 experts</text><text x="310" y="605" class="s">开放编码 → 比较 → 饱和</text><text x="310" y="631" class="s">3 轮 IAA，κ=0.88</text>
+  <rect x="565" y="513" width="210" height="150" class="box" fill="#fee2e2"/><text x="590" y="549" class="t">MAST taxonomy</text><text x="590" y="579" class="s">3 类 / 14 个 mode</text><text x="590" y="605" class="s">定位常见起源阶段</text><text x="590" y="631" class="s">多标签 + 文本理由</text>
+  <rect x="825" y="513" width="185" height="150" class="box" fill="#ede9fe"/><text x="850" y="549" class="t">LLM 标注器</text><text x="850" y="579" class="s">trace + 定义 + few-shot</text><text x="850" y="605" class="s">o1：Acc 0.94</text><text x="850" y="631" class="s">F1 0.80，κ=0.77</text>
+  <rect x="1060" y="513" width="150" height="150" class="box" fill="#dcfce7"/><text x="1085" y="549" class="t">失败画像</text><text x="1085" y="579" class="s">1,642 traces</text><text x="1085" y="605" class="s">比较模型/架构</text><text x="1085" y="631" class="s">提出受控干预</text>
+  <path d="M235 588H285" class="f"/><path d="M515 588H565" class="f"/><path d="M775 588H825" class="f"/><path d="M1010 588H1060" class="f"/>
+  <path d="M1130 663C1130 750 680 760 680 663" class="bad"/>
+  <text x="776" y="786" class="s" fill="#991b1b">干预后重跑同任务并重新标注；若目标 mode 不降，机制解释未获支持</text>
+  <text x="45" y="830" class="s">实线＝信息/分析流程；红色虚线＝失败归因或可证伪反馈。类别并非互斥阶段：一条轨迹可有多个 mode，表象相同也可能来自不同起源。</text>
+</svg>

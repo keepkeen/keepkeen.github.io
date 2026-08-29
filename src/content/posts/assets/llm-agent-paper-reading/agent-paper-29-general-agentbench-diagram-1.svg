@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="#334155"/></marker>
+    <marker id="r" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="#c2413a"/></marker>
+    <style>.title{font:700 26px sans-serif;fill:#172033}.sub{font:700 17px sans-serif;fill:#172033}.txt{font:14px sans-serif;fill:#283548}.small{font:12px sans-serif;fill:#465468}.box{stroke:#334155;stroke-width:1.6;rx:12}.ln{fill:none;stroke:#334155;stroke-width:2;marker-end:url(#a)}.red{fill:none;stroke:#c2413a;stroke-width:2.4;marker-end:url(#r)}.dash{stroke-dasharray:7 6}</style>
+  </defs>
+  <rect width="1200" height="760" fill="#fbfcfe"/>
+  <text x="600" y="38" text-anchor="middle" class="title">General AgentBench：统一工具世界中的两种推理时扩展与两类混杂</text>
+
+  <text x="28" y="77" class="sub">1  同一自然语言任务，两种环境条件</text>
+  <rect x="28" y="92" width="230" height="76" class="box" fill="#e8f2ff"/><text x="143" y="119" text-anchor="middle" class="txt">任务 x（领域标签对代理隐藏）</text><text x="143" y="145" text-anchor="middle" class="small">搜索 / 编码 / 推理 / 工具使用</text>
+  <rect x="28" y="199" width="230" height="77" class="box" fill="#edf9f1"/><text x="143" y="226" text-anchor="middle" class="txt">专用环境 B</text><text x="143" y="251" text-anchor="middle" class="small">只开放该基准原生工具</text>
+  <rect x="28" y="303" width="230" height="89" class="box" fill="#fff8e7"/><text x="143" y="330" text-anchor="middle" class="txt">通用环境 G</text><text x="143" y="355" text-anchor="middle" class="small">35 个服务器 / 301 个工具</text><text x="143" y="377" text-anchor="middle" class="small">无关工具也返回合法结果</text>
+  <path d="M143 168 V199" class="ln"/><path d="M110 168 C80 235 78 275 109 303" class="ln"/>
+
+  <text x="306" y="77" class="sub">2  共享代理—世界闭环</text>
+  <rect x="304" y="92" width="240" height="100" class="box" fill="#e9ddff"/><text x="424" y="121" text-anchor="middle" class="txt">MCP Host：全局工具注册表</text><text x="424" y="147" text-anchor="middle" class="small">同一提示接口；隐藏领域实现</text><text x="424" y="171" text-anchor="middle" class="small">上下文包含工具描述与历史</text>
+  <rect x="304" y="246" width="240" height="98" class="box" fill="#e8f2ff"/><text x="424" y="275" text-anchor="middle" class="txt">被测 LLM 代理</text><text x="424" y="301" text-anchor="middle" class="small">选工具 → 填参数 → 读结果</text><text x="424" y="324" text-anchor="middle" class="small">给出最终答案</text>
+  <rect x="304" y="399" width="240" height="90" class="box" fill="#eef3f7"/><text x="424" y="428" text-anchor="middle" class="txt">领域服务器与原生验证器</text><text x="424" y="454" text-anchor="middle" class="small">更新隐藏世界状态 / 返回反馈</text><text x="424" y="476" text-anchor="middle" class="small">按任务判正确性</text>
+  <path d="M258 238 H283 V142 H304" class="ln"/><path d="M258 348 H283 V142 H304" class="ln"/>
+  <path d="M424 192 V246" class="ln"/><path d="M424 344 V399" class="ln"/><path d="M304 444 C268 444 268 295 304 295" class="ln"/>
+
+  <text x="600" y="77" class="sub">3  Sequential scaling：同一轨迹延长</text>
+  <rect x="594" y="92" width="264" height="116" class="box" fill="#edf9f1"/><text x="726" y="120" text-anchor="middle" class="txt">第 1 次终止仍失败</text><text x="726" y="146" text-anchor="middle" class="small">注入额外环境反馈</text><text x="726" y="170" text-anchor="middle" class="small">继续思考、调用工具与累积上下文</text><text x="726" y="193" text-anchor="middle" class="small">最长约 196K token</text>
+  <path d="M726 208 V252" class="ln"/>
+  <rect x="594" y="252" width="264" height="107" class="box" fill="#fff0ed" stroke="#c2413a"/><text x="726" y="280" text-anchor="middle" class="txt">增长 → 平台 → 退化</text><text x="726" y="307" text-anchor="middle" class="small">“上下文天花板”是观测曲线</text><text x="726" y="332" text-anchor="middle" class="small">长度同时受模型冗长度、工具轨迹、</text><text x="726" y="350" text-anchor="middle" class="small">反馈格式影响，并非纯算力剂量</text>
+
+  <text x="906" y="77" class="sub">4  Parallel scaling：K 条独立轨迹</text>
+  <rect x="900" y="92" width="272" height="116" class="box" fill="#fff8e7"/><text x="1036" y="120" text-anchor="middle" class="txt">采样 τ₁ … τₖ</text><text x="1036" y="146" text-anchor="middle" class="small">Oracle：任一正确即 pass@K</text><text x="1036" y="170" text-anchor="middle" class="small">Self-choice：模型二选/锦标赛</text><text x="1036" y="193" text-anchor="middle" class="small">External verifier：GPT-5 选择</text>
+  <rect x="900" y="252" width="272" height="107" class="box" fill="#f2efff"/><text x="1036" y="280" text-anchor="middle" class="txt">验证差距</text><text x="1036" y="307" text-anchor="middle" class="small">pass@K − 被选轨迹正确率</text><text x="1036" y="332" text-anchor="middle" class="small">生成覆盖率上升，不保证选择能力上升</text><text x="1036" y="350" text-anchor="middle" class="small">某些模型 K 增大反而选得更差</text>
+  <path d="M1036 208 V252" class="red"/>
+
+  <rect x="28" y="537" width="1144" height="132" rx="14" fill="#fff" stroke="#b6c0ce" stroke-width="1.5"/>
+  <text x="48" y="568" class="sub">结果解释与混杂审计</text>
+  <text x="48" y="598" class="txt">环境差值：</text><text x="140" y="598" class="small">Δrel = (G−B)/B。它同时改变候选工具数、工具描述长度、选择难度和可能的压缩表示，不能单独归因为“通用性”。</text>
+  <text x="48" y="626" class="txt">扩展曲线：</text><text x="140" y="626" class="small">Sequential 把计算量、交互轮数、上下文长度绑在一起；Parallel 的 pass@K 是有正确解存在的上界，选择器才决定实际效用。</text>
+  <text x="48" y="652" class="txt">必要对照：</text><text x="140" y="652" class="small">固定工具描述 token、工具数量、总采样 token 与验证预算，再跨模型比较；否则“模型效应”和“环境效应”不能识别。</text>
+
+  <text x="30" y="714" class="sub">图例</text><rect x="94" y="696" width="24" height="18" fill="#e8f2ff" stroke="#334155"/><text x="128" y="710" class="small">输入 / 代理</text><rect x="265" y="696" width="24" height="18" fill="#fff8e7" stroke="#334155"/><text x="299" y="710" class="small">扩展或通用条件</text><line x1="466" y1="706" x2="520" y2="706" class="ln"/><text x="532" y="710" class="small">执行与反馈</text><line x1="674" y1="706" x2="728" y2="706" class="red dash"/><text x="740" y="710" class="small">失败 / 不能直接因果归因</text>
+</svg>

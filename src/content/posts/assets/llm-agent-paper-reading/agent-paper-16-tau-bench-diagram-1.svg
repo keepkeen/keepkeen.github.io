@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="940" viewBox="0 0 1560 940" role="img" aria-labelledby="title desc">
+  <title id="title">τ-bench 工具、agent、用户交互与 pass-hat-k 评估</title>
+  <desc id="desc">Agent 与随机 LLM 用户对话，并通过 API 读写确定数据库，领域政策约束决策。终止后比较数据库与唯一目标状态、检查关键输出，重复多次后用 pass-hat-k 测全部试次成功的概率。</desc>
+  <defs>
+    <marker id="ab" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#2c66aa"/></marker>
+    <marker id="ao" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#cb6d29"/></marker>
+    <marker id="ag" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#3a8b70"/></marker>
+    <style>
+      .title{font:700 32px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.sub{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#59677c}.h{font:700 23px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.t{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#293950}.s{font:500 16px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#56657b}.mono{font:600 18px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#27436c}.b{fill:#edf5ff;stroke:#5b86c2;stroke-width:2}.o{fill:#fff3e8;stroke:#d28a49;stroke-width:2}.g{fill:#edf9f4;stroke:#4d9a7c;stroke-width:2}.p{fill:#f5efff;stroke:#8969b8;stroke-width:2}.r{fill:#fff0f0;stroke:#d36262;stroke-width:2}.w{fill:#fff;stroke:#b8c3d4;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1560" height="940" fill="#f7f9fc"/>
+  <text x="780" y="52" text-anchor="middle" class="title">τ-bench：一次做对不够，同一任务换种说法也要做对</text>
+  <text x="780" y="84" text-anchor="middle" class="sub">蓝：与用户对话　橙：API/数据库　绿：终态验收　紫：重复可靠性</text>
+
+  <rect x="55" y="122" width="360" height="225" rx="22" class="b"/>
+  <text x="235" y="166" text-anchor="middle" class="h">LLM 模拟用户</text>
+  <text x="235" y="207" text-anchor="middle" class="t">隐藏情境 ℕ</text>
+  <text x="235" y="242" text-anchor="middle" class="t">身份、意图、偏好、授权</text>
+  <text x="235" y="277" text-anchor="middle" class="t">每轮采样不同说法</text>
+  <rect x="110" y="298" width="250" height="34" rx="12" class="w"/><text x="235" y="321" text-anchor="middle" class="s">看不到 API 轨迹</text>
+
+  <rect x="600" y="122" width="360" height="225" rx="22" class="p"/>
+  <text x="780" y="166" text-anchor="middle" class="h">Agent</text>
+  <text x="780" y="207" text-anchor="middle" class="t">读对话 + API 结果</text>
+  <text x="780" y="242" text-anchor="middle" class="t">查领域政策</text>
+  <text x="780" y="277" text-anchor="middle" class="t">选：说话 或 工具调用</text>
+  <rect x="655" y="298" width="250" height="34" rx="12" class="w"/><text x="780" y="321" text-anchor="middle" class="s">最多 30 个动作</text>
+
+  <rect x="1145" y="122" width="360" height="225" rx="22" class="o"/>
+  <text x="1325" y="166" text-anchor="middle" class="h">Python API + 数据库</text>
+  <text x="1325" y="207" text-anchor="middle" class="t">隐藏真实状态 s_db</text>
+  <text x="1325" y="242" text-anchor="middle" class="t">读动作 + 不可逆写动作</text>
+  <text x="1325" y="277" text-anchor="middle" class="t">确定状态转移</text>
+  <rect x="1200" y="298" width="250" height="34" rx="12" class="w"/><text x="1325" y="321" text-anchor="middle" class="s">只能通过 API 观测</text>
+
+  <path d="M415 202H585" fill="none" stroke="#2c66aa" stroke-width="4" marker-end="url(#ab)"/><text x="500" y="187" text-anchor="middle" class="s">用户说话</text>
+  <path d="M600 270H430" fill="none" stroke="#2c66aa" stroke-width="4" marker-end="url(#ab)"/><text x="515" y="294" text-anchor="middle" class="s">agent 回复</text>
+  <path d="M960 202H1130" fill="none" stroke="#cb6d29" stroke-width="4" marker-end="url(#ao)"/><text x="1045" y="187" text-anchor="middle" class="s">工具调用</text>
+  <path d="M1145 270H975" fill="none" stroke="#cb6d29" stroke-width="4" marker-end="url(#ao)"/><text x="1060" y="294" text-anchor="middle" class="s">API 结果</text>
+
+  <rect x="570" y="392" width="420" height="104" rx="18" class="r"/>
+  <text x="780" y="430" text-anchor="middle" class="h">领域政策文档</text>
+  <text x="780" y="465" text-anchor="middle" class="t">流程、限制、授权；有些规则 API 不会替你强制</text>
+  <path d="M780 392V361" fill="none" stroke="#d36262" stroke-width="4" marker-end="url(#ab)"/>
+
+  <rect x="80" y="558" width="405" height="192" rx="22" class="g"/>
+  <text x="282" y="603" text-anchor="middle" class="h">终止后：数据库验收</text>
+  <text x="282" y="644" text-anchor="middle" class="t">r_action = [s_db = 唯一目标]</text>
+  <text x="282" y="681" text-anchor="middle" class="t">r_output = [关键信息都已告知]</text>
+  <text x="282" y="720" text-anchor="middle" class="mono">r = r_action × r_output</text>
+
+  <rect x="578" y="558" width="404" height="192" rx="22" class="p"/>
+  <text x="780" y="603" text-anchor="middle" class="h">同一任务重复 n 次</text>
+  <text x="780" y="644" text-anchor="middle" class="t">情境/数据库相同</text>
+  <text x="780" y="681" text-anchor="middle" class="t">用户与 agent 对话采样不同</text>
+  <text x="780" y="720" text-anchor="middle" class="mono">得到 c 次 r=1</text>
+
+  <rect x="1075" y="558" width="405" height="192" rx="22" class="p"/>
+  <text x="1277" y="603" text-anchor="middle" class="h">pass^k：要全部都成功</text>
+  <text x="1277" y="650" text-anchor="middle" class="mono">E_task [ C(c,k) / C(n,k) ]</text>
+  <text x="1277" y="691" text-anchor="middle" class="t">k 越大，越能暴露偶发错误</text>
+  <text x="1277" y="721" text-anchor="middle" class="s">与 pass@k“至少成一次”方向相反</text>
+
+  <path d="M1325 347C1325 500 390 480 330 544" fill="none" stroke="#3a8b70" stroke-width="4" marker-end="url(#ag)"/>
+  <path d="M485 654H563" fill="none" stroke="#7958ac" stroke-width="4" marker-end="url(#ab)"/>
+  <path d="M982 654H1060" fill="none" stroke="#7958ac" stroke-width="4" marker-end="url(#ab)"/>
+
+  <rect x="165" y="810" width="1230" height="92" rx="20" class="b"/>
+  <text x="780" y="848" text-anchor="middle" class="h">评测要分开两个问题</text>
+  <text x="780" y="883" text-anchor="middle" class="t">一条轨迹最后做对了吗？　同一语义换种对话路径，是否每次都做对？</text>
+</svg>

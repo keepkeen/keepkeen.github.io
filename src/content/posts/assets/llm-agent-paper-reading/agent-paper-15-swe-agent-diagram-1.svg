@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">SWE-agent 的 ACI 文件、命令反馈与补丁闭环</title>
+  <desc id="desc">问题描述和仓库状态进入语言模型，模型经 ACI 使用摘要搜索、百行文件窗口、带语法检查的编辑和命令执行；环境反馈被压缩回上下文，循环直到提交补丁，再由测试决定是否解决问题。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0L10 4 0 8Z" fill="#334155"/></marker>
+    <marker id="feedbackArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0L10 4 0 8Z" fill="#0f766e"/></marker>
+    <style>.t{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#172033}.h{font-size:25px;font-weight:700}.m{font-size:18px;font-weight:650}.s{font-size:15px}.tiny{font-size:13px}.box{stroke:#334155;stroke-width:2;rx:16}.flow{stroke:#334155;stroke-width:2.4;fill:none;marker-end:url(#arrow)}.fb{stroke:#0f766e;stroke-width:2.4;fill:none;stroke-dasharray:8 6;marker-end:url(#feedbackArrow)}</style>
+  </defs>
+  <rect width="1200" height="720" fill="#f8fafc"/>
+  <text class="t h" x="46" y="47">SWE-agent：ACI 把仓库操作压缩成可理解、可恢复的补丁闭环</text>
+  <text class="t s" x="46" y="75">实线＝命令/状态流；绿色虚线＝精简反馈。ACI 同时定义可用动作和计算机如何向模型报告结果。</text>
+
+  <rect class="box" x="45" y="120" width="220" height="145" fill="#ede9fe"/>
+  <text class="t m" x="65" y="153">① 任务输入</text><text class="t s" x="65" y="184">GitHub issue 描述</text>
+  <text class="t s" x="65" y="211">代码仓库与当前补丁状态</text><text class="t s" x="65" y="238">命令文档 + 一条示范</text>
+
+  <rect class="box" x="335" y="120" width="225" height="145" fill="#fef3c7"/>
+  <text class="t m" x="355" y="153">② 固定语言模型</text><text class="t s" x="355" y="184">输出 Thought + Action</text>
+  <text class="t s" x="355" y="211">根据反馈定位、编辑、验证</text><text class="t tiny" x="355" y="239">研究变量在接口，不改模型权重</text>
+
+  <rect class="box" x="630" y="98" width="520" height="212" fill="#dbeafe"/>
+  <text class="t m" x="650" y="132">③ Agent–Computer Interface（ACI）</text>
+  <rect x="652" y="151" width="108" height="108" rx="10" fill="#fff" stroke="#64748b"/>
+  <text class="t s" x="670" y="178">摘要搜索</text><text class="t tiny" x="668" y="203">≤50 结果</text><text class="t tiny" x="664" y="225">过宽则提示细化</text>
+  <rect x="776" y="151" width="108" height="108" rx="10" fill="#fff" stroke="#64748b"/>
+  <text class="t s" x="793" y="178">文件窗口</text><text class="t tiny" x="799" y="203">≤100 行</text><text class="t tiny" x="794" y="225">路径/行号/滚动</text>
+  <rect x="900" y="151" width="108" height="108" rx="10" fill="#fff" stroke="#64748b"/>
+  <text class="t s" x="919" y="178">紧凑编辑</text><text class="t tiny" x="915" y="203">替换行区间</text><text class="t tiny" x="915" y="225">lint 拒绝坏编辑</text>
+  <rect x="1024" y="151" width="108" height="108" rx="10" fill="#fff" stroke="#64748b"/>
+  <text class="t s" x="1042" y="178">上下文管理</text><text class="t tiny" x="1041" y="203">保留近 5 观察</text><text class="t tiny" x="1044" y="225">旧观察压成一行</text>
+
+  <path class="flow" d="M265 192 H335"/><path class="flow" d="M560 192 H630"/>
+  <text class="t tiny" x="575" y="179">选择一个动作</text>
+
+  <rect class="box" x="125" y="390" width="295" height="177" fill="#dcfce7"/>
+  <text class="t m" x="145" y="424">④ 计算机环境</text>
+  <text class="t s" x="145" y="455">搜索仓库 / 打开文件 / 执行命令</text><text class="t s" x="145" y="484">应用或拒绝编辑，刷新文件视图</text>
+  <text class="t s" x="145" y="513">运行复现脚本与测试</text><text class="t tiny" x="145" y="542">仍可使用普通 Linux shell 工具</text>
+
+  <rect class="box" x="505" y="390" width="250" height="177" fill="#ccfbf1" stroke="#0f766e"/>
+  <text class="t m" x="525" y="424">⑤ 信息性反馈</text>
+  <text class="t s" x="525" y="455">命令 stdout / 明确的无输出消息</text><text class="t s" x="525" y="484">更新后的代码窗口</text>
+  <text class="t s" x="525" y="513">lint 错误 + 出错前后片段</text><text class="t tiny" x="525" y="542">删去重复错误与过时大段观察</text>
+
+  <rect class="box" x="840" y="390" width="285" height="177" fill="#fee2e2"/>
+  <text class="t m" x="860" y="424">⑥ 提交补丁与执行评测</text>
+  <text class="t s" x="860" y="455">submit 或达到每题成本上限</text><text class="t s" x="860" y="484">把最终 diff 应用到仓库</text>
+  <text class="t s" x="860" y="513">全部测试通过 → Resolved</text><text class="t tiny" x="860" y="542">否则保留失败轨迹用于分析</text>
+
+  <path class="flow" d="M954 310 C930 345 420 340 300 390"/><text class="t tiny" x="600" y="345">ACI 命令在仓库中执行</text>
+  <path class="fb" d="M420 475 H505"/>
+  <path class="fb" d="M630 390 C620 335 520 315 477 265"/><text class="t tiny" x="525" y="320">压缩后回到下一轮上下文</text>
+  <path class="flow" d="M755 478 H840"/>
+
+  <text class="t s" x="84" y="631">典型轨迹：复现/定位 → 摘要搜索 → 打开相关行 → edit → lint/刷新 → 运行测试 → 根据新错误继续 edit → submit。</text>
+  <text class="t s" x="84" y="664">机制主张：接口减少无效动作、噪声上下文和级联编辑错误；最终测试仍决定补丁是否真正解决 issue。</text>
+</svg>

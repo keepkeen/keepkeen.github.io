@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">GroupMemBench：身份、时间、提问者条件化的多方记忆评测</title>
+  <desc id="desc">多方消息流写入带身份和时间的记忆，查询按提问者检索和推理；下方显示身份错绑、过期覆盖和权限泄露失败，并以只看内容的检索作对照。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#315f79"/></marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#b84a4a"/></marker>
+    <style>
+      .title{font:700 28px -apple-system,BlinkMacSystemFont,"Noto Sans SC",sans-serif;fill:#17384d}.sub{font:15px -apple-system,BlinkMacSystemFont,"Noto Sans SC",sans-serif;fill:#526b79}.h{font:700 18px -apple-system,BlinkMacSystemFont,"Noto Sans SC",sans-serif;fill:#17384d}.t{font:15px -apple-system,BlinkMacSystemFont,"Noto Sans SC",sans-serif;fill:#294b5d}.small{font:13px -apple-system,BlinkMacSystemFont,"Noto Sans SC",sans-serif;fill:#526b79}.box{fill:#f4f8fa;stroke:#77a0b5;stroke-width:2}.state{fill:#eef5ff;stroke:#5988bd;stroke-width:2}.answer{fill:#eef9f2;stroke:#5d9972;stroke-width:2}.control{fill:#fff7e8;stroke:#d29a3a;stroke-width:2}.fail{fill:#fff0ef;stroke:#c45b55;stroke-width:2}.line{fill:none;stroke:#315f79;stroke-width:2.5;marker-end:url(#arrow)}.dash{fill:none;stroke:#b84a4a;stroke-width:2.5;stroke-dasharray:8 6;marker-end:url(#arrowRed)}
+    </style>
+  </defs>
+  <rect width="1200" height="760" fill="#ffffff"/>
+  <text x="60" y="55" class="title">GroupMemBench：多方记忆的身份—时间—视角链</text>
+  <text x="60" y="82" class="sub">蓝色＝带关系的状态　绿色＝回答　橙色＝词面基线对照　红色虚线＝失效/缺失评价</text>
+
+  <rect x="55" y="135" rx="16" ry="16" width="225" height="170" class="box"/>
+  <text x="167" y="168" text-anchor="middle" class="h">多人消息流</text>
+  <circle cx="91" cy="205" r="14" fill="#5a8bb3"/><text x="116" y="211" class="t">作者 aᵢ</text>
+  <circle cx="91" cy="240" r="14" fill="#7aa67e"/><text x="116" y="246" class="t">时间 tᵢ</text>
+  <circle cx="91" cy="275" r="14" fill="#c09048"/><text x="116" y="281" class="t">内容 cᵢ</text>
+
+  <rect x="340" y="120" rx="16" ry="16" width="275" height="200" class="state"/>
+  <text x="477" y="154" text-anchor="middle" class="h">记忆更新 Mᵢ</text>
+  <text x="365" y="188" class="t">身份：谁主张 / 谁批准</text>
+  <text x="365" y="220" class="t">时间：旧状态 → 新状态</text>
+  <text x="365" y="252" class="t">关系：回复 / 项目 / 成员</text>
+  <text x="365" y="286" class="small">不能把意见压成无来源“共识”</text>
+
+  <rect x="685" y="135" rx="16" ry="16" width="190" height="170" class="box"/>
+  <text x="780" y="168" text-anchor="middle" class="h">条件查询</text>
+  <text x="780" y="207" text-anchor="middle" class="t">问题 q</text>
+  <text x="780" y="237" text-anchor="middle" class="t">提问者 u_q</text>
+  <text x="780" y="274" text-anchor="middle" class="small">同一问题可有不同答案</text>
+
+  <rect x="945" y="135" rx="16" ry="16" width="195" height="170" class="answer"/>
+  <text x="1042" y="168" text-anchor="middle" class="h">检索与回答</text>
+  <text x="1042" y="207" text-anchor="middle" class="t">组合证据</text>
+  <text x="1042" y="237" text-anchor="middle" class="t">回答或拒答</text>
+  <text x="1042" y="274" text-anchor="middle" class="small">裁判 + 金证据轨迹</text>
+
+  <path d="M280 220 H340" class="line"/><path d="M615 220 H685" class="line"/><path d="M875 220 H945" class="line"/>
+
+  <rect x="340" y="375" rx="16" ry="16" width="275" height="110" class="control"/>
+  <text x="477" y="408" text-anchor="middle" class="h">对照：只按词面取片段</text>
+  <text x="365" y="440" class="t">BM25 保留原文，但不显式推理关系</text>
+  <text x="365" y="467" class="small">复杂记忆必须证明胜过这一强基线</text>
+  <path d="M477 375 V320" class="line"/>
+
+  <rect x="680" y="370" rx="16" ry="16" width="460" height="120" class="box"/>
+  <text x="910" y="404" text-anchor="middle" class="h">评测反馈</text>
+  <text x="705" y="438" class="t">六类：多跳 · 更新 · 歧义 · 隐含 · 时间 · 拒答</text>
+  <text x="705" y="467" class="small">区分“没取到证据”与“取到后推错”</text>
+  <path d="M1042 305 V370" class="line"/>
+
+  <rect x="55" y="555" rx="16" ry="16" width="1085" height="105" class="fail"/>
+  <text x="597" y="588" text-anchor="middle" class="h" fill="#8f3333">失败路径与当前评价边界</text>
+  <text x="115" y="623" class="t">身份错绑：把甲的意见归给乙</text>
+  <text x="455" y="623" class="t">时间错序：旧决定覆盖新决定</text>
+  <text x="800" y="623" class="t">权限缺口：共享历史未测私有可见性</text>
+  <path d="M410 320 C330 430 250 490 230 555" class="dash"/>
+  <path d="M525 320 C540 430 570 490 570 555" class="dash"/>
+  <path d="M780 305 C835 430 900 485 930 555" class="dash"/>
+
+  <g transform="translate(60,710)"><rect width="18" height="12" fill="#eef5ff" stroke="#5988bd"/><text x="27" y="11" class="small">关系状态</text><rect x="135" width="18" height="12" fill="#eef9f2" stroke="#5d9972"/><text x="162" y="11" class="small">回答</text><rect x="230" width="18" height="12" fill="#fff7e8" stroke="#d29a3a"/><text x="257" y="11" class="small">基线对照</text><line x1="365" y1="6" x2="405" y2="6" stroke="#b84a4a" stroke-width="2" stroke-dasharray="7 5"/><text x="415" y="11" class="small">失败/缺口</text></g>
+</svg>

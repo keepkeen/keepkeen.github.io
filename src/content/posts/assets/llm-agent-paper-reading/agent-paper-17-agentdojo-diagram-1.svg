@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">AgentDojo 提示注入与安全—效用联合评估机制</title>
+  <desc id="desc">可信用户任务与含有攻击指令的不可信工具输出同时进入 agent 上下文，agent 调用工具改变环境状态，独立的效用函数和安全函数分别检查用户目标和攻击者目标。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#28465f"/></marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#b43b3b"/></marker>
+    <style>
+      .title{font:700 28px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#17324d}.h{font:700 19px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#17324d}.t{font:15px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#23384d}.small{font:13px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#41566b}.box{stroke-width:2;rx:16}.arrow{stroke:#28465f;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.attack{stroke:#b43b3b;stroke-width:3;stroke-dasharray:9 6;fill:none;marker-end:url(#arrow-red)}
+    </style>
+  </defs>
+  <rect width="1200" height="700" fill="#fbfcfe"/>
+  <text x="600" y="42" text-anchor="middle" class="title">AgentDojo：一条轨迹，两个目标，三个读数</text>
+
+  <rect x="45" y="92" width="250" height="130" class="box" fill="#e6f1ff" stroke="#3975ad"/>
+  <text x="170" y="123" text-anchor="middle" class="h">可信用户任务</text>
+  <text x="65" y="154" class="t">例：汇总今日邮件</text><text x="65" y="179" class="t">并发给老板</text>
+  <text x="65" y="206" class="small">评估目标：完成用户意图</text>
+
+  <rect x="45" y="410" width="250" height="150" class="box" fill="#fff0f0" stroke="#b43b3b"/>
+  <text x="170" y="442" text-anchor="middle" class="h">不信任的第三方数据</text>
+  <text x="65" y="474" class="t">邮件 / 网页 / 旅行列表中</text>
+  <text x="65" y="499" class="t">夹带“忽略之前指令…”</text>
+  <text x="65" y="527" class="small">攻击者目标：泄露、转账、误订</text>
+
+  <rect x="390" y="145" width="300" height="290" class="box" fill="#f2eafe" stroke="#7652a7"/>
+  <text x="540" y="180" text-anchor="middle" class="h">LLM Agent 决策循环</text>
+  <rect x="425" y="205" width="230" height="62" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="540" y="231" text-anchor="middle" class="t">同一文本上下文</text><text x="540" y="253" text-anchor="middle" class="small">用户指令 + 工具返回</text>
+  <rect x="425" y="292" width="230" height="62" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="540" y="319" text-anchor="middle" class="t">规划下一步</text><text x="540" y="341" text-anchor="middle" class="small">说话 / 选工具 / 填参数</text>
+  <rect x="425" y="379" width="230" height="36" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="540" y="403" text-anchor="middle" class="small">可选防御：检测、分隔、工具过滤</text>
+
+  <rect x="790" y="145" width="350" height="290" class="box" fill="#eaf7ef" stroke="#3e8b60"/>
+  <text x="965" y="179" text-anchor="middle" class="h">有状态工具环境</text>
+  <text x="820" y="211" class="t">Workspace · Slack · Travel · Banking</text>
+  <rect x="820" y="235" width="290" height="76" rx="10" fill="#fff" stroke="#6ba783"/>
+  <text x="965" y="262" text-anchor="middle" class="t">读工具</text><text x="965" y="286" text-anchor="middle" class="small">返回可能被攻击者操控的文本</text>
+  <rect x="820" y="331" width="290" height="76" rx="10" fill="#fff" stroke="#6ba783"/>
+  <text x="965" y="358" text-anchor="middle" class="t">写工具</text><text x="965" y="382" text-anchor="middle" class="small">改邮件、预订、账户等环境状态</text>
+
+  <path d="M295 157 L390 225" class="arrow"/>
+  <path d="M295 474 C350 455 360 360 425 251" class="attack"/>
+  <path d="M690 310 L790 310" class="arrow"/>
+  <path d="M790 265 C735 230 730 210 655 236" class="attack"/>
+  <text x="710" y="207" class="small" fill="#a42f2f">工具输出回流</text>
+
+  <rect x="180" y="600" width="840" height="72" rx="16" fill="#fff7dc" stroke="#b58b22" stroke-width="2"/>
+  <text x="600" y="626" text-anchor="middle" class="h">独立验收环境前后状态与模型输出</text>
+  <text x="600" y="652" text-anchor="middle" class="t">良性效用 Uₑ · 攻击下效用 Uₐ · 定向攻击成功 ASR （同时报安全与服务能力）</text>
+  <path d="M965 435 L965 600" class="arrow"/>
+  <path d="M540 435 C540 520 500 550 500 600" class="arrow"/>
+  <text x="1040" y="522" class="small">状态差异</text><text x="515" y="548" class="small">最终回答</text>
+</svg>

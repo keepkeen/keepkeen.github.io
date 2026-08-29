@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">OSWorld 真实桌面交互与执行式评测机制</title>
+  <desc id="desc">配置文件恢复虚拟机初态，智能体根据截图或无障碍树生成鼠标键盘动作，桌面返回新观察；任务结束后评测器提取文件、应用状态或云端数据并检查目标是否达成。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#334155"/></marker>
+    <marker id="dashArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#b45309"/></marker>
+    <style>
+      .t{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK SC",sans-serif;fill:#172033}.h{font-size:25px;font-weight:700}.m{font-size:18px;font-weight:650}.s{font-size:15px}.tiny{font-size:13px}.box{stroke:#334155;stroke-width:2;rx:16}.flow{stroke:#334155;stroke-width:2.4;fill:none;marker-end:url(#arrow)}.eval{stroke:#b45309;stroke-width:2.4;stroke-dasharray:8 6;fill:none;marker-end:url(#dashArrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="700" fill="#f8fafc"/>
+  <text class="t h" x="45" y="48">OSWorld：真实桌面闭环 + 以最终状态为准的评测</text>
+  <text class="t s" x="45" y="76">实线＝交互数据/控制流；橙色虚线＝任务完成后的评测流。界面路径可以不同，最终状态满足条件即可。</text>
+
+  <rect class="box" x="42" y="118" width="220" height="154" fill="#fee2e2"/>
+  <text class="t m" x="62" y="150">① 任务配置</text>
+  <text class="t s" x="62" y="181">自然语言指令</text><text class="t s" x="62" y="207">VM 快照与任务文件</text>
+  <text class="t s" x="62" y="233">打开应用、窗口布局</text><text class="t s" x="62" y="259">评测 getter / evaluator</text>
+
+  <rect class="box" x="330" y="108" width="300" height="180" fill="#dbeafe"/>
+  <text class="t m" x="350" y="140">② 可恢复的真实桌面</text>
+  <rect x="353" y="158" width="254" height="96" rx="8" fill="#ffffff" stroke="#64748b"/>
+  <rect x="365" y="171" width="108" height="69" rx="5" fill="#dcfce7" stroke="#64748b"/>
+  <rect x="484" y="171" width="110" height="69" rx="5" fill="#ede9fe" stroke="#64748b"/>
+  <text class="t s" x="384" y="198">浏览器/Office</text><text class="t tiny" x="380" y="222">GUI、文件、弹窗</text>
+  <text class="t s" x="503" y="198">终端/编辑器</text><text class="t tiny" x="508" y="222">CLI、跨应用</text>
+  <text class="t tiny" x="350" y="278">Ubuntu 主集；环境也支持 Windows/macOS</text>
+
+  <rect class="box" x="706" y="108" width="260" height="180" fill="#fef3c7"/>
+  <text class="t m" x="726" y="140">③ 多模态智能体</text>
+  <text class="t s" x="726" y="171">观察：完整截图 / a11y 树</text>
+  <text class="t s" x="726" y="198">决策：历史 + 当前观察 → 动作</text>
+  <text class="t s" x="726" y="225">动作：click(x,y)、write、hotkey</text>
+  <text class="t s" x="726" y="252">终止：DONE / FAIL / 达到步数上限</text>
+
+  <path class="flow" d="M262 194 H330"/><text class="t tiny" x="274" y="183">恢复初态</text>
+  <path class="flow" d="M630 165 H706"/><text class="t tiny" x="646" y="153">观察 oₜ</text>
+  <path class="flow" d="M706 240 C670 330 607 335 568 288"/><text class="t tiny" x="615" y="326">执行 aₜ，得到 sₜ₊₁</text>
+
+  <rect class="box" x="90" y="380" width="1020" height="240" fill="#fff7ed" stroke="#b45309"/>
+  <text class="t m" x="115" y="416">④ 执行式评测：检查“做成了什么”，而非“是否复现唯一点击序列”</text>
+  <rect x="120" y="448" width="245" height="112" rx="12" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+  <text class="t m" x="140" y="478">后处理与 getter</text>
+  <text class="t s" x="140" y="507">保存/重开应用，提取文件</text><text class="t s" x="140" y="533">读取 cookie、a11y 树、云端值</text>
+  <rect x="474" y="448" width="245" height="112" rx="12" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+  <text class="t m" x="494" y="478">任务专属 evaluator</text>
+  <text class="t s" x="494" y="507">比较内容、结构和运行状态</text><text class="t s" x="494" y="533">可组合多个条件并给部分分</text>
+  <rect x="828" y="448" width="245" height="112" rx="12" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+  <text class="t m" x="848" y="478">最终得分 R∈[0,1]</text>
+  <text class="t s" x="848" y="507">成功/正确识别不可行 → 正分</text><text class="t s" x="848" y="533">其他情况 → 0</text>
+  <path class="eval" d="M365 504 H474"/><path class="eval" d="M719 504 H828"/>
+  <path class="eval" d="M478 288 V350 C478 365 365 365 365 448"/><text class="t tiny" x="385" y="357">任务终止后读取真实最终状态</text>
+
+  <text class="t s" x="90" y="658">机制主张：基准的科学变量是可执行、可重置且可检查的环境；模型能力由真实状态变化暴露，而非离线动作匹配分数代替。</text>
+</svg>

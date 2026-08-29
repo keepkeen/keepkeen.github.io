@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="940" viewBox="0 0 1560 940" role="img" aria-labelledby="title desc">
+  <title id="title">Voyager 自动课程、程序修复和技能库闭环</title>
+  <desc id="desc">自动课程根据状态与历史选目标，技能库检索相关函数，GPT-4 生成并迭代代码，环境、解释器和自验证提供反馈，通过验收后将程序存入技能库并开始下一目标。</desc>
+  <defs>
+    <marker id="ab" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#2d67ad"/></marker>
+    <marker id="ao" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#c96b27"/></marker>
+    <marker id="ap" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#7958ac"/></marker>
+    <style>
+      .title{font:700 32px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.sub{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#58657b}.h{font:700 23px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.t{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#283750}.s{font:500 16px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#56647b}.mono{font:600 17px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#26406c}.b{fill:#edf5ff;stroke:#5b86c2;stroke-width:2}.o{fill:#fff3e8;stroke:#d38a48;stroke-width:2}.p{fill:#f5efff;stroke:#8968bb;stroke-width:2}.g{fill:#edf9f4;stroke:#4d9a7b;stroke-width:2}.r{fill:#fff0f0;stroke:#d26363;stroke-width:2}.w{fill:#fff;stroke:#b6c1d4;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1560" height="940" fill="#f7f9fc"/>
+  <text x="780" y="52" text-anchor="middle" class="title">Voyager：选对下一课，把做成的代码变成长期能力</text>
+  <text x="780" y="84" text-anchor="middle" class="sub">蓝：目标与状态　橙：程序执行/修复　紫：技能持久化　绿：验收</text>
+
+  <rect x="55" y="120" width="410" height="218" rx="22" class="b"/>
+  <text x="260" y="164" text-anchor="middle" class="h">自动课程 C</text>
+  <text x="260" y="204" text-anchor="middle" class="t">当前状态 + 成功/失败历史</text>
+  <text x="260" y="239" text-anchor="middle" class="t">多样、新颖、但别超过能力</text>
+  <rect x="112" y="267" width="296" height="48" rx="13" class="w"/>
+  <text x="260" y="298" text-anchor="middle" class="mono">新目标 gₜ</text>
+
+  <rect x="575" y="120" width="410" height="218" rx="22" class="p"/>
+  <text x="780" y="164" text-anchor="middle" class="h">语义检索技能库 ℒ</text>
+  <text x="780" y="204" text-anchor="middle" class="t">用目标/反馈向量查询</text>
+  <text x="780" y="239" text-anchor="middle" class="t">取 Top-k 相关旧函数</text>
+  <rect x="632" y="267" width="296" height="48" rx="13" class="w"/>
+  <text x="780" y="298" text-anchor="middle" class="mono">Rₜ = retrieve(qₜ, ℒ)</text>
+
+  <rect x="1095" y="120" width="410" height="218" rx="22" class="o"/>
+  <text x="1300" y="164" text-anchor="middle" class="h">GPT-4 写 JavaScript</text>
+  <text x="1300" y="204" text-anchor="middle" class="t">目标 + 状态 + API + 旧技能</text>
+  <text x="1300" y="239" text-anchor="middle" class="t">上版代码 + 反馈 + 批评</text>
+  <rect x="1152" y="267" width="296" height="48" rx="13" class="w"/>
+  <text x="1300" y="298" text-anchor="middle" class="mono">候选程序 pₜ</text>
+
+  <path d="M465 229H560" stroke="#2d67ad" stroke-width="4" fill="none" marker-end="url(#ab)"/><text x="512" y="214" text-anchor="middle" class="s">目标</text>
+  <path d="M985 229H1080" stroke="#7958ac" stroke-width="4" fill="none" marker-end="url(#ap)"/><text x="1032" y="214" text-anchor="middle" class="s">旧技能</text>
+
+  <rect x="105" y="430" width="390" height="214" rx="22" class="o"/>
+  <text x="300" y="475" text-anchor="middle" class="h">Minecraft + Mineflayer</text>
+  <text x="300" y="516" text-anchor="middle" class="t">执行程序，改变世界</text>
+  <text x="300" y="552" text-anchor="middle" class="t">环境文字：材料/进度</text>
+  <text x="300" y="588" text-anchor="middle" class="t">解释器：语法/API 错误</text>
+
+  <rect x="585" y="430" width="390" height="214" rx="22" class="g"/>
+  <text x="780" y="475" text-anchor="middle" class="h">自验证 V</text>
+  <text x="780" y="516" text-anchor="middle" class="t">读目标 + 当前状态</text>
+  <text x="780" y="552" text-anchor="middle" class="t">成功？　是 / 否</text>
+  <text x="780" y="588" text-anchor="middle" class="t">失败则给可操作批评</text>
+
+  <rect x="1065" y="430" width="390" height="214" rx="22" class="p"/>
+  <text x="1260" y="475" text-anchor="middle" class="h">通过才提交技能</text>
+  <text x="1260" y="516" text-anchor="middle" class="t">程序 + 自生成描述</text>
+  <text x="1260" y="552" text-anchor="middle" class="t">嵌入建索引，保留代码</text>
+  <text x="1260" y="588" text-anchor="middle" class="mono">ℒ ← ℒ ∪ {(dₜ,pₜ)}</text>
+
+  <path d="M1300 338C1300 385 410 367 360 418" stroke="#c96b27" stroke-width="4" fill="none" marker-end="url(#ao)"/><text x="820" y="379" class="s">执行</text>
+  <path d="M495 537H570" stroke="#2d67ad" stroke-width="4" fill="none" marker-end="url(#ab)"/><text x="532" y="521" text-anchor="middle" class="s">状态</text>
+  <path d="M975 537H1050" stroke="#4d9a7b" stroke-width="4" fill="none" marker-end="url(#ab)"/><text x="1012" y="521" text-anchor="middle" class="s">成功</text>
+  <path d="M780 430C780 380 1180 397 1260 350" stroke="#c96b27" stroke-width="4" fill="none" stroke-dasharray="10 7" marker-end="url(#ao)"/>
+  <text x="1000" y="398" class="s">失败：反馈/错误/批评回到下一版代码</text>
+  <path d="M1260 644C1260 706 840 709 806 658" stroke="#7958ac" stroke-width="4" fill="none" marker-end="url(#ap)"/><text x="1050" y="702" class="s">新技能进入下一轮检索</text>
+
+  <rect x="120" y="754" width="1320" height="76" rx="20" class="b"/>
+  <text x="780" y="785" text-anchor="middle" class="h">跨目标闭环</text>
+  <text x="780" y="816" text-anchor="middle" class="t">技能库变大 → 可组合更难技能 → 课程把能力边界向外推 → 发现更多东西</text>
+  <path d="M1065 605C950 735 445 710 300 657" stroke="#2d67ad" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#ab)"/>
+
+  <rect x="250" y="862" width="1060" height="58" rx="16" class="r"/>
+  <text x="780" y="899" text-anchor="middle" class="h">能力存在代码库，不在 GPT-4 权重；验证错误会把坏技能存入长期记忆</text>
+</svg>

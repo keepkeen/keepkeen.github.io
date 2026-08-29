@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">ReAct 推理—动作—观察闭环</title>
+  <desc id="desc">语言模型读取任务与历史，生成不改变环境的思考或可执行动作；动作进入外部环境并产生新观察，观察回写上下文，支持下一轮计划修正。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .title{font:700 28px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#0f172a}
+      .head{font:700 20px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#0f172a}
+      .body{font:16px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#334155}
+      .small{font:14px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#475569}
+      .box{stroke-width:2;rx:16;ry:16}
+      .flow{fill:none;stroke:#334155;stroke-width:3;marker-end:url(#arrow)}
+      .control{fill:none;stroke:#2563eb;stroke-width:3;stroke-dasharray:9 7;marker-end:url(#arrow-blue)}
+    </style>
+  </defs>
+  <rect width="1200" height="650" fill="#f8fafc"/>
+  <text x="60" y="55" class="title">ReAct：把语言思考写入历史，再用环境反馈修正下一步</text>
+
+  <rect x="60" y="105" width="230" height="120" class="box" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="85" y="145" class="head">任务与当前观察</text>
+  <text x="85" y="178" class="body">问题 / 目标 + oₜ</text>
+  <text x="85" y="204" class="small">例如：胡椒罐不在水槽</text>
+
+  <rect x="360" y="95" width="300" height="145" class="box" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="390" y="137" class="head">上下文 cₜ 与冻结 LLM</text>
+  <text x="390" y="171" class="body">历史观察、动作、思考</text>
+  <text x="390" y="202" class="small">策略 π(âₜ | cₜ) 选择下一项</text>
+
+  <polygon points="770,95 1030,95 1090,167 1030,240 770,240 710,167" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="780" y="133" class="head">二选一的扩展动作空间</text>
+  <text x="772" y="171" class="body">思考 ℓ ∈ 𝓛　或　动作 a ∈ 𝓐</text>
+  <text x="763" y="205" class="small">同一模型生成；作用对象不同</text>
+
+  <path d="M290 165 L360 165" class="flow"/>
+  <path d="M660 165 L710 165" class="flow"/>
+
+  <rect x="170" y="345" width="340" height="145" class="box" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="205" y="385" class="head">思考（内部控制流）</text>
+  <text x="205" y="420" class="body">分解目标、记录进度、处理异常</text>
+  <text x="205" y="451" class="small">不改变环境；直接追加到 cₜ₊₁</text>
+
+  <rect x="690" y="345" width="340" height="145" class="box" fill="#ecfdf5" stroke="#059669"/>
+  <text x="725" y="385" class="head">动作 → 外部环境</text>
+  <text x="725" y="420" class="body">search / lookup / 移动 / 购买</text>
+  <text x="725" y="451" class="small">改变或查询环境，返回 oₜ₊₁</text>
+
+  <path d="M820 240 C760 285 580 280 430 345" class="control"/>
+  <path d="M980 240 C1010 280 970 310 900 345" class="flow"/>
+  <path d="M340 345 C300 285 385 250 455 240" class="control"/>
+  <path d="M860 490 C860 575 230 585 175 225" class="flow"/>
+
+  <rect x="60" y="535" width="1080" height="72" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="90" y1="559" x2="155" y2="559" class="flow"/>
+  <text x="170" y="565" class="small">实线：会读取或改变外部状态的数据流</text>
+  <line x1="500" y1="559" x2="565" y2="559" class="control"/>
+  <text x="580" y="565" class="small">虚线：只更新语言上下文的内部控制流</text>
+  <text x="90" y="592" class="small">失效点：思考可幻觉或循环；检索无信息时，错误观察仍会污染后续上下文。</text>
+</svg>

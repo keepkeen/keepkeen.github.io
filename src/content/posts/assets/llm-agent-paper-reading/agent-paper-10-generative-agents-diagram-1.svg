@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Generative Agents 的记忆、反思、规划与环境反馈回路</title>
+  <desc id="desc">环境观察进入记忆流。当前情境作为查询，按近期性、重要性、相关性检索记忆。反思将多条记忆合成高层推断，分层规划生成动作。动作改变沙盒环境，形成反馈回路。</desc>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#24324a"/></marker>
+    <marker id="ao" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#b45309"/></marker>
+    <style>
+      .title{font:700 28px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#172033}
+      .h{font:700 18px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#172033}
+      .t{font:15px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#26364d}
+      .small{font:13px -apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#44546a}
+      .box{stroke:#43536b;stroke-width:2;rx:14}
+      .data{fill:none;stroke:#24324a;stroke-width:3;marker-end:url(#a)}
+      .control{fill:none;stroke:#b45309;stroke-width:2.5;stroke-dasharray:8 6;marker-end:url(#ao)}
+    </style>
+  </defs>
+  <rect width="1200" height="760" fill="#fbfcfe"/>
+  <text x="46" y="50" class="title">Generative Agents：经验如何变成长时程行为</text>
+
+  <rect x="48" y="102" width="205" height="112" class="box" fill="#e8f1ff"/>
+  <text x="68" y="137" class="h">沙盒环境</text>
+  <text x="68" y="166" class="t">时间、位置、物体状态</text>
+  <text x="68" y="192" class="t">附近代理的动作／语言</text>
+
+  <rect x="320" y="90" width="270" height="138" class="box" fill="#f1edff"/>
+  <text x="342" y="124" class="h">记忆流（自然语言记录）</text>
+  <text x="342" y="153" class="t">观察：直接看到的事件</text>
+  <text x="342" y="180" class="t">反思：高层推断＋证据指针</text>
+  <text x="342" y="207" class="t">计划：时间＋地点＋持续时间</text>
+
+  <rect x="657" y="88" width="310" height="145" class="box" fill="#fff2cf"/>
+  <text x="679" y="121" class="h">情境化检索</text>
+  <text x="679" y="151" class="t">查询：当前处境／待回答问题</text>
+  <text x="679" y="178" class="t">score = 近期性＋重要性＋相关性</text>
+  <text x="679" y="205" class="small">只把上下文窗口容得下的高分项送入 LLM</text>
+
+  <path d="M253 158 H310" class="data"/><text x="258" y="146" class="small">观察</text>
+  <path d="M590 158 H647" class="data"/>
+
+  <rect x="820" y="332" width="302" height="148" class="box" fill="#e8f7ee"/>
+  <text x="842" y="366" class="h">LLM 决策上下文</text>
+  <text x="842" y="396" class="t">代理概要＋当前观察</text>
+  <text x="842" y="423" class="t">检索记忆＋现有计划</text>
+  <text x="842" y="450" class="t">选择：继续计划或反应／重排</text>
+
+  <rect x="428" y="332" width="300" height="148" class="box" fill="#e8f7ee"/>
+  <text x="450" y="366" class="h">分层规划</text>
+  <text x="450" y="396" class="t">全日粗计划</text>
+  <text x="450" y="423" class="t">→ 小时级活动</text>
+  <text x="450" y="450" class="t">→ 5–15 分钟动作</text>
+
+  <rect x="48" y="332" width="300" height="148" class="box" fill="#ffeceb"/>
+  <text x="70" y="366" class="h">反思生成器</text>
+  <text x="70" y="396" class="t">重要性累计超阈值时触发</text>
+  <text x="70" y="423" class="t">近期经验 → 显著问题 → 推断</text>
+  <text x="70" y="450" class="small">推断可再参与后续检索与反思</text>
+
+  <path d="M800 233 C840 270 900 288 928 324" class="data"/>
+  <path d="M818 406 H738" class="data"/><text x="744" y="394" class="small">目标与记忆约束</text>
+  <path d="M428 406 H358" class="control"/><text x="363" y="394" class="small">重要经验触发</text>
+  <path d="M198 332 C228 270 310 246 365 230" class="control"/><text x="205" y="278" class="small">反思写回</text>
+  <path d="M578 332 C555 280 505 255 480 232" class="control"/><text x="520" y="278" class="small">计划写回</text>
+
+  <rect x="744" y="566" width="250" height="108" class="box" fill="#e8f1ff"/>
+  <text x="766" y="601" class="h">可执行动作</text>
+  <text x="766" y="630" class="t">语言／位移／物体状态变更</text>
+  <text x="766" y="655" class="small">传统寻路算法落地位移</text>
+  <path d="M970 480 C970 515 935 535 900 558" class="data"/>
+  <path d="M744 620 C540 700 180 660 144 224" class="data"/>
+  <text x="320" y="696" class="t">环境更新 → 下一时刻的新观察</text>
+
+  <line x1="56" y1="724" x2="106" y2="724" class="data"/><text x="118" y="730" class="small">实线：数据／状态流</text>
+  <line x1="340" y1="724" x2="390" y2="724" class="control"/><text x="402" y="730" class="small">虚线：触发与写回</text>
+  <text x="690" y="730" class="small">原创重绘；结构依据论文方法，非原图复制</text>
+</svg>

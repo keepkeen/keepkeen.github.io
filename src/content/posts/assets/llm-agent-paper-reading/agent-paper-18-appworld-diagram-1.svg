@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">AppWorld 自然语言任务、API 交互、隐藏世界状态与状态差分验证</title>
+  <desc id="desc">Agent 只看到自然语言任务和 API 文档，通过有状态执行 shell 编写代码、调用 API 、观察返回并修改决策。隐藏数据库从起始状态变到终止状态，评估器通过表、行、列三级状态差分核对期望变化和允许变化。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#294861"/></marker>
+    <marker id="dasharrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#548268"/></marker>
+    <style>
+      .title{font:700 27px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#17324d}.h{font:700 19px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#17324d}.t{font:15px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#23384d}.small{font:13px system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;fill:#41566b}.box{stroke-width:2;rx:16}.arrow{stroke:#294861;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.feedback{stroke:#548268;stroke-width:2.5;stroke-dasharray:8 6;fill:none;marker-end:url(#dasharrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="#fbfcfe"/>
+  <text x="600" y="42" text-anchor="middle" class="title">AppWorld：交互得到信息，代码改变世界，diff 验收结果</text>
+
+  <rect x="35" y="105" width="240" height="142" class="box" fill="#e7f1ff" stroke="#3975ad"/>
+  <text x="155" y="137" text-anchor="middle" class="h">自然语言任务</text>
+  <text x="55" y="168" class="t">例：找到今日训练时长，</text>
+  <text x="55" y="193" class="t">播放足够长的歌单</text>
+  <text x="55" y="222" class="small">只给目标，不给隐藏数据</text>
+
+  <rect x="345" y="90" width="340" height="340" class="box" fill="#f1eafe" stroke="#7652a7"/>
+  <text x="515" y="125" text-anchor="middle" class="h">Agent + 有状态执行 Shell</text>
+  <rect x="380" y="151" width="270" height="60" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="515" y="177" text-anchor="middle" class="t">查 ApiDocs，选 API</text><text x="515" y="198" text-anchor="middle" class="small">认参数、类型与 JSON 输出</text>
+  <rect x="380" y="236" width="270" height="60" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="515" y="262" text-anchor="middle" class="t">写并执行 Python 代码</text><text x="515" y="283" text-anchor="middle" class="small">循环、过滤、聚合、分支</text>
+  <rect x="380" y="321" width="270" height="78" rx="10" fill="#fff" stroke="#9b83bd"/>
+  <text x="515" y="347" text-anchor="middle" class="t">观察并修订</text><text x="515" y="370" text-anchor="middle" class="small">API 返回 / 错误栈 / 中间变量</text><text x="515" y="390" text-anchor="middle" class="small">最后调用 task_completed</text>
+
+  <rect x="770" y="90" width="390" height="340" class="box" fill="#e9f7ef" stroke="#3e8b60"/>
+  <text x="965" y="125" text-anchor="middle" class="h">隐藏 AppWorld 世界状态</text>
+  <text x="965" y="153" text-anchor="middle" class="small">9 个日常 app · 457 APIs · 数据库与冻结时间</text>
+  <rect x="805" y="178" width="320" height="68" rx="10" fill="#fff" stroke="#6ba783"/>
+  <text x="965" y="205" text-anchor="middle" class="t">起始状态 Dᵢˢ</text><text x="965" y="229" text-anchor="middle" class="small">邮件、订单、联系人、歌单、余额…</text>
+  <rect x="805" y="271" width="320" height="68" rx="10" fill="#fff" stroke="#6ba783"/>
+  <text x="965" y="298" text-anchor="middle" class="t">API 读 / 写转移</text><text x="965" y="322" text-anchor="middle" class="small">只有返回值对 agent 可见</text>
+  <rect x="805" y="364" width="320" height="45" rx="10" fill="#fff" stroke="#6ba783"/>
+  <text x="965" y="393" text-anchor="middle" class="t">终止状态 Dᵢᶠ</text>
+
+  <path d="M275 176 L345 176" class="arrow"/>
+  <path d="M685 265 L770 265" class="arrow"/>
+  <text x="727" y="249" text-anchor="middle" class="small">调 API</text>
+  <path d="M805 305 C725 355 710 355 650 355" class="feedback"/>
+  <text x="730" y="382" class="small">观察回流</text>
+
+  <rect x="95" y="510" width="1010" height="165" class="box" fill="#fff7dc" stroke="#b58b22"/>
+  <text x="600" y="542" text-anchor="middle" class="h">过程无关的状态差分验证</text>
+  <rect x="135" y="566" width="280" height="75" rx="10" fill="#fff" stroke="#c9a94d"/>
+  <text x="275" y="592" text-anchor="middle" class="t">计算 ΔDᵢ = diff(Dᵢˢ, Dᵢᶠ)</text><text x="275" y="617" text-anchor="middle" class="small">逐表 → 逐行 → 逐列</text>
+  <rect x="460" y="566" width="280" height="75" rx="10" fill="#fff" stroke="#c9a94d"/>
+  <text x="600" y="592" text-anchor="middle" class="t">Cᵢᵉˣᵖᵉᶜᵗ ⊆ ΔDᵢ</text><text x="600" y="617" text-anchor="middle" class="small">要求的改动一个不少</text>
+  <rect x="785" y="566" width="280" height="75" rx="10" fill="#fff" stroke="#c9a94d"/>
+  <text x="925" y="592" text-anchor="middle" class="t">ΔDᵢ ⊆ Cᵢᵉˣᵖᵉᶜᵗ ∪ Cᵢᵃˡˡᵒʷ</text><text x="925" y="617" text-anchor="middle" class="small">额外改动必须是允许的</text>
+  <path d="M965 430 L965 510" class="arrow"/>
+  <text x="600" y="663" text-anchor="middle" class="small">TGC：单任务全部测试通过 · SGC：同一场景的三个变体全部通过</text>
+</svg>

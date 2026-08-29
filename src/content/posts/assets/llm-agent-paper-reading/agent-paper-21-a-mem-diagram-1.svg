@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1580" height="960" viewBox="0 0 1580 960" role="img" aria-labelledby="title desc">
+  <title id="title">A-MEM 笔记构造、链接生成、记忆演化和查询检索</title>
+  <desc id="desc">写入时，新交互被富化为结构化笔记和向量，向量 top-k 召回候选，LLM 建立链接并可改写旧记忆。查询时，问题向量取回相关笔记与链接邻居，提供给 LLM 回答。</desc>
+  <defs>
+    <marker id="ap" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#805db2"/></marker>
+    <marker id="ab" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#2d67ac"/></marker>
+    <marker id="ag" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L10 5.5 0 11Z" fill="#398a70"/></marker>
+    <style>
+      .title{font:700 32px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.sub{font:500 18px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#59677d}.h{font:700 22px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#17233b}.t{font:500 17px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#293950}.s{font:500 15px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;fill:#56657b}.mono{font:600 16px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#29436d}.p{fill:#f5efff;stroke:#8969b9;stroke-width:2}.b{fill:#edf5ff;stroke:#5b86c2;stroke-width:2}.g{fill:#edf9f4;stroke:#4f9a7c;stroke-width:2}.o{fill:#fff4e9;stroke:#d28a49;stroke-width:2}.r{fill:#fff0f0;stroke:#d26363;stroke-width:2}.w{fill:#fff;stroke:#b8c3d4;stroke-width:2}.link{stroke:#6c78a0;stroke-width:3;fill:none;stroke-dasharray:8 6}
+    </style>
+  </defs>
+  <rect width="1580" height="960" fill="#f7f9fc"/>
+  <text x="790" y="51" text-anchor="middle" class="title">A-MEM：写入时建关系，新记忆还会改变旧记忆</text>
+  <text x="790" y="83" text-anchor="middle" class="sub">紫：写入/组织　蓝：查询/检索　绿：输出　红：可变记忆风险</text>
+
+  <rect x="45" y="125" width="300" height="190" rx="20" class="p"/>
+  <text x="195" y="168" text-anchor="middle" class="h">新交互 cₙ + 时间 tₙ</text>
+  <text x="195" y="208" text-anchor="middle" class="t">LLM 生成 K/G/X</text>
+  <text x="195" y="243" text-anchor="middle" class="t">关键词 / 标签 / 上下文</text>
+  <text x="195" y="278" text-anchor="middle" class="mono">mₙ={c,t,K,G,X,e,L}</text>
+
+  <rect x="425" y="125" width="300" height="190" rx="20" class="p"/>
+  <text x="575" y="168" text-anchor="middle" class="h">向量粗召回</text>
+  <text x="575" y="208" text-anchor="middle" class="t">富化文本 → eₙ</text>
+  <text x="575" y="243" text-anchor="middle" class="t">与旧记忆做余弦相似度</text>
+  <text x="575" y="278" text-anchor="middle" class="mono">M_near = top-k(sₙ,ⱼ)</text>
+
+  <rect x="805" y="125" width="300" height="190" rx="20" class="p"/>
+  <text x="955" y="168" text-anchor="middle" class="h">LLM 精建链 LG</text>
+  <text x="955" y="208" text-anchor="middle" class="t">共享属性 / 概念 / 关系</text>
+  <text x="955" y="243" text-anchor="middle" class="t">一条笔记可进多个“盒”</text>
+  <text x="955" y="278" text-anchor="middle" class="mono">Lₙ ← LLM(mₙ, M_near)</text>
+
+  <rect x="1185" y="125" width="350" height="190" rx="20" class="r"/>
+  <text x="1360" y="168" text-anchor="middle" class="h">LLM 演化旧记忆 ME</text>
+  <text x="1360" y="208" text-anchor="middle" class="t">更新邻近旧笔记的 X/K/G</text>
+  <text x="1360" y="243" text-anchor="middle" class="t">新版 mⱼ* 替换原 mⱼ</text>
+  <text x="1360" y="278" text-anchor="middle" class="s">无原生不可变版本/回滚保证</text>
+
+  <path d="M345 220H410" stroke="#805db2" stroke-width="4" fill="none" marker-end="url(#ap)"/>
+  <path d="M725 220H790" stroke="#805db2" stroke-width="4" fill="none" marker-end="url(#ap)"/>
+  <path d="M1105 220H1170" stroke="#805db2" stroke-width="4" fill="none" marker-end="url(#ap)"/>
+
+  <rect x="155" y="385" width="1270" height="255" rx="26" class="w"/>
+  <text x="790" y="425" text-anchor="middle" class="h">可变记忆网 ⱼ</text>
+  <rect x="260" y="472" width="225" height="105" rx="18" class="b"/><text x="372" y="511" text-anchor="middle" class="h">m₁</text><text x="372" y="546" text-anchor="middle" class="s">训练马拉松</text>
+  <rect x="675" y="452" width="230" height="105" rx="18" class="b"/><text x="790" y="491" text-anchor="middle" class="h">m₂*</text><text x="790" y="526" text-anchor="middle" class="s">训练负荷相关膝痛</text>
+  <rect x="1095" y="482" width="225" height="105" rx="18" class="b"/><text x="1207" y="521" text-anchor="middle" class="h">mₙ</text><text x="1207" y="556" text-anchor="middle" class="s">医生的新解释</text>
+  <path d="M485 515C560 470 600 470 675 500" class="link"/>
+  <path d="M905 500C980 470 1020 490 1095 525" class="link"/>
+  <path d="M450 565C650 635 1000 625 1135 575" class="link"/>
+  <text x="790" y="610" text-anchor="middle" class="s">链接保留跨时间关系；星号表示该旧记忆已被新信息改写</text>
+  <path d="M1360 315C1360 358 1250 365 1185 383" stroke="#d26363" stroke-width="4" fill="none" marker-end="url(#ap)"/>
+
+  <rect x="75" y="708" width="300" height="160" rx="20" class="b"/>
+  <text x="225" y="751" text-anchor="middle" class="h">当前问题 q</text>
+  <text x="225" y="791" text-anchor="middle" class="t">编码为 e_q</text>
+  <text x="225" y="826" text-anchor="middle" class="t">查记忆而非重写权重</text>
+
+  <rect x="480" y="708" width="380" height="160" rx="20" class="b"/>
+  <text x="670" y="751" text-anchor="middle" class="h">检索 top-k + 链接邻居</text>
+  <text x="670" y="791" text-anchor="middle" class="t">直接相似证据 + 间接关联证据</text>
+  <text x="670" y="826" text-anchor="middle" class="mono">M_retrieved</text>
+
+  <rect x="965" y="708" width="300" height="160" rx="20" class="g"/>
+  <text x="1115" y="751" text-anchor="middle" class="h">LLM 回答</text>
+  <text x="1115" y="791" text-anchor="middle" class="t">问题 + 取回记忆</text>
+  <text x="1115" y="826" text-anchor="middle" class="t">多跳/时序整合</text>
+
+  <path d="M375 788H465" stroke="#2d67ac" stroke-width="4" fill="none" marker-end="url(#ab)"/>
+  <path d="M860 788H950" stroke="#398a70" stroke-width="4" fill="none" marker-end="url(#ag)"/>
+  <path d="M670 708C670 660 725 655 760 640" stroke="#2d67ac" stroke-width="4" fill="none" marker-end="url(#ab)"/>
+
+  <rect x="1305" y="708" width="230" height="160" rx="20" class="o"/>
+  <text x="1420" y="751" text-anchor="middle" class="h">开销口径</text>
+  <text x="1420" y="791" text-anchor="middle" class="s">向量检索：微秒级</text>
+  <text x="1420" y="826" text-anchor="middle" class="s">LLM 记忆操作：秒级</text>
+
+  <rect x="260" y="900" width="1060" height="44" rx="14" class="r"/>
+  <text x="790" y="929" text-anchor="middle" class="t">链接与演化能找间接证据，也能把一次 LLM 误判传播到长期记忆</text>
+</svg>

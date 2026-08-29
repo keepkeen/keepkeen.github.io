@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">BrowseComp 的约束搜索、回退和短答案评分机制</title>
+  <desc id="desc">实线表示搜索代理从约束问题出发，通过多轮查询、证据核验和回退得到短答案；红色虚线表示盲目穷举、过早停止和候选答案歧义。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#315b7d"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#387a55"/></marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#b74343"/></marker>
+    <style>
+      .title{font:700 27px sans-serif;fill:#17324d}.sub{font:600 18px sans-serif;fill:#17324d}.txt{font:16px sans-serif;fill:#203040}.small{font:14px sans-serif;fill:#405064}
+      .box{fill:#f6f9fc;stroke:#315b7d;stroke-width:2;rx:14}.search{fill:#eef8f0;stroke:#387a55;stroke-width:2;rx:14}.score{fill:#fff7df;stroke:#9a6c17;stroke-width:2;rx:14}.fail{fill:#fff0f0;stroke:#b74343;stroke-width:2;rx:12}
+      .flow{fill:none;stroke:#315b7d;stroke-width:3;marker-end:url(#arrow)}.loop{fill:none;stroke:#387a55;stroke-width:3;marker-end:url(#arrowGreen)}.bad{fill:none;stroke:#b74343;stroke-width:3;stroke-dasharray:9 7;marker-end:url(#arrowRed)}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="white"/>
+  <text x="600" y="44" text-anchor="middle" class="title">BrowseComp：用“难找、易验”短答题隔离持续浏览能力</text>
+
+  <rect x="45" y="110" width="220" height="128" class="box"/>
+  <text x="155" y="143" text-anchor="middle" class="sub">1. 约束组问题</text>
+  <text x="155" y="176" text-anchor="middle" class="txt">多个稀有线索的交集</text>
+  <text x="155" y="205" text-anchor="middle" class="small">目标：唯一、短、稳定答案</text>
+
+  <rect x="325" y="85" width="250" height="178" class="search"/>
+  <text x="450" y="119" text-anchor="middle" class="sub">2. 搜索代理循环</text>
+  <text x="450" y="153" text-anchor="middle" class="txt">拆线索→构造查询</text>
+  <text x="450" y="183" text-anchor="middle" class="txt">打开页面→提取实体</text>
+  <text x="450" y="213" text-anchor="middle" class="txt">更新候选集→改写查询</text>
+  <text x="450" y="241" text-anchor="middle" class="small">遇到死路时回退</text>
+
+  <rect x="655" y="110" width="220" height="128" class="search"/>
+  <text x="765" y="143" text-anchor="middle" class="sub">3. 证据核验</text>
+  <text x="765" y="176" text-anchor="middle" class="txt">候选是否满足全部约束？</text>
+  <text x="765" y="205" text-anchor="middle" class="small">多页面、多步线索交叉检查</text>
+
+  <rect x="955" y="110" width="195" height="128" class="score"/>
+  <text x="1052" y="143" text-anchor="middle" class="sub">4. 短答案</text>
+  <text x="1052" y="176" text-anchor="middle" class="txt">Exact Answer</text>
+  <text x="1052" y="205" text-anchor="middle" class="small">+模型自报信心</text>
+
+  <path d="M265 174 H325" class="flow"/><path d="M575 174 H655" class="flow"/><path d="M875 174 H955" class="flow"/>
+  <path d="M705 238 C650 330 495 330 450 263" class="loop"/>
+  <text x="590" y="323" text-anchor="middle" class="small">核验失败：保留线索，回退并换搜索路径</text>
+
+  <rect x="280" y="390" width="640" height="148" class="score"/>
+  <text x="600" y="424" text-anchor="middle" class="sub">5. 评分与分析</text>
+  <text x="600" y="458" text-anchor="middle" class="txt">语义匹配器：预测短答案 ≈ 参考答案 → 正确 / 错误</text>
+  <text x="600" y="489" text-anchor="middle" class="txt">准确率 = 正确题数 / 总题数</text>
+  <text x="600" y="517" text-anchor="middle" class="small">另行比较信心与实际正确性，审计校准</text>
+  <path d="M1052 238 V330 H600 V390" class="flow"/>
+
+  <rect x="35" y="585" width="355" height="82" class="fail"/>
+  <text x="212" y="616" text-anchor="middle" class="sub">失败 A：盲目穷举</text>
+  <text x="212" y="646" text-anchor="middle" class="small">候选空间过大，预算内无法找到稀有交集</text>
+  <path d="M380 263 C330 365 260 445 212 585" class="bad"/>
+  <rect x="423" y="585" width="355" height="82" class="fail"/>
+  <text x="600" y="616" text-anchor="middle" class="sub">失败 B：过早停止</text>
+  <text x="600" y="646" text-anchor="middle" class="small">首个候选只满足部分约束，却未回退验证</text>
+  <path d="M765 238 C745 350 650 445 600 585" class="bad"/>
+  <rect x="810" y="585" width="355" height="82" class="fail"/>
+  <text x="987" y="616" text-anchor="middle" class="sub">标注边界：多个有效答案</text>
+  <text x="987" y="646" text-anchor="middle" class="small">反向出题只保证参考答案成立，难穷尽其他解</text>
+  <path d="M1052 238 C1090 350 1040 455 987 585" class="bad"/>
+
+  <line x1="405" y1="696" x2="455" y2="696" class="flow"/><text x="470" y="702" class="small">前向数据流</text>
+  <line x1="610" y1="696" x2="660" y2="696" class="loop"/><text x="675" y="702" class="small">验证/回退控制流</text>
+  <line x1="875" y1="696" x2="925" y2="696" class="bad"/><text x="940" y="702" class="small">失败或数据边界</text>
+</svg>

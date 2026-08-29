@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="760" viewBox="0 0 1250 760" role="img" aria-labelledby="title desc">
+  <title id="title">AgentBench 多环境评测、交互轨迹与指标汇总机制</title>
+  <desc id="desc">八个环境分为代码、游戏和网页三类，通过统一的用户反馈与智能体动作协议生成轨迹，随后分别计算任务指标和结束原因，再经固定权重形成总体分。</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#34495e"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#23856d"/></marker>
+    <style>text{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#203040}.h{font-size:26px;font-weight:700}.t{font-size:19px}.s{font-size:16px}.box{stroke-width:2.4;rx:15}.f{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#a)}.d{fill:none;stroke:#23856d;stroke-width:3;stroke-dasharray:10 7;marker-end:url(#g)}</style>
+  </defs>
+  <rect width="1250" height="760" fill="#fbfcfe"/><text x="48" y="48" class="h">AgentBench：同一模型在八个交互闭环中的轨迹与测量</text>
+  <rect x="45" y="85" width="290" height="165" class="box" fill="#e8f2ff" stroke="#3976b8"/><text x="190" y="120" text-anchor="middle" class="h">代码环境</text><text x="190" y="160" text-anchor="middle" class="t">操作系统 OS</text><text x="190" y="193" text-anchor="middle" class="t">数据库 DB</text><text x="190" y="226" text-anchor="middle" class="t">知识图谱 KG</text>
+  <rect x="45" y="278" width="290" height="165" class="box" fill="#fff1df" stroke="#d17a22"/><text x="190" y="313" text-anchor="middle" class="h">游戏环境</text><text x="190" y="353" text-anchor="middle" class="t">数字卡牌 DCG</text><text x="190" y="386" text-anchor="middle" class="t">横向思维谜题 LTP</text><text x="190" y="419" text-anchor="middle" class="t">家务 HH</text>
+  <rect x="45" y="471" width="290" height="130" class="box" fill="#f0eafa" stroke="#7852a9"/><text x="190" y="508" text-anchor="middle" class="h">网页环境</text><text x="190" y="550" text-anchor="middle" class="t">网页购物 WS</text><text x="190" y="582" text-anchor="middle" class="t">网页浏览 WB</text>
+  <rect x="425" y="88" width="355" height="142" class="box" fill="#eef1f4" stroke="#697786"/><text x="603" y="126" text-anchor="middle" class="h">统一交互协议</text><text x="603" y="163" text-anchor="middle" class="t">uₖ：任务指令＋环境反馈</text><text x="603" y="197" text-anchor="middle" class="t">aₖ：Thought＋Action</text>
+  <path d="M335 170L420 170" class="f"/><path d="M335 360C380 350 390 250 425 205" class="f"/><path d="M335 535C390 520 390 240 430 215" class="f"/>
+  <rect x="425" y="300" width="355" height="168" class="box" fill="#e8f2ff" stroke="#3976b8"/><text x="603" y="340" text-anchor="middle" class="h">被测 LLM agent 𝓜</text><text x="603" y="380" text-anchor="middle" class="t">读取历史 → 规划 → 生成动作</text><text x="603" y="415" text-anchor="middle" class="s">温度 0；超长历史裁到约 3500 token</text><text x="603" y="447" text-anchor="middle" class="s">动作执行后，环境返回下一轮观察或错误</text>
+  <path d="M603 230L603 295" class="f"/><path d="M425 410C350 410 350 235 425 200" class="f"/><text x="367" y="318" text-anchor="middle" class="s">反馈闭环</text>
+  <rect x="870" y="85" width="330" height="180" class="box" fill="#e6f6ef" stroke="#23856d"/><text x="1035" y="124" text-anchor="middle" class="h">环境任务指标</text><text x="1035" y="163" text-anchor="middle" class="t">SR / F1 / Reward</text><text x="1035" y="198" text-anchor="middle" class="t">Game Progress / Step SR</text><text x="1035" y="234" text-anchor="middle" class="s">八项原始尺度不同</text>
+  <rect x="870" y="306" width="330" height="180" class="box" fill="#fde9e7" stroke="#c44b43"/><text x="1035" y="345" text-anchor="middle" class="h">轨迹结束原因</text><text x="1035" y="385" text-anchor="middle" class="t">Complete / CLE / IF / IA / TLE</text><text x="1035" y="422" text-anchor="middle" class="s">区分格式、动作、上下文与循环</text><text x="1035" y="454" text-anchor="middle" class="s">Completed 不等于任务成功</text>
+  <path d="M780 360C825 310 820 210 865 185" class="f"/><path d="M780 400L865 400" class="f"/>
+  <rect x="815" y="570" width="385" height="118" class="box" fill="#e6f6ef" stroke="#23856d"/><text x="1008" y="608" text-anchor="middle" class="h">跨环境总体分 OA</text><text x="1008" y="646" text-anchor="middle" class="t">各项 × 固定倒数均值权重，再平均</text><text x="1008" y="676" text-anchor="middle" class="s">用于排序画像，不是绝对成功率</text>
+  <path d="M1010 265L1010 565" class="d"/>
+  <text x="47" y="713" class="s">实线＝单条交互轨迹　虚线＝异质指标的标准化汇总　红色框用于诊断“为什么没有完成”</text>
+</svg>
