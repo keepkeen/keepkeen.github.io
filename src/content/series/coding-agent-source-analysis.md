@@ -1,6 +1,6 @@
 ---
 title: "Coding Agent 源码解剖：Pi、Codex、DeepSeek Harness 与 Claude Code"
-description: "固定到 2026-08-29 可核查的源码与发布物，从单仓架构到 Agent Loop、安全、上下文、多代理、SDK 与可观测性，系统比较四种 Coding Agent。"
+description: "固定到 2026-08-29 可核查的源码与发布物，系统比较四种 Coding Agent，并以截至 2026-08-30 的公开证据整理国内大厂 Agent 面试指南。"
 lang: zh-CN
 featured: true
 draft: false
@@ -8,7 +8,7 @@ draft: false
 
 这套专题不按“谁的内置工具更多”排名，而是追问一个更稳定的问题：**每个 Agent 把控制权放在哪里？** Pi 把控制权交给 provider 与宿主扩展；Codex 交给 app-server、Session、安全 orchestrator 与共享多代理控制面；DeepSeek Harness 交给 Cordis effect composition 和 durable event surface；Claude Code 2.1.88 则围绕共享 `query()` 循环叠加完整产品能力。
 
-专题先用固定版本和证据等级建立边界，再逐仓解释四个实现，最后从 Loop 与工具、安全与扩展、上下文与子代理、接口与可观测性四条横线比较。源码能证明机制和不变量，不能直接推出模型完成率、延迟、成本或 benchmark 排名。
+专题先用固定版本和证据等级建立边界，再逐仓解释四个实现，从 Loop 与工具、安全与扩展、上下文与子代理、接口与可观测性四条横线比较。第 11 篇把这些源码机制映射到 2025–2026 国内大厂公开面经，提供公司画像、答题框架、P0/P1 题单和 14 天准备路线。源码能证明机制和不变量，不能直接推出模型完成率、延迟、成本或 benchmark 排名；公开面经也不能外推为公司统一题库。
 
 ## 证据边界
 

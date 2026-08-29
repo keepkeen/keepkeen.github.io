@@ -42,6 +42,7 @@ seriesOrder: 1
    - [权限、沙箱、信任与扩展](/blog/coding-agent-security-extensions/)
    - [上下文、会话、压缩与子代理](/blog/coding-agent-context-session-subagents/)
    - [UI、SDK、协议、配置与可观测性](/blog/coding-agent-interfaces-observability/)
+6. [2025–2026 国内大厂 Agent 面经](/blog/china-agent-interview-guide-2025-2026/)——把源码机制映射到真实面试题、公司画像和 14 天准备计划。
 
 ## 交互式代码地图
 
