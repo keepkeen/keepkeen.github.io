@@ -2,6 +2,7 @@
 title: "2025–2026 厂商真题精讲：把 slime 讲进面试"
 description: "字节、百度、阿里、腾讯混元、商汤等 2025–2026 公开面经真题逐题精讲：GRPO 家族、训推一致性、异步 RL 与 Agentic RL，每道题都落到 slime 源码与具体开关。"
 date: 2026-08-14
+updatedDate: 2026-08-29
 tags:
 - slime
 - interview
@@ -12,7 +13,7 @@ draft: false
 series: slime-interview-guide
 seriesOrder: 12
 ---
-> **快照说明**：本文答案以 `main@681b3adc`（v0.3.1 之后，扫描日期 2026-08-14）源码为准。
+> **快照说明**：本文答案以 `main@3778dbf6`（v0.3.2，扫描日期 2026-08-29）源码为准。
 >
 > **来源说明**：题目收集自 2025–2026 公开渠道，按可信度分三档标注：
 >
@@ -52,9 +53,9 @@ seriesOrder: 12
 
 **机制**（按侵入性从低到高）：
 
-1. **Dynamic sampling 超发 + 先到先得**：一次发出比需求更多的 prompt 组，先完成的组先收集，凑够 `rollout_batch_size` 个有效组就停止，不等最慢的。slime 的默认 rollout 循环就是这样写的：`--over-sampling-batch-size` 控制超发粒度，`--dynamic-sampling-filter-path` 按 DAPO 语义丢弃全对/全错组（[arguments.py#L430](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/arguments.py#L430)）。
-2. **Partial rollout（APRIL 思路）**：超发后被 abort 的未完成轨迹不丢弃，连同已生成的 token 一起放回 Data Buffer，下一轮从断点继续生成，复用已算的前缀。slime 的 `--partial-rollout` 就是该机制（[arguments.py#L458](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/arguments.py#L458)）；APRIL 论文报告其在 GRPO/DAPO/GSPO 上最多提升 rollout 吞吐约 49.5%，且已集成进 slime。
-3. **跨 batch 常驻异步生成池（fully-async）**：训练 batch 不再绑定"同一批发出的请求"，后台 worker 维持恒定并发，完成的组进队列，训练侧按需取。slime 的 `examples/fully_async` + `slime/rollout/fully_async_rollout.py` 实现了这个模式，队列有背压控制，多余完成组留在队列供下一轮使用（[fully_async_rollout.py#L148](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/rollout/fully_async_rollout.py#L148)）。
+1. **Dynamic sampling 超发 + 先到先得**：一次发出比需求更多的 prompt 组，先完成的组先收集，凑够 `rollout_batch_size` 个有效组就停止，不等最慢的。slime 的默认 rollout 循环就是这样写的：`--over-sampling-batch-size` 控制超发粒度，`--dynamic-sampling-filter-path` 按 DAPO 语义丢弃全对/全错组（[arguments.py#L440](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/arguments.py#L440)）。
+2. **Partial rollout（APRIL 思路）**：超发后被 abort 的未完成轨迹不丢弃，连同已生成的 token 一起放回 Data Buffer，下一轮从断点继续生成，复用已算的前缀。slime 的 `--partial-rollout` 就是该机制（[arguments.py#L468](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/arguments.py#L468)）；APRIL 论文报告其在 GRPO/DAPO/GSPO 上最多提升 rollout 吞吐约 49.5%，且已集成进 slime。
+3. **跨 batch 常驻异步生成池（fully-async）**：训练 batch 不再绑定"同一批发出的请求"，后台 worker 维持恒定并发，完成的组进队列，训练侧按需取。slime 的 `examples/fully_async` + `slime/rollout/fully_async_rollout.py` 实现了这个模式，队列有背压控制，多余完成组留在队列供下一轮使用（[fully_async_rollout.py#L148](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/rollout/fully_async_rollout.py#L148)）。
 4. 补充手段：`train_async.py` 的 N/N+1 流水让训练与下一轮生成重叠；MoE 大模型还可以用 FP8 rollout、投机解码（MTP）直接加速生成本身。
 
 **取舍**：超发浪费算力换时延；partial rollout 的续推段是旧权重生成的，引入轨迹内混合策略；fully-async 引入不固定的 staleness。所以答题时要补一句：**吞吐方案必须配 off-policy 修正/监控**（TIS、OPSM、staleness 指标，见 Q15–Q17）。
@@ -70,13 +71,13 @@ seriesOrder: 12
 **机制**：
 
 - **为什么会不一致**：rollout 由 SGLang 执行，训练侧由 Megatron 重算 logprob。两套引擎的 kernel 实现、算子归约顺序、精度（BF16/FP8）、top-k 的 tie-breaking 都可能有微小差异。Dense 模型里这只是 logprob 的小数点误差；MoE 里 router 是 `top-k` 的**离散选择**，score 差 1e-6 就可能翻转专家选择，token 走完全不同的专家网络，logprob 出现跳变，重要性采样比率 `π_train/π_rollout` 失真甚至爆炸，训练不稳或崩溃。
-- **解法一：Routing Replay（对齐派）**。训练时不再自己算路由，而是记录并重放 rollout 时的专家选择，从根上消除路由差异。slime 提供两个开关：`--use-routing-replay`（GSPO 论文 [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) 提出的训练侧 routing replay）和 `--use-rollout-routing-replay`（R3，[arXiv:2510.11370](https://arxiv.org/abs/2510.11370)，直接重放 rollout 引擎的路由决策），见 [arguments.py#L1092](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/arguments.py#L1092)。实现上 slime 还处理了一个细节：SGLang 的确定性 top-k 用 `sorted=False`，Megatron 默认 `sorted=True`，专家集合相同但**归约顺序**不同也会改变 BF16 累加结果，slime 的 [routing_replay.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/routing_replay.py#L49) 专门对齐了 top-k 顺序。
+- **解法一：Routing Replay（对齐派）**。训练时不再自己算路由，而是记录并重放 rollout 时的专家选择，从根上消除路由差异。slime 提供两个开关：`--use-routing-replay`（GSPO 论文 [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) 提出的训练侧 routing replay）和 `--use-rollout-routing-replay`（R3，[arXiv:2510.11370](https://arxiv.org/abs/2510.11370)，直接重放 rollout 引擎的路由决策），见 [arguments.py#L1103](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/arguments.py#L1103)。实现上 slime 还处理了一个细节：SGLang 的确定性 top-k 用 `sorted=False`，Megatron 默认 `sorted=True`，专家集合相同但**归约顺序**不同也会改变 BF16 累加结果，slime 的 [routing_replay.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/routing_replay.py#L52) 专门对齐了 top-k 顺序。
 - **解法二：算法容错派**。TIS（截断重要性采样）用 `exp(logp_train − logp_rollout)` 加权并截断极端值；OPSM（Off-Policy Sequence Masking）直接把 mismatch 过大的整条序列 mask 掉不参与梯度；GSPO 把 ratio 从 token 级改为序列几何平均，天然抹平单 token 的路由抖动。slime 对应 `--use-tis`、`--use-opsm`、`--advantage-estimator gspo`。
-- **解法三：极致确定性（2026 年新方向）**。slime 与 SGLang 配合做了确定性推理 patch 和 Megatron 侧 DeepEP 对齐（`slime/backends/megatron_utils/alignment/` 模块，GLM-5 系列训练用），目标是训推 bitwise 对齐，此时 mismatch 从源头归零。这是当前少有框架做到的深度，面试中主动提会非常加分。
+- **解法三：极致确定性（2026 年新方向）**。slime 与 SGLang 配合提供了确定性推理 patch 和 Megatron 侧 DeepEP 对齐模块（`slime/backends/megatron_utils/alignment/`），目标是在匹配的版本、配置和硬件路径下实现训推 bitwise 对齐，从源头降低乃至消除已观测到的 mismatch。它不是对所有模型、算子和部署组合的无条件保证，回答时要同时说明适用边界。
 
 **取舍**：replay 要传输/存储路由信息、且训练梯度仍会流过 router（只重放离散选择）；TIS/OPSM 丢失部分样本效率；确定性对齐牺牲部分 kernel 性能。
 
-**验证**：监控 `train_rollout_logprob_abs_diff`、TIS 的 `tis_clipfrac`、OPSM 的 `opsm_clipfrac`；第一步（on-policy 起点）的 train/rollout KL 应接近 0，这是作者公开强调的正确性锚点 [官方口径]。
+**验证**：监控 `train/train_rollout_logprob_abs_diff`、TIS 的 `tis_clipfrac`、OPSM 的 `opsm_clipfrac`；第一步（on-policy 起点）应看 train/rollout logprob 绝对差是否接近 0。它是 mismatch 指标，不是 `train/ppo_kl`（old-current signed log-ratio），更不是 `rollout/kl`（current-reference）。
 
 ### Q3 [真题·字节] GSPO 具体采取了什么方案缓解这个问题？
 
@@ -88,7 +89,7 @@ $$
 r_{seq}(\theta)=\exp\Big(\frac{1}{|M|}\sum_{t\in M}(\log\pi_\theta(y_t)-\log\pi_{old}(y_t))\Big),
 $$
 
-再把同一个 $r_{seq}$ 广播给该序列所有 token 进入 clipped surrogate。slime 的实现在 [`compute_gspo_kl`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L95)：先对完整序列求平均 log-ratio（CP 并行时先 all-gather 完整 response，避免每个 rank 用局部片段算出不同的序列比率），再扩展回 token。
+再把同一个 $r_{seq}$ 广播给该序列所有 token 进入 clipped surrogate。slime 的实现在 [`compute_gspo_kl`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L95)：先对完整序列求平均 log-ratio（CP 并行时先 all-gather 完整 response，避免每个 rank 用局部片段算出不同的序列比率），再扩展回 token。
 
 **取舍**：序列级平均也可能掩盖个别 token 的严重偏移；clip 发生在序列粒度上，一条序列要么全保留要么全被 clip，粒度更粗。GSPO 论文同时提出了 routing replay 作为配套（对应 slime `--use-routing-replay`），说明作者们也不认为单靠序列平均就够。
 
@@ -105,7 +106,7 @@ $$
 - $A<0$ 且 $r<1-\epsilon$：min 选中未 clip 项（更负）→ 同样不奖励逃逸；
 - 若只用 clip 不用 min，$A<0$ 时 ratio 掉出下界反而没有惩罚梯度，策略可以"作弊"式逃离。
 
-**slime 对应**：[`compute_policy_loss`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L125) 实现了标准 clipped surrogate（`eps_clip`/`eps_clip_high` 分控上下界），并支持 Dual-Clip PPO 的第三重下界 `--eps-clip-c`（对 $A<0$ 且 ratio 极大的 token 再加一层 `c·A` 下限，防止负优势 × 巨大 ratio 的梯度爆炸；[arXiv:1912.09729](https://arxiv.org/pdf/1912.09729)）。注意 dual-clip 参数在 2026 年 8 月的 [PR #2247](https://github.com/THUDM/slime/pull/2247) 才真正接通——如果你读过旧版源码，这是展示"我持续跟踪代码演进"的好素材。
+**slime 对应**：[`compute_policy_loss`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L125) 实现了标准 clipped surrogate（`eps_clip`/`eps_clip_high` 分控上下界），并支持 Dual-Clip PPO 的第三重下界 `--eps-clip-c`（对 $A<0$ 且 ratio 极大的 token 再加一层 `c·A` 下限，防止负优势 × 巨大 ratio 的梯度爆炸；[arXiv:1912.09729](https://arxiv.org/pdf/1912.09729)）。注意 dual-clip 参数在 2026 年 8 月的 [PR #2247](https://github.com/THUDM/slime/pull/2247) 才真正接通——如果你读过旧版源码，这是展示"我持续跟踪代码演进"的好素材。
 
 ### Q5 [真题·字节] DAPO 相较于 GRPO 的 clip 有什么区别？逐 token 更新和 batch 内更新有什么区别？
 
@@ -135,7 +136,7 @@ $$
 | $\pi_\theta$ | 训练中实时 forward | Megatron | ratio 的分子、entropy |
 | （追问会带出）$\pi_{ref}$ | `ref_log_probs` | 冻结参考模型 | KL 约束 |
 
-**关键点**：为什么 $\pi_{\theta_{old}}$ 不直接用 $\pi_{rollout}$？因为两套引擎数值有差异（见 Q2），且一轮数据可能做多个 optimizer step——第一步时 old=current（ratio=1，KL=0），后续步 ratio 才偏离。slime 提供 `--use-rollout-logprobs` 直接把 behavior logprob 当 old 用（省一次 forward，但把训推 mismatch 直接引入 ratio），默认则用 Megatron 重算——这个取舍本身就是面试官想听的。
+**关键点**：为什么 $\pi_{\theta_{old}}$ 不直接用 $\pi_{rollout}$？因为两套引擎数值有差异（见 Q2），且一轮数据可能做多个 optimizer step——第一步时 old=current（ratio=1，`train/ppo_kl`=0），后续步 ratio 才偏离。slime 提供 `--use-rollout-logprobs` 直接把 behavior logprob 当 old 用（省一次 forward，但把训推 mismatch 直接引入 ratio），默认则用 Megatron 重算——这个取舍本身就是面试官想听的。
 
 ### Q7 [真题·百度] 讲一下 GRPO 训练的数据流。
 
@@ -165,15 +166,15 @@ JSONL/Parquet 行 → Dataset(prompt/label/metadata)
 
 1. **控制侧**：减少每批 optimizer step 数；缩短权重同步间隔（slime 同步驱动每轮都同步，`train_async.py` 用 `--update-weights-interval` 控制）；限制最大 staleness（fully-async 场景监控队列年龄）。
 2. **修正侧**：PPO clip 本身就是一阶防线；TIS 截断重要性采样纠正 behavior→train 偏移（`--use-tis`）；OPSM 把偏移过大的序列整条 mask（`--use-opsm`）；必要时用 `--use-rollout-logprobs` 让 ratio 直接以 behavior 为分母，语义更接近标准 IS。
-3. **观测侧**：`ppo_kl`（old vs current 的有符号 log-ratio）、`pg_clipfrac`、`tis_clipfrac`，以及 rollout 权重版本与训练 step 的差距分布。
+3. **观测侧**：`train/ppo_kl`（old vs current 的有符号 log-ratio）、`train/train_rollout_logprob_abs_diff`（默认 train-old vs rollout；启用 `use_rollout_logprobs` 后为 current vs rollout）、`pg_clipfrac`、`tis_clipfrac`，以及 rollout 权重版本与训练 step 的差距分布。
 
 ### Q9 [真题·阿里] 为什么需要 advantage？直接用 reward 不行吗？重要性采样在新旧策略差别很大时还有用吗？
 
 **结论**：advantage 是"减 baseline 的 reward"，作用是**降方差、不改变梯度期望**；IS 在策略差异大时理论上仍无偏但方差爆炸，实践必须 clip/截断，等价于接受一点偏差换方差。
 
-**机制**：策略梯度 $\nabla J=\mathbb E[\nabla\log\pi\cdot\Psi]$ 中 $\Psi$ 可以是原始 reward，也可以是减去任意与动作无关 baseline 的量——期望不变、方差大幅下降。GRPO 的组内均值就是一个"免费 critic"：同 prompt 采 n 个回答，用组均值当 baseline（slime 在 rollout 后处理阶段完成，[`get_grpo_returns`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L361) 只做广播）。若直接用 raw reward：全正的 reward 会让所有采样到的动作都被强化，收敛慢且不稳。
+**机制**：策略梯度 $\nabla J=\mathbb E[\nabla\log\pi\cdot\Psi]$ 中 $\Psi$ 可以是原始 reward，也可以是减去任意与动作无关 baseline 的量——期望不变、方差大幅下降。GRPO 的组内均值就是一个"免费 critic"：同 prompt 采 n 个回答，用组均值当 baseline（slime 在 rollout 后处理阶段完成，[`get_grpo_returns`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L361) 只做广播）。若直接用 raw reward：全正的 reward 会让所有采样到的动作都被强化，收敛慢且不稳。
 
-IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长；当差异大时少数样本拿到巨大权重，梯度被单点主导。所以 PPO clip、TIS 截断、OPSM 掩码本质都是"有偏但可控"的方差控制。可以补充 slime 的实践锚点：每轮第一步 KL 严格为 0（on-policy 起点），后续步的 `ppo_kl` 和 clipfrac 就是"策略差异是否过大"的直接读数。
+IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长；当差异大时少数样本拿到巨大权重，梯度被单点主导。所以 PPO clip、TIS 截断、OPSM 掩码本质都是"有偏但可控"的方差控制。可以补充 slime 的实践锚点：每轮第一步的 `train/ppo_kl`（old-current signed log-ratio）严格为 0，后续步的该指标和 clipfrac 才是“更新后策略差异是否过大”的直接读数；它不能替代 train/rollout mismatch 指标。
 
 ### Q10 [真题·阿里] 序列级 reward 如何分配到每个 token（credit assignment）？
 
@@ -184,7 +185,7 @@ IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长
 | 方案 | 分配方式 | slime 实现 |
 |---|---|---|
 | 广播 | 组归一化后的序列标量复制给每个 response token | `get_grpo_returns`（GRPO/GSPO/CISPO 共用） |
-| 折扣回传 | terminal reward + 稠密 KL 惩罚，从后向前 $G_t=r_t+\gamma G_{t+1}$ | [`get_reinforce_plus_plus_returns`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L371)（已向量化） |
+| 折扣回传 | terminal reward + 稠密 KL 惩罚，从后向前 $G_t=r_t+\gamma G_{t+1}$ | [`get_reinforce_plus_plus_returns`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L371)（已向量化） |
 | 学习分配 | critic 给每个 token 估 value，GAE 算逐 token advantage | PPO 分支 + `chunked_gae` |
 | 过程奖励 | 对中间步骤单独打分（PRM、规则 step 检查） | 自定义 RM / reward 后处理 hook 表达 |
 
@@ -231,7 +232,7 @@ IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长
 | CISPO | MiniMax（M1） | **clip 权重、不 clip 更新**：对 ratio 做 stop-gradient 截断，token 梯度保留 | 长 CoT 中低概率关键 token（"Wait"/"Recheck"类反思词）被 PPO clip 永久杀死梯度的问题 |
 | K2 变体 | 月之暗面 | GRPO 相对基线 + 显式 KL 正则的混合 | MoE 规模下的稳定性折中 |
 
-**CISPO 细节**（MiniMax 面试必考自家算法）：$L=-\text{sg}[\text{clip}(r_t)]\cdot A_t\log\pi_\theta(y_t)$，被截断的 token 权重封顶但梯度仍从 $\log\pi_\theta$ 流过；MiniMax 报告同等性能只需 DAPO 一半训练步数。slime 内置实现见 [`compute_cispo_loss`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L152)，且参数校验会提醒 canonical 用法是 `eps_clip=1.0` 关掉下界、单调 `eps_clip_high`——slime 是少数把三家算法都收进同一套 loss 分派的框架，横向对比题可以直接拿它当"活教材"。
+**CISPO 细节**（MiniMax 面试必考自家算法）：$L=-\text{sg}[\text{clip}(r_t)]\cdot A_t\log\pi_\theta(y_t)$，被截断的 token 权重封顶但梯度仍从 $\log\pi_\theta$ 流过；MiniMax 报告同等性能只需 DAPO 一半训练步数。slime 内置实现见 [`compute_cispo_loss`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L152)，且参数校验会提醒 canonical 用法是 `eps_clip=1.0` 关掉下界、单调 `eps_clip_high`——slime 是少数把三家算法都收进同一套 loss 分派的框架，横向对比题可以直接拿它当"活教材"。
 
 ## 3. 系统与 Infra 真题
 
@@ -257,36 +258,36 @@ IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长
 
 ### Q17 [官方口径+真题变体] Ray 在 slime 里承担什么角色？千卡规模下 Ray 会不会成为瓶颈？
 
-**结论**：Ray 只做**控制面**（资源编排、进程生命周期、异步依赖表达），**数据面完全绕开 Ray**——这是回答"Ray 瓶颈"质疑的关键。
+**结论**：Ray 主要做**控制面**（资源编排、进程生命周期、异步依赖表达），不承载分离部署的大权重广播或 Megatron 集合通信。colocate 是边界例外：Ray actor 调用会携带 tensor，但当前 CUDA 路径依赖 IPC handle 共享底层显存，而不是经 object store 复制整份权重。
 
 **机制**：
 
 - Ray 负责：placement group 锁定 GPU 拓扑、创建训练/rollout actor、`.remote()/ray.get` 表达同步异步依赖。
-- Ray 不负责：**权重同步不走 Ray**（colocate 用 CUDA IPC 传显存指针；分离部署由 Megatron 与 SGLang 直接建 NCCL 通信组 broadcast；跨集群走共享磁盘）；**Megatron 内部集合通信不走 Ray**；rollout 数据（token/mask/logprob，量级小）经 Ray object store 单点交给训练侧再内部广播。
+- Ray 不负责：**权重的数据面不经 Ray object store 搬运大权重**（当前 CUDA colocate 路径把 tensor 交给 engine，生命周期由 CUDA IPC handle 管理；分离部署由 Megatron 与 SGLang 建 NCCL 通信组 broadcast；跨集群走共享磁盘）；**Megatron 内部集合通信不走 Ray**；rollout 数据（token/mask/logprob，量级小）经 Ray object store 单点交给训练侧再内部广播。这里的 CUDA IPC/NCCL 是当前 GPU 实现边界，不代表任意 accelerator/backend 自动具备同一传输路径。
 - 作者原话要点：曾有人担心 Ray 序列化大 tensor 的开销（GPU→CPU→序列化→反序列化→GPU），slime 的设计就是让这条路径上没有大 tensor，所以规模上去后 Ray 不是卡点。
 
 **追问预演**："为什么不去掉 Ray？"——Python 生态里同时做资源分配+异步的工具，Ray 目前最成熟；slime 对 Ray 的使用很浅，未来有更好方案可替换。
 
 ### Q18 [高频方向] 训练完的权重怎么同步给推理引擎？开销多大？怎么保证不在生成中途换权重？
 
-**结论**：slime 三条路径——**colocate 走 CUDA IPC、分离走 NCCL 分块广播、跨集群走磁盘（全量或字节级 delta）**；355B 模型分钟级，同步前 pause 生成 + flush KV。
+**结论**：在当前 CUDA GPU backend 下，slime 三条路径是 **colocate 的 tensor/CUDA IPC、分离的 NCCL 分块广播、跨集群的磁盘（全量或字节级 delta）**；非 CUDA accelerator 或非 NCCL backend 不能直接套用这组结论。355B 模型分钟级，同步前 pause 生成 + flush KV。
 
 **机制**：
 
 | 路径 | 适用 | 原理 |
 |---|---|---|
-| full + tensor（CUDA IPC） | colocate 同卡 | 传显存指针，不拷贝数据 |
-| full + NCCL | 训推分离、同集群 | gather Megatron 分片 → 转 HF 命名 → 分 chunk 广播给各 engine |
+| full + tensor（CUDA IPC） | CUDA colocate 同卡 | tensor 经 Ray actor 调用交给 engine，CUDA IPC handle 管理底层显存共享；训练侧另有 GPU collective/Gloo gather |
+| full + NCCL | CUDA GPU 训推分离、同集群 | gather Megatron 分片 → 转 HF 命名 → 分 chunk 广播给各 engine；要求 NCCL backend/可建通信组 |
 | full + disk | 跨集群/external engine/release-train | 写版本化 HF checkpoint，engine reload；容错最好（engine 挂了重启直接从盘加载） |
 | delta + disk | 超大模型跨集群 | 对上一版本做字节级 diff，只发布差量，host 本地合并后 reload |
 
-一致性协议：更新前 `pause_generation` + flush cache，发布后 resume，加分布式锁防并发 broadcast 死锁——保证没有一条请求跨越两个权重版本。量级 [官方口径]：355B 约 1–2 分钟（相对一轮 1 小时的 rollout 可忽略），业界极致参考是 Kimi 的 checkpoint engine ~20s/TB。此外 `optimizer step ≠ weight sync`：前者更新训练侧参数，后者才把参数发布给 serving，频率可以不同（`--update-weights-interval`），这是面试常见混淆点。
+一致性协议：更新前 `pause_generation` + flush cache，发布后 resume，加分布式锁防并发 broadcast 死锁——正常协议旨在避免请求跨越两个权重版本；异常恢复仍要结合具体部署验证。量级 [官方口径]：355B 约 1–2 分钟（相对一轮 1 小时的 rollout 可忽略，具体取决于拓扑、带宽和版本），业界极致参考是 Kimi 的 checkpoint engine ~20s/TB。此外 `optimizer step ≠ weight sync`：前者更新训练侧参数，后者才把参数发布给 serving，频率可以不同（`--update-weights-interval`），这是面试常见混淆点。
 
 ### Q19 [真题变体·多家] 训推一体（colocate）和训推分离怎么选？
 
 **结论**：卡不够选 colocate（分时复用），卡够且想重叠生成/训练选分离——用**端到端 round time 和成本**做决策，不看单阶段吞吐。
 
-**机制**：colocate 下 actor 和 rollout 共用 GPU，靠 offload/onload 切换（训练时释放 KV cache，生成时释放优化器状态）；GPU 数 = max(训练需求, 推理需求)。分离下两边各占独立 GPU（相加），可用 `train_async.py` 让 train(N) 与 generate(N+1) 重叠，代价是固定一轮策略滞后。slime 的资源公式在 [placement_group.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/placement_group.py)：分离 = A+R，colocate = max(A,R)。硬约束：`train_async.py` 断言不支持 colocate（重叠与分时复用目标冲突）。还有第三种形态：external rollout engine（推理集群完全独立部署，slime 只管训练和发权重），适合 serving 团队独立运维的场景。
+**机制**：colocate 下 actor 和 rollout 共用 GPU，靠 offload/onload 切换（训练时释放 KV cache，生成时释放优化器状态）；GPU 数 = max(训练需求, 推理需求)。分离下两边各占独立 GPU（相加），可用 `train_async.py` 让 train(N) 与 generate(N+1) 重叠，代价是固定一轮策略滞后。slime 的资源公式在 [placement_group.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/ray/placement_group.py)：分离 = A+R，colocate = max(A,R)。硬约束：`train_async.py` 断言不支持 colocate（重叠与分时复用目标冲突）。还有第三种形态：external rollout engine（推理集群完全独立部署，slime 只管训练和发权重），适合 serving 团队独立运维的场景。
 
 ### Q20 [高频方向] 同步、异步、fully-async 的区别？staleness 怎么管？
 
@@ -336,13 +337,13 @@ IS 部分：权重 $w=\pi_{new}/\pi_{old}$ 的方差随两策略 KL 指数增长
 
 | 框架 | 定位 | 训练后端 | 推理后端 | 突出点 |
 |---|---|---|---|---|
-| slime（智谱） | SGLang-native、RL scaling | Megatron | SGLang（唯一） | 大 MoE 最强路径、GLM 全系验证、hybrid 同步/异步、轻量易读 |
+| slime（智谱） | SGLang-native、RL scaling | Megatron | SGLang（唯一） | 大 MoE/GLM 项目实践路径、hybrid 同步/异步、轻量易读；具体模型与拓扑按版本验证 |
 | verl（字节） | 大一统、易用 | Megatron/FSDP | vLLM/SGLang | HybridFlow 数据流、社区最活跃、特性最全 |
 | OpenRLHF | 早期标杆、易上手 | DeepSpeed 系 | vLLM | 教学与中小规模友好 |
 | AReaL（蚂蚁） | 全异步 | Megatron/FSDP | vLLM/SGLang | staleness 超参化、异步吞吐极致 |
 | NeMo-RL（NVIDIA） | NV 栈整合 | Megatron 系 | 内置 | replay buffer + in-flight 权重更新 |
 
-选型口诀：**超大 MoE → slime（SGLang DeepEP 路径最完善）；要快速上手/全特性/多后端 → verl；极长尾 agent 且接受 off-policy → AReaL 或 slime 异步模式；学习源码 → slime（代码量最小、控制流显式）**。加一句维度提醒：各框架在互相吸收特性（partial rollout、异步、routing replay 都在扩散），对比结论有时效性，答题时报出你核对过的时间点。
+选型口诀：**超大 MoE 且技术栈匹配 SGLang/Megatron → 优先评估 slime；要快速上手/全特性/多后端 → verl；极长尾 agent 且接受 off-policy → AReaL 或 slime 异步模式；学习源码 → slime（控制流较显式）**。加一句维度提醒：各框架在互相吸收特性（partial rollout、异步、routing replay 都在扩散），对比结论有时效性，答题时报出你核对过的时间点，并用自己的模型、硬件和任务做验证。
 
 ## 4. 手撕与白板题
 
@@ -372,11 +373,11 @@ def grpo_policy_loss(logp, logp_old, adv, mask, eps_lo=0.2, eps_hi=0.2):
     return (per_tok.sum(-1) / mask.sum(-1).clamp(min=1)).mean()
 ```
 
-写完主动说三个工程差异（对照 slime 真实实现）：①生产实现用 `ppo_kl = logp_old - logp` 再 `exp(-ppo_kl)`，数值上等价但便于直接记录 KL 指标；②归一化分母要预计算并跨 micro-batch 保持一致（slime 的 `rollout_mask_sums`）；③零 std 组要么被 dynamic filter 丢弃要么 advantage 为 0 白占算力——这就是 zero-std 监控的意义。
+写完主动说三个工程差异（对照 slime 真实实现）：①生产实现用 `ppo_kl = logp_old - logp` 再 `exp(-ppo_kl)`，数值上等价；这里记录的是 old-current signed log-ratio，不是 reference KL；②归一化分母要预计算并跨 micro-batch 保持一致（slime 的 `rollout_mask_sums`）；③零 std 组要么被 dynamic filter 丢弃要么 advantage 为 0 白占算力——这就是 zero-std 监控的意义。
 
 ### Q27 [真题·百度] KL 散度的公式，几种估计怎么写？怎么"平滑"？
 
-三种蒙特卡洛估计（John Schulman 的 k1/k2/k3，slime 的 [`compute_approx_kl`](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/ppo_utils.py#L12) 全部实现）：
+三种蒙特卡洛估计（John Schulman 的 k1/k2/k3，slime 的 [`compute_approx_kl`](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/ppo_utils.py#L12) 全部实现）：
 
 ```python
 log_ratio = logp - logp_ref            # log(π/π_ref)，逐 token
@@ -385,7 +386,7 @@ k2 = 0.5 * log_ratio ** 2              # 有偏，低方差，恒非负
 k3 = (-log_ratio).exp() - 1 + log_ratio  # 低方差且无偏地估计 KL(π||π_ref)，恒非负
 ```
 
-"平滑/防数值爆炸"的答法：logprob 域计算（先 log_softmax 再相减，绝不先 exp）；ratio 用 `exp(clamp(log_ratio, -20, 20))` 防溢出；k3 恒非负所以不会出现负 KL 惩罚变奖励的 bug——GRPO 论文用的就是 k3。追问 softmax 数值稳定就答减 max 的 log-sum-exp 技巧。
+"平滑/防数值爆炸"的答法：logprob 域计算（先 log_softmax 再相减，绝不先 exp）；`exp(clamp(log_ratio, -20, 20))` 可以作为你建议的额外溢出保护，但要明确 **v0.3.2 的 `compute_approx_kl` 当前直接对 log-ratio 做 `exp`，没有这层 clamp**。k3 恒非负，可避免 k1 单样本为负时让惩罚符号反转；追问 softmax 数值稳定就答减 max 的 log-sum-exp 技巧。
 
 ### Q28 [高频方向] 手写 TIS（截断重要性采样）修正
 
@@ -412,7 +413,7 @@ def tis_correction(logp_train_old, logp_behavior, pg_loss, mask, c=2.0):
    │ SGLang×N     │ ────────────────────────▶ │ Megatron actors  │
    │ + router     │                           │ (+critic/ref可选)  │
    │ + DataBuffer │ ◀──────────────────────── │                  │
-   └──────────────┘   权重: IPC/NCCL/disk      └──────────────────┘
+   └──────────────┘   权重: CUDA IPC/NCCL(GPU)/disk └─────────────┘
         ▲  自定义生成/RM/环境 hook                    │ checkpoint
         └── agent env / verifier / sandbox ──────────┘
 ```
@@ -421,7 +422,7 @@ def tis_correction(logp_train_old, logp_behavior, pg_loss, mask, c=2.0):
 
 ## 5. 把 slime 讲成加分项的策略
 
-1. **报快照**：开口先说"我基于 2026 年 8 月的 main 分支/v0.3.1"，展示你知道框架在快速演进（比如 dual-clip 是 8 月才接通的、mbridge 是 8 月才内部化的）。
+1. **报快照**：开口先说“我基于 2026 年 8 月 29 日扫描的 main/v0.3.2”，展示你知道框架在快速演进（比如 dual-clip 是 8 月才接通的、mbridge 是 8 月才内部化的）。
 2. **用证据分层**：源码实现 / 测试覆盖 / README 声称 / 示例 recipe 四档表述不要混——这是资深工程师和背题者的最大区别。
 3. **主动给边界**：每个亮点跟一句代价（单后端 ↔ 深度优化；异步 ↔ staleness；colocate ↔ 切换开销）。
 4. **落到指标**：任何"会不会有问题"类追问，都用"我会看哪个指标、跑哪个最小实验"收尾（zero-std、clipfrac、logprob diff、rollout/train replay）。

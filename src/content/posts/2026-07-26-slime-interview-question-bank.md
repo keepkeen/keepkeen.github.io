@@ -2,7 +2,7 @@
 title: "面试题库与模拟追问"
 description: "70 道架构、数据、算法、分布式、扩展与排障问题，并附快速面、深挖面和代码 Agent 系统设计框架。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
 - slime
 - interview
@@ -13,7 +13,7 @@ draft: false
 series: slime-interview-guide
 seriesOrder: 11
 ---
-> 适用快照：`main@681b3adc`（v0.3.1 之后，扫描日期 2026-08-14）。题库中的“参考回答”是组织答案的骨架，不是逐字背诵稿。涉及生产规模、吞吐或稳定性的数字必须来自你自己的实验，不要用仓库宣传语代替证据。各厂公开面经的真题精讲见 [11. 厂商真题](../slime-company-interview-questions/)。
+> 适用快照：`main@3778dbf6`（v0.3.2，扫描日期 2026-08-29）。题库中的“参考回答”是组织答案的骨架，不是逐字背诵稿。涉及生产规模、吞吐或稳定性的数字必须来自你自己的实验，不要用仓库宣传语代替证据。各厂公开面经的真题精讲见 [11. 厂商真题](../slime-company-interview-questions/)。
 
 ## 1. 评分标准
 
@@ -223,11 +223,11 @@ PPO clipped surrogate 在 ratio 越界区域可能形成梯度平台；CISPO 对
 
 ### Q40：on-policy distillation 是 estimator 吗？
 
-当前参数帮助明确说明 OPD 与 advantage estimator 正交：teacher reverse log-ratio penalty 会直接修改 estimator 产生的 advantage，随后仍进入对应 policy loss；它不是额外的独立 OPD objective。启动脚本中同时出现 GRPO 和 OPD 不矛盾。
+当前参数帮助明确说明 OPD 与 advantage estimator 正交：teacher reverse log-ratio penalty 会直接修改 estimator 产生的 advantage，随后仍进入对应 policy loss；它不是额外的独立 OPD objective。启动脚本中同时出现 GRPO 和 OPD 不矛盾。`rollout_temperature` 必须为正，student 与 teacher 都以同一个该温度计算 logprob；不要把 teacher 描述成另有一套蒸馏温度。
 
 ### Q41：怎样判断训练健康？
 
-联合看：reward 与 pass@k、zero-std、响应长度/截断率、entropy、PPO KL/ratio/clipfrac、rollout-vs-train logprob mismatch、grad norm/NaN、每阶段时间、token throughput、GPU 利用率、队列/等待。单独 reward 上升可能来自 reward hacking 或长度偏置。
+联合看：reward 与 pass@k、zero-std、响应长度/截断率、entropy、`rollout/kl`（raw current-reference）、`train/ppo_kl`（old-current signed log-ratio）、`train/train_rollout_logprob_abs_diff`（train-rollout 绝对差）、ratio/clipfrac、grad norm/NaN、每阶段时间、token throughput、GPU 利用率、队列/等待。三种指标比较对象不同；单独 reward 上升也可能来自 reward hacking 或长度偏置。
 
 ### Q42：为什么 estimator 名称不能代表完整算法？
 
@@ -390,7 +390,7 @@ SGLang和Megatron各自有原生parser，slime先预解析决定是否跳过某�
 
 建议白板顺序：
 
-![代码 Agent RL 系统设计](./assets/slime-interview-guide/slime-interview-question-bank-diagram-1.svg)
+![slime-interview-question-bank 架构图 1](./assets/slime-interview-guide/slime-interview-question-bank-diagram-1.svg)
 
 依次回答：
 

@@ -2,7 +2,7 @@
 title: "slime 面试与源码解读指南"
 description: "一套从零建立 slime 心智模型、追踪源码、理解算法与系统取舍，并准备真实场景面试追问的完整学习路线。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
 - slime
 - interview
@@ -13,7 +13,7 @@ draft: false
 series: slime-interview-guide
 seriesOrder: 1
 ---
-> 适用快照：`main` 分支，提交 `681b3adc`（v0.3.1 之后，扫描日期：2026-08-14）。本指南是基于该快照的静态源码解读；未在本机执行多 GPU 训练，硬件能力与稳定性等级以仓库 CI 和对应版本文档为准。相对上一版（`aaf5c209`）的主要变化：dual-clip PPO 参数接通（#2247）、fully-async 不再丢弃多余完成组（#2238）、mbridge 内部化为 `hf_to_megatron/`（#2251）、新增 rollout sample hooks（#2250）、新增确定性对齐模块 `alignment/`（#2262）、移除 gemma4/gpt-oss 支持。
+> 适用快照：`v0.3.2`，提交 `3778dbf6`（扫描日期：2026-08-29）。本指南是基于该快照的静态源码解读；未在本机执行多 GPU 训练，硬件能力与稳定性等级以仓库 CI 和对应版本文档为准。相对上一轮文档的主要变化：SGLang server 启动被拆分为 deployment/config/disaggregation/engine-group 层并支持 normal、PD、EPD 配置路径，指标、trace、profile 与调试数据工具集中到 `slime/observability/`，新增 backend-aware accelerator 抽象与 MUSA 代码路径，权重 updater 选择提取为独立 factory，并修正 eval-only 初始化。这里的 MUSA 表述只说明 v0.3.2 存在实现与仓库测试，不把它等同于本文完成了 MUSA 硬件 E2E 或生产验证。
 
 这套文档不是“参数字典”，而是一条从零建立心智模型、能读代码、能回答追问、能设计真实训练方案的学习路线。读完后，你应该能把 slime 讲成一个完整的在线 RL 后训练系统，而不是只记住“Megatron + SGLang”。
 
@@ -32,7 +32,7 @@ seriesOrder: 1
 
 ## 先记住这张图
 
-![slime 训练与系统闭环](./assets/slime-interview-guide/slime-interview-guide-diagram-1.svg)
+![slime-interview-guide 架构图 1](./assets/slime-interview-guide/slime-interview-guide-diagram-1.svg)
 
 把它理解成两个闭环：
 
@@ -140,16 +140,17 @@ seriesOrder: 1
 
 ## 源码锚点
 
-- 同步入口：[train.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train.py#L10)
-- 流水异步入口：[train_async.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/train_async.py#L11)
-- Ray 资源布局：[slime/ray/placement_group.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/placement_group.py#L100)
-- rollout 控制中枢：[slime/ray/rollout.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/ray/rollout.py#L465)
-- 默认 rollout：[slime/rollout/sglang_rollout.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/rollout/sglang_rollout.py)
-- 核心样本类型：[slime/utils/types.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/types.py#L94)
-- DP/micro-batch 调度：[slime/utils/dp_schedule.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/dp_schedule.py#L82)
-- Megatron actor：[slime/backends/megatron_utils/actor.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils/actor.py#L424)
-- advantage/loss：[slime/backends/megatron_utils/loss.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/backends/megatron_utils/loss.py#L704)
-- 参数解析与校验：[slime/utils/arguments.py](https://github.com/THUDM/slime/blob/681b3adca54105d5ecd3fb822fa0dc58a427e0f9/slime/utils/arguments.py#L1584)
+- 同步入口：[train.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/train.py#L9)
+- 流水异步入口：[train_async.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/train_async.py#L10)
+- Ray 资源布局：[slime/ray/placement_group.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/ray/placement_group.py#L100)
+- rollout 生命周期与数据控制：[slime/ray/rollout.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/ray/rollout.py#L38)
+- SGLang 部署入口：[slime/backends/sglang_utils/deployment.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/backends/sglang_utils/deployment.py#L79)
+- 默认 rollout：[slime/rollout/sglang_rollout.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/rollout/sglang_rollout.py#L627)
+- 核心样本类型：[slime/utils/types.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/types.py#L94)
+- DP/micro-batch 调度：[slime/utils/dp_schedule.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/dp_schedule.py#L82)
+- Megatron actor：[slime/backends/megatron_utils/actor.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/backends/megatron_utils/actor.py#L391)
+- advantage/loss：[slime/backends/megatron_utils/loss.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/backends/megatron_utils/loss.py#L704)
+- 参数解析与校验：[slime/utils/arguments.py](https://github.com/THUDM/slime/blob/3778dbf6d1a533ab478ecf5ddaa11449a47752b2/slime/utils/arguments.py#L1588)
 
 ## 学完后的自检
 
