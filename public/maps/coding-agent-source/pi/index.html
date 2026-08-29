@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codebase Map</title>
+<style>
+/* ============ theme (validated palette — see dataviz references) ============ */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-2: #f2f1ed;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --hairline: #e1e0d9;
+  --baseline: #c3c2b7;
+  --ring: rgba(11,11,11,0.10);
+  --grid-dot: #dddcd4;
+  --slot-1: #2a78d6; --slot-2: #1baf7a; --slot-3: #eda100; --slot-4: #008300;
+  --slot-5: #4a3aa7; --slot-6: #e34948; --slot-7: #e87ba4; --slot-8: #eb6834;
+  --c-other: #a5a39b;
+  --hatch: rgba(11,11,11,0.20);
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+    --hairline: #2c2c2a;
+    --baseline: #383835;
+    --ring: rgba(255,255,255,0.10);
+    --grid-dot: #262624;
+    --slot-1: #3987e5; --slot-2: #199e70; --slot-3: #c98500; --slot-4: #008300;
+    --slot-5: #9085e9; --slot-6: #e66767; --slot-7: #d55181; --slot-8: #d95926;
+    --c-other: #6b6a64;
+    --hatch: rgba(255,255,255,0.22);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --ink-1: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --hairline: #2c2c2a;
+  --baseline: #383835;
+  --ring: rgba(255,255,255,0.10);
+  --grid-dot: #262624;
+  --slot-1: #3987e5; --slot-2: #199e70; --slot-3: #c98500; --slot-4: #008300;
+  --slot-5: #9085e9; --slot-6: #e66767; --slot-7: #d55181; --slot-8: #d95926;
+  --c-other: #6b6a64;
+  --hatch: rgba(255,255,255,0.22);
+}
+
+/* ============ base ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--page);
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1480px; margin: 0 auto; padding: 0 28px; }
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+/* ============ header ============ */
+header.site { border-bottom: 1px solid var(--hairline); background: var(--surface-1); position: relative; }
+header.site::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: .5;
+  pointer-events: none;
+}
+.masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 30px 0 22px; position: relative; z-index: 1; flex-wrap: wrap; }
+.masthead h1 { font-family: var(--font-mono); font-size: clamp(24px, 3.4vw, 38px); font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; margin-top: 8px; }
+.masthead h1 .dim { color: var(--ink-3); font-weight: 450; }
+.meta-right { text-align: right; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.meta-right .snapshot { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.theme-btn { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--hairline); border-radius: 999px; padding: 4px 12px; color: var(--ink-2); background: var(--surface-1); }
+.theme-btn:hover { border-color: var(--baseline); color: var(--ink-1); }
+
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); position: relative; z-index: 1; border-top: 1px solid var(--hairline); }
+.stat { padding: 14px 18px 16px 18px; border-left: 1px solid var(--hairline); }
+.stat:first-child { border-left: none; padding-left: 0; }
+.stat .v { font-family: var(--font-mono); font-size: 26px; font-weight: 620; letter-spacing: -0.02em; line-height: 1.15; }
+.stat .l { font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+.stat .s { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 1px; }
+@media (max-width: 980px) { .stats { grid-template-columns: repeat(3, 1fr); } .stat:nth-child(4) { border-left: none; padding-left: 0; } }
+
+nav.tabs { display: flex; gap: 2px; position: relative; z-index: 1; overflow-x: auto; }
+nav.tabs button { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); padding: 12px 16px 10px; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs button:hover { color: var(--ink-1); }
+nav.tabs button[aria-selected="true"] { color: var(--ink-1); border-bottom-color: var(--ink-1); }
+
+/* ============ views ============ */
+main { padding: 26px 0 60px; }
+section.view { display: none; }
+section.view.active { display: block; animation: viewin .25s ease; }
+@keyframes viewin { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.view-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.view-head h2 { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
+.view-head .sub { font-size: 12.5px; color: var(--ink-2); }
+
+/* ============ architecture ============ */
+.arch-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .arch-layout { grid-template-columns: 1fr; } }
+.graph-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; overflow-x: auto; }
+#graph { position: relative; min-width: 860px; background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px); background-size: 22px 22px; }
+#graph svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#graph svg path { fill: none; stroke: var(--baseline); stroke-width: 1; opacity: .28; transition: opacity .15s, stroke .15s; }
+#graph.focused svg path { opacity: .05; }
+#graph.focused svg path.is-imports { stroke: var(--slot-1); stroke-width: 1.6; opacity: .95; }
+#graph.focused svg path.is-imported { stroke: var(--slot-8); stroke-width: 1.6; opacity: .95; }
+.gnode { position: absolute; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 7px; box-shadow: 0 1px 2px var(--ring); padding: 6px 10px 6px 13px; cursor: pointer; transition: opacity .15s, border-color .15s, transform .1s; user-select: none; }
+.gnode::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 7px 0 0 7px; background: var(--kc, var(--c-other)); }
+.gnode.testpkg { border-style: dashed; }
+.gnode.testpkg::before { background: var(--c-other); }
+.gnode:hover { border-color: var(--baseline); transform: translateY(-1px); }
+.gnode.selected { border-color: var(--ink-1); box-shadow: 0 0 0 1px var(--ink-1), 0 2px 8px var(--ring); }
+#graph.focused .gnode.dimmed { opacity: .3; }
+.gnode .gname { display: block; font-family: var(--font-mono); font-size: 12.5px; font-weight: 620; line-height: 1.3; }
+.gnode .gmeta { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); line-height: 1.4; }
+.row-label { position: absolute; left: 10px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .8; user-select: none; }
+.graph-legend { display: flex; gap: 18px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--ink-2); position: sticky; left: 0; }
+.graph-legend .li { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
+.sw.line { height: 2px; border-radius: 1px; }
+.sw.dashed { border: 1px dashed var(--ink-3); background: transparent; height: 10px; }
+.tooling-strip { margin-top: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tooling-strip .chip { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 10px; background: var(--surface-1); cursor: default; }
+.tooling-strip .chip:hover { border-color: var(--baseline); color: var(--ink-1); }
+
+.panel { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 18px 18px 20px; position: sticky; top: 16px; max-height: calc(100vh - 40px); overflow-y: auto; }
+.panel h3 { font-family: var(--font-mono); font-size: 17px; font-weight: 650; margin: 3px 0 2px; overflow-wrap: anywhere; }
+.panel .badges { display: flex; gap: 6px; margin: 6px 0 10px; flex-wrap: wrap; }
+.badge { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--hairline); color: var(--ink-2); }
+.badge.kind { border-color: var(--kc); color: var(--kc); }
+.panel p.purpose { font-size: 13px; color: var(--ink-1); }
+.panel .runtime { font-size: 12px; color: var(--ink-2); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--hairline); }
+.panel .pstats { display: flex; margin: 12px 0; border: 1px solid var(--hairline); border-radius: 8px; overflow: hidden; }
+.panel .pstats div { flex: 1; padding: 8px 10px; border-left: 1px solid var(--hairline); }
+.panel .pstats div:first-child { border-left: none; }
+.panel .pstats .v { font-family: var(--font-mono); font-size: 15px; font-weight: 620; }
+.panel .pstats .l { font-size: 9.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.panel h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 16px 0 6px; }
+.panel ul.areas { list-style: none; }
+.panel ul.areas li { font-size: 12px; color: var(--ink-2); padding: 5px 0 5px 14px; border-left: 2px solid var(--hairline); margin-bottom: 4px; }
+.panel ul.areas li b { font-family: var(--font-mono); font-weight: 620; color: var(--ink-1); font-size: 11.5px; }
+.dep-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.dep-chips button { font-family: var(--font-mono); font-size: 11px; padding: 2px 9px; border: 1px solid var(--hairline); border-radius: 999px; color: var(--ink-2); background: var(--surface-1); }
+.dep-chips button:hover { border-color: var(--slot-1); color: var(--slot-1); }
+.dep-chips.rev button:hover { border-color: var(--slot-8); color: var(--slot-8); }
+.explore-btn { margin-top: 16px; width: 100%; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 9px 12px; border-radius: 8px; background: var(--ink-1); color: var(--page); transition: transform .1s; }
+.explore-btn:hover { transform: translateY(-1px); }
+.flow-steps { list-style: none; counter-reset: fs; }
+.flow-steps li { counter-increment: fs; position: relative; padding: 6px 0 6px 34px; font-size: 12.5px; color: var(--ink-2); }
+.flow-steps li b { color: var(--ink-1); font-family: var(--font-mono); font-size: 12px; }
+.flow-steps li::before { content: counter(fs, decimal-leading-zero); position: absolute; left: 0; top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); border: 1px solid var(--hairline); border-radius: 4px; padding: 0 4px; }
+details.story { margin-top: 14px; }
+details.story summary { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); cursor: pointer; text-transform: uppercase; letter-spacing: .1em; }
+details.story p { font-size: 12px; color: var(--ink-2); margin-top: 8px; }
+
+/* ============ files / treemap ============ */
+.files-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.files-toolbar select { font-family: var(--font-mono); font-size: 12.5px; background: var(--surface-1); color: var(--ink-1); border: 1px solid var(--hairline); border-radius: 7px; padding: 6px 10px; max-width: 320px; }
+.crumbs { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; }
+.crumbs button { color: var(--slot-1); padding: 2px 4px; border-radius: 4px; }
+.crumbs button:hover { background: var(--surface-2); }
+.crumbs .sep { color: var(--ink-3); }
+.crumbs .here { color: var(--ink-1); font-weight: 620; padding: 2px 4px; }
+.type-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto; font-size: 11px; color: var(--ink-2); }
+.type-legend .li { display: inline-flex; align-items: center; gap: 5px; cursor: default; }
+.type-legend .li:hover { color: var(--ink-1); }
+.files-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .files-layout { grid-template-columns: 1fr; } }
+#treemap { position: relative; height: clamp(480px, calc(100vh - 320px), 860px); background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; }
+.tm-cell { position: absolute; border-radius: 3px; overflow: hidden; }
+.tm-file.hatched { background-image: repeating-linear-gradient(45deg, var(--hatch) 0 2px, transparent 2px 7px); }
+.tm-file .lbl, .tm-dircell .lbl {
+  position: absolute; top: 2px; left: 3px; right: 3px;
+  font-family: var(--font-mono); font-size: 10px; line-height: 1.35;
+  color: var(--ink-1);
+  background: color-mix(in srgb, var(--surface-1) 82%, transparent);
+  border-radius: 3px; padding: 0 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  width: fit-content; max-width: calc(100% - 6px);
+  pointer-events: none;
+}
+.tm-dircell { background: var(--surface-2); border: 1px solid var(--baseline); cursor: pointer; }
+.tm-dircell:hover { border-color: var(--ink-2); }
+.tm-group { position: absolute; border: 1px solid var(--baseline); border-radius: 4px; background: var(--surface-1); }
+.tm-group > .hd { position: absolute; top: 0; left: 0; right: 0; height: 17px; font-family: var(--font-mono); font-size: 10px; font-weight: 620; line-height: 17px; padding: 0 5px; color: var(--ink-2); background: var(--surface-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.tm-group > .hd:hover { color: var(--ink-1); background: color-mix(in srgb, var(--surface-2) 60%, var(--surface-1)); }
+.tm-group > .body { position: absolute; top: 17px; left: 0; right: 0; bottom: 0; }
+#treemap.type-focus .tm-file:not(.type-hit) { opacity: .18; }
+.tm-hint { position: absolute; inset: auto 8px 6px auto; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); pointer-events: none; }
+.side-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 16px 16px 18px; }
+.side-card + .side-card { margin-top: 14px; }
+.side-card h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.side-card .bigpath { font-family: var(--font-mono); font-size: 12.5px; font-weight: 620; overflow-wrap: anywhere; margin-bottom: 8px; }
+.kv { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); padding: 3px 0; }
+.kv b { font-family: var(--font-mono); color: var(--ink-1); font-weight: 620; }
+.typebar { display: flex; height: 12px; gap: 2px; border-radius: 3px; overflow: hidden; margin: 8px 0; }
+.typebar div { border-radius: 2px; min-width: 2px; }
+.typerow { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--ink-2); padding: 2px 0; }
+.typerow .sw { width: 10px; height: 10px; border-radius: 2px; }
+.typerow b { font-family: var(--font-mono); color: var(--ink-1); margin-left: auto; font-weight: 600; }
+.topfiles { list-style: none; }
+.topfiles li { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-top: 1px dashed var(--hairline); cursor: pointer; }
+.topfiles li:first-child { border-top: none; }
+.topfiles li:hover .fp { color: var(--slot-1); }
+.topfiles .fp { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); overflow-wrap: anywhere; }
+.topfiles .fl { font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); font-weight: 620; margin-left: auto; white-space: nowrap; }
+
+/* ============ facets ============ */
+.facet-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.facet-grid.cols-2 { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); }
+@media (max-width: 1000px) { .facet-grid.cols-2 { grid-template-columns: 1fr; } }
+.facet-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 16px 18px 18px; }
+.facet-card > h3 { font-family: var(--font-mono); font-size: 13px; font-weight: 650; margin-bottom: 2px; }
+.facet-card > .sub { font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+.tiles-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 900px; }
+@media (max-width: 800px) { .tiles-row { grid-template-columns: repeat(2, 1fr); } }
+.tile { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 14px 16px; }
+.tile .v { font-family: var(--font-mono); font-size: 28px; font-weight: 640; letter-spacing: -0.02em; }
+.tile .l { font-size: 11.5px; color: var(--ink-2); }
+.tile .s { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-2); margin: 0 0 12px; }
+.chart-legend .li { display: inline-flex; align-items: center; gap: 5px; }
+.sortbar { display: flex; gap: 4px; margin-bottom: 10px; }
+.sortbar button { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--hairline); color: var(--ink-3); }
+.sortbar button.on { border-color: var(--ink-1); color: var(--ink-1); }
+.rbar-list { padding: 2px 0; }
+.rbar { display: grid; grid-template-columns: 180px minmax(0,1fr) minmax(90px,auto); align-items: center; gap: 12px; padding: 5px 0; border-top: 1px dashed var(--hairline); }
+.rbar:first-child { border-top: none; }
+.rbar:hover { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+.rbar .rn { font-family: var(--font-mono); font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rbar .track { display: flex; gap: 2px; height: 13px; }
+.rbar .track div { border-radius: 3px; min-width: 3px; }
+.rbar .vals { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); text-align: right; white-space: nowrap; }
+.rbar .vals b { color: var(--ink-1); font-weight: 620; }
+.group-cols { columns: 3 300px; column-gap: 14px; }
+.db-group { break-inside: avoid; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 13px 15px 14px; margin-bottom: 14px; }
+.db-group.accent { border-left: 3px solid var(--slot-1); }
+.db-group h4 { font-family: var(--font-mono); font-size: 11px; font-weight: 650; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.db-group h4 .cnt { color: var(--ink-3); font-weight: 400; font-size: 10px; }
+.tchips { display: flex; flex-wrap: wrap; gap: 4px; }
+.tchips span { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); background: var(--surface-2); border-radius: 5px; padding: 2px 7px; }
+.rt-tree details { margin-left: 14px; }
+.rt-tree > details { margin-left: 0; }
+.rt-tree summary { font-family: var(--font-mono); font-size: 12px; cursor: pointer; padding: 2px 0; color: var(--ink-1); list-style: none; display: flex; align-items: center; gap: 6px; }
+.rt-tree summary::before { content: "▸"; font-size: 9px; color: var(--ink-3); transition: transform .12s; }
+.rt-tree details[open] > summary::before { transform: rotate(90deg); }
+.rt-leaf { display: flex; align-items: center; gap: 7px; padding: 2px 0 2px 15px; margin-left: 14px; }
+.rt-tree > .rt-leaf { margin-left: 0; padding-left: 0; }
+.rt-badge { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .08em; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--bc, var(--ink-3)); color: var(--bc, var(--ink-3)); text-transform: uppercase; }
+.rt-leaf .p { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.job-list { list-style: none; }
+.job-list li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px dashed var(--hairline); }
+.job-list li:first-child { border-top: none; }
+.job-list .jn { font-family: var(--font-mono); font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.job-list .jm { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+.job-list .jbar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.job-list .jbar div { height: 100%; background: var(--slot-5); border-radius: 2px; }
+.job-list li.muted .jn { color: var(--ink-3); font-weight: 450; }
+.job-list li.muted .jbar div { background: var(--c-other); }
+h5.subhead { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 16px 0 6px; }
+
+#tip { position: fixed; z-index: 50; display: none; max-width: 380px; background: var(--ink-1); color: var(--page); font-family: var(--font-mono); font-size: 11px; line-height: 1.5; padding: 7px 10px; border-radius: 7px; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,.25); overflow-wrap: anywhere; }
+#tip .t2 { opacity: .65; }
+footer.site { border-top: 1px solid var(--hairline); padding: 18px 0 30px; margin-top: 20px; }
+footer.site p { font-size: 11px; color: var(--ink-3); max-width: 900px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="masthead">
+      <div>
+        <div class="kicker" id="kicker"></div>
+        <h1 id="pageTitle"></h1>
+      </div>
+      <div class="meta-right">
+        <button class="theme-btn" id="themeBtn">theme: auto</button>
+        <div class="snapshot" id="snapshot"></div>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="view-arch">
+    <div class="view-head">
+      <h2>Module dependency graph</h2>
+      <div class="sub">Hover a module to trace its imports · click for details · layers = dependency depth (a module only imports downward)</div>
+    </div>
+    <div class="arch-layout">
+      <div>
+        <div class="graph-card">
+          <div id="graph"></div>
+          <div class="graph-legend" id="graphLegend"></div>
+        </div>
+        <div class="tooling-strip" id="stripRow" style="display:none"></div>
+      </div>
+      <aside class="panel" id="archPanel"></aside>
+    </div>
+  </section>
+
+  <section class="view" id="view-files">
+    <div class="view-head">
+      <h2>File explorer — lines of code treemap</h2>
+      <div class="sub">Cell area = lines of code · click a directory to zoom in · breadcrumb to zoom out</div>
+    </div>
+    <div class="files-toolbar">
+      <select id="pkgSelect"></select>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="type-legend" id="typeLegend"></div>
+    </div>
+    <div class="files-layout">
+      <div id="treemap"></div>
+      <aside>
+        <div class="side-card" id="tmInfo"></div>
+        <div class="side-card">
+          <h4>Largest files in view</h4>
+          <ul class="topfiles" id="topFiles"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="facetViews"></div>
+</main>
+
+<footer class="site"><div class="wrap"><p id="footNote"></p></div></footer>
+<div id="tip"></div>
+
+<script>
+const EMBED = {"title":"Pi Agent Harness","subtitle":"0.84.4 · production CLI and experimental durable runtime","generated":"2026-08-29","commit":"853a80d2","commitDate":"2026-08-28","branch":"main","topKinds":["app","eval"],"stripKinds":[],"scan":{"repoName":"Pi Agent Harness","since":"180 days ago","modules":[{"id":"packages/ai","dir":"ai","kind":"model","name":"@earendil-works/pi-ai","loc":66673,"files":334,"commits":915,"deps":[],"tree":{"n":"packages/ai","c":[{"n":"test","c":[{"n":"openai-codex-stream.test.ts","v":2623,"e":"ts"},{"n":"openai-completions-tool-choice.test.ts","v":1883,"e":"ts"},{"n":"stream.test.ts","v":1747,"e":"ts"},{"n":"models-runtime.test.ts","v":1159,"e":"ts"},{"n":"total-tokens.test.ts","v":882,"e":"ts"},{"n":"unicode-surrogate.test.ts","v":839,"e":"ts"},{"n":"empty.test.ts","v":822,"e":"ts"},{"n":"context-overflow.test.ts","v":771,"e":"ts"},{"n":"github-copilot-oauth.test.ts","v":720,"e":"ts"},{"n":"providers.test.ts","v":629,"e":"ts"},{"n":"faux-provider.test.ts","v":616,"e":"ts"},{"n":"deferred-tools.test.ts","v":550,"e":"ts"},{"n":"image-tool-result.test.ts","v":550,"e":"ts"},{"n":"cache-retention.test.ts","v":529,"e":"ts"},{"n":"openai-responses-compat.test.ts","v":524,"e":"ts"},{"n":"cross-provider-handoff.test.ts","v":522,"e":"ts"},{"n":"openai-codex-oauth.test.ts","v":486,"e":"ts"},{"n":"mistral-http-transport.test.ts","v":431,"e":"ts"},{"n":"anthropic-sse-parsing.test.ts","v":424,"e":"ts"},{"n":"bedrock-convert-messages.test.ts","v":410,"e":"ts"},{"n":"tokens.test.ts","v":365,"e":"ts"},{"n":"tool-call-without-result.test.ts","v":359,"e":"ts"},{"n":"openai-responses-terminal-event.test.ts","v":356,"e":"ts"},{"n":"abort.test.ts","v":351,"e":"ts"},{"n":"xai-oauth.test.ts","v":335,"e":"ts"},{"n":"cloudflare-gateway-binding.test.ts","v":332,"e":"ts"},{"n":"fireworks-models.test.ts","v":332,"e":"ts"},{"n":"openrouter-oauth.test.ts","v":322,"e":"ts"},{"n":"constrained-sampling.test.ts","v":305,"e":"ts"},{"n":"openai-completions-empty-tools.test.ts","v":304,"e":"ts"},{"n":"codex-websocket-cached-probe.ts","v":299,"e":"ts"},{"n":"openai-responses-reasoning-replay-e2e.test.ts","v":291,"e":"ts"},{"n":"tool-call-id-normalization.test.ts","v":290,"e":"ts"},{"n":"qwen-token-plan-models.test.ts","v":284,"e":"ts"},{"n":"bedrock-redacted-reasoning.test.ts","v":274,"e":"ts"},{"n":"openai-completions-prompt-cache.test.ts","v":274,"e":"ts"},{"n":"xai-responses.test.ts","v":273,"e":"ts"},{"n":"kimi-coding-oauth.test.ts","v":270,"e":"ts"},{"n":"bedrock-thinking-payload.test.ts","v":266,"e":"ts"},{"n":"openai-completions-reasoning-details.test.ts","v":251,"e":"ts"},{"n":"pi-messages.test.ts","v":248,"e":"ts"},{"n":"google-vertex-api-key-resolution.test.ts","v":242,"e":"ts"},{"n":"openai-completions-cache-control-format.test.ts","v":231,"e":"ts"},{"n":"azure-openai-base-url.test.ts","v":227,"e":"ts"},{"n":"openai-completions-thinking-as-text.test.ts","v":227,"e":"ts"},{"n":"error-body.test.ts","v":226,"e":"ts"},{"n":"openai-responses-namespace.test.ts","v":224,"e":"ts"},{"n":"retry.test.ts","v":223,"e":"ts"},{"n":"anthropic-auth-token.test.ts","v":216,"e":"ts"},{"n":"provider-error-body-regression.test.ts","v":213,"e":"ts"},{"n":"bedrock-error-metadata.test.ts","v":212,"e":"ts"},{"n":"validation.test.ts","v":210,"e":"ts"},{"n":"images-models.test.ts","v":209,"e":"ts"},{"n":"bedrock-endpoint-resolution.test.ts","v":208,"e":"ts"},{"n":"anthropic-tool-name-normalization.test.ts","v":204,"e":"ts"},{"n":"google-shared-convert-tools.test.ts","v":203,"e":"ts"},{"n":"bedrock-custom-headers.test.ts","v":202,"e":"ts"},{"n":"openai-completions-thinking-token-budget.test.ts","v":202,"e":"ts"},{"n":"google-raw-stop-reason.test.ts","v":194,"e":"ts"},{"n":"openai-responses-tool-result-images.test.ts","v":194,"e":"ts"},{"n":"transform-messages-copilot-openai-to-anthropic.test.ts","v":191,"e":"ts"},{"n":"fetch-option.test.ts","v":178,"e":"ts"},{"n":"model-data-validation.test.ts","v":177,"e":"ts"},{"n":"overflow.test.ts","v":177,"e":"ts"},{"n":"anthropic-thinking-disable.test.ts","v":172,"e":"ts"},{"n":"telemetry-options.test.ts","v":171,"e":"ts"},{"n":"google-thinking-level-map.test.ts","v":170,"e":"ts"},{"n":"google-shared-gemini3-unsigned-tool-call.test.ts","v":167,"e":"ts"},{"n":"anthropic-eager-tool-input-compat.test.ts","v":166,"e":"ts"},{"n":"oauth-auth.test.ts","v":166,"e":"ts"},{"n":"supports-xhigh.test.ts","v":163,"e":"ts"},{"n":"google-thinking-disable.test.ts","v":160,"e":"ts"},{"n":"openai-completions-tool-result-images.test.ts","v":158,"e":"ts"},{"n":"anthropic-eager-tool-input-e2e.test.ts","v":155,"e":"ts"},{"n":"oauth-device-code.test.ts","v":145,"e":"ts"},{"n":"anthropic-oauth.test.ts","v":144,"e":"ts"},{"n":"interleaved-thinking.test.ts","v":144,"e":"ts"},{"n":"baseten-models.test.ts","v":141,"e":"ts"},{"n":"openai-completions-response-model.test.ts","v":140,"e":"ts"},{"n":"openrouter-images.test.ts","v":140,"e":"ts"},{"n":"openai-completions-retry.test.ts","v":139,"e":"ts"},{"n":"azure-openai-responses-reasoning-replay.test.ts","v":136,"e":"ts"},{"n":"radius-oauth.test.ts","v":129,"e":"ts"},{"n":"sampling-options.test.ts","v":128,"e":"ts"},{"n":"anthropic-long-cache-retention-e2e.test.ts","v":127,"e":"ts"},{"n":"github-copilot-anthropic.test.ts","v":127,"e":"ts"},{"n":"anthropic-force-adaptive-thinking.test.ts","v":123,"e":"ts"},{"n":"responseid.test.ts","v":120,"e":"ts"},{"n":"google-shared-signed-empty-blocks.test.ts","v":117,"e":"ts"},{"n":"env-api-keys.test.ts","v":116,"e":"ts"},{"n":"bedrock-credentials.test.ts","v":115,"e":"ts"},{"n":"xiaomi-token-plan-ams-anthropic-empty-signature-smoke.test.ts","v":114,"e":"ts"},{"n":"lazy-module-load.test.ts","v":113,"e":"ts"},{"n":"openrouter-reasoning-options.test.ts","v":109,"e":"ts"},{"n":"anthropic-empty-thinking-signature-compat.test.ts","v":108,"e":"ts"},{"n":"openai-responses-partial-json-cleanup.test.ts","v":106,"e":"ts"},{"n":"anthropic-temperature-compat.test.ts","v":103,"e":"ts"},{"n":"google-shared-image-tool-result-routing.test.ts","v":102,"e":"ts"},{"n":"mistral-reasoning-mode.test.ts","v":97,"e":"ts"},{"n":"images.test.ts","v":90,"e":"ts"},{"n":"max-thinking.test.ts","v":89,"e":"ts"},{"n":"anthropic-cache-write-1h-cost.test.ts","v":86,"e":"ts"},{"n":"generate-models-strict.test.ts","v":86,"e":"ts"},{"n":"together-models.test.ts","v":86,"e":"ts"},{"n":"oauth.ts","v":85,"e":"ts"},{"n":"bedrock-raw-stop-reason.test.ts","v":82,"e":"ts"},{"n":"context-estimate.test.ts","v":81,"e":"ts"},{"n":"provider-retry.test.ts","v":81,"e":"ts"},{"n":"azure-openai-tool-choice.test.ts","v":79,"e":"ts"},{"n":"openai-completions-raw-stop-reason.test.ts","v":79,"e":"ts"},{"n":"provider-error-body-passthrough.test.ts","v":78,"e":"ts"},{"n":"openrouter-cache-write-repro.test.ts","v":77,"e":"ts"},{"n":"node-http-proxy.test.ts","v":76,"e":"ts"},{"n":"compat-env.test.ts","v":74,"e":"ts"},{"n":"anthropic-opus-4-8-smoke.test.ts","v":71,"e":"ts"},{"n":"bedrock-models.test.ts","v":70,"e":"ts"},{"n":"xhigh.test.ts","v":70,"e":"ts"},{"n":"lax-message-content.test.ts","v":67,"e":"ts"},{"n":"openai-responses-foreign-toolcall-id.test.ts","v":66,"e":"ts"},{"n":"cloudflare-stream.test.ts","v":65,"e":"ts"},{"n":"bedrock-response-headers.test.ts","v":63,"e":"ts"},{"n":"mistral-tool-schema.test.ts","v":63,"e":"ts"},{"n":"mistral-raw-stop-reason.test.ts","v":61,"e":"ts"},{"n":"zai-coding-plan-models.test.ts","v":60,"e":"ts"},{"n":"openai-responses-empty-tool-result.test.ts","v":58,"e":"ts"},{"n":"scratch.ts","v":57,"e":"ts"},{"n":"uuid.test.ts","v":50,"e":"ts"},{"n":"openai-responses-message-id.test.ts","v":48,"e":"ts"},{"n":"image-model-data.test.ts","v":47,"e":"ts"},{"n":"anthropic-adaptive-thinking-models.test.ts","v":40,"e":"ts"},{"n":"google-shared-retry.test.ts","v":40,"e":"ts"},{"n":"google-thinking-signature.test.ts","v":38,"e":"ts"},{"n":"reasoning-options.test.ts","v":36,"e":"ts"},{"n":"openai-codex-cache-affinity-e2e.test.ts","v":35,"e":"ts"},{"n":"text.test.ts","v":33,"e":"ts"},{"n":"openai-responses-cache-affinity-e2e.test.ts","v":31,"e":"ts"},{"n":"azure-utils.ts","v":28,"e":"ts"},{"n":"zen.test.ts","v":25,"e":"ts"},{"n":"bedrock-utils.ts","v":18,"e":"ts"},{"n":"xiaomi-models.test.ts","v":18,"e":"ts"},{"n":"model-catalog-types.test.ts","v":17,"e":"ts"},{"n":"openrouter-cache-control-models.test.ts","v":15,"e":"ts"},{"n":"cloudflare-utils.ts","v":9,"e":"ts"}],"v":35547,"f":143},{"n":"src","c":[{"n":"api","c":[{"n":"openai-completions.ts","v":1707,"e":"ts"},{"n":"openai-codex-responses.ts","v":1650,"e":"ts"},{"n":"anthropic-messages.ts","v":1391,"e":"ts"},{"n":"bedrock-converse-stream.ts","v":1325,"e":"ts"},{"n":"mistral-conversations.ts","v":936,"e":"ts"},{"n":"openai-responses-shared.ts","v":792,"e":"ts"},{"n":"google-vertex.ts","v":598,"e":"ts"},{"n":"google-generative-ai.ts","v":526,"e":"ts"},{"n":"google-shared.ts","v":452,"e":"ts"},{"n":"pi-messages.ts","v":433,"e":"ts"},{"n":"openai-responses.ts","v":376,"e":"ts"},{"n":"azure-openai-responses.ts","v":338,"e":"ts"},{"n":"constrained-sampling.ts","v":277,"e":"ts"},{"n":"transform-messages.ts","v":223,"e":"ts"},{"n":"openrouter-images.ts","v":196,"e":"ts"},{"n":"cloudflare-gateway-binding.ts","v":192,"e":"ts"},{"n":"lazy.ts","v":98,"e":"ts"},{"n":"simple-options.ts","v":95,"e":"ts"},{"n":"github-copilot-headers.ts","v":37,"e":"ts"},{"n":"bedrock-converse-stream.lazy.ts","v":30,"e":"ts"},{"n":"cloudflare.ts","v":15,"e":"ts"},{"n":"openrouter-images.lazy.ts","v":10,"e":"ts"},{"n":"openai-prompt-cache.ts","v":8,"e":"ts"},{"n":"anthropic-messages.lazy.ts","v":4,"e":"ts"},{"n":"azure-openai-responses.lazy.ts","v":4,"e":"ts"},{"n":"google-generative-ai.lazy.ts","v":4,"e":"ts"},{"n":"google-vertex.lazy.ts","v":4,"e":"ts"},{"n":"mistral-conversations.lazy.ts","v":4,"e":"ts"},{"n":"openai-codex-responses.lazy.ts","v":4,"e":"ts"},{"n":"openai-completions.lazy.ts","v":4,"e":"ts"},{"n":"openai-responses.lazy.ts","v":4,"e":"ts"},{"n":"pi-messages.lazy.ts","v":4,"e":"ts"}],"v":11741,"f":32},{"n":"auth","c":[{"n":"oauth","c":[{"n":"openai-codex.ts","v":544,"e":"ts"},{"n":"github-copilot.ts","v":507,"e":"ts"},{"n":"radius.ts","v":403,"e":"ts"},{"n":"anthropic.ts","v":364,"e":"ts"},{"n":"openrouter.ts","v":311,"e":"ts"},{"n":"kimi-coding.ts","v":296,"e":"ts"},{"n":"xai.ts","v":239,"e":"ts"},{"n":"oauth-page.ts","v":109,"e":"ts"},{"n":"device-code.ts","v":98,"e":"ts"},{"n":"load.ts","v":68,"e":"ts"},{"n":"pkce.ts","v":34,"e":"ts"}],"v":2973,"f":11},{"n":"types.ts","v":240,"e":"ts"},{"n":"resolve.ts","v":205,"e":"ts"},{"n":"credential-store.ts","v":67,"e":"ts"},{"n":"helpers.ts","v":59,"e":"ts"},{"n":"context.ts","v":45,"e":"ts"}],"v":3589,"f":16},{"n":"providers","c":[{"n":"faux.ts","v":708,"e":"ts"},{"n":"all.ts","v":155,"e":"ts"},{"n":"cloudflare-auth.ts","v":103,"e":"ts"},{"n":"google-vertex.ts","v":100,"e":"ts"},{"n":"radius-config.ts","v":96,"e":"ts"},{"n":"amazon-bedrock.ts","v":90,"e":"ts"},{"n":"radius.ts","v":82,"e":"ts"},{"n":"anthropic.ts","v":59,"e":"ts"},{"n":"images","c":[{"n":"register-builtins.ts","v":50,"e":"ts"}],"v":50,"f":1},{"n":"github-copilot.ts","v":34,"e":"ts"},{"n":"cloudflare-stream.ts","v":28,"e":"ts"},{"n":"kimi-coding.ts","v":24,"e":"ts"},{"n":"opencode.ts","v":24,"e":"ts"},{"n":"xai.ts","v":24,"e":"ts"},{"n":"cloudflare-ai-gateway.ts","v":23,"e":"ts"},{"n":"openrouter.ts","v":23,"e":"ts"},{"n":"openai-codex.ts","v":22,"e":"ts"},{"n":"openrouter-images.ts","v":22,"e":"ts"},{"n":"opencode-go.ts","v":20,"e":"ts"},{"n":"fireworks.ts","v":19,"e":"ts"},{"n":"ant-ling.ts","v":15,"e":"ts"},{"n":"baseten.ts","v":15,"e":"ts"},{"n":"cerebras.ts","v":15,"e":"ts"},{"n":"cloudflare-workers-ai.ts","v":15,"e":"ts"},{"n":"deepseek.ts","v":15,"e":"ts"},{"n":"google.ts","v":15,"e":"ts"},{"n":"groq.ts","v":15,"e":"ts"},{"n":"huggingface.ts","v":15,"e":"ts"},{"n":"minimax-cn.ts","v":15,"e":"ts"},{"n":"minimax.ts","v":15,"e":"ts"},{"n":"mistral.ts","v":15,"e":"ts"},{"n":"moonshotai-cn.ts","v":15,"e":"ts"},{"n":"moonshotai.ts","v":15,"e":"ts"},{"n":"nvidia.ts","v":15,"e":"ts"},{"n":"openai.ts","v":15,"e":"ts"},{"n":"qwen-token-plan-cn.ts","v":15,"e":"ts"},{"n":"qwen-token-plan-individual.ts","v":15,"e":"ts"},{"n":"qwen-token-plan.ts","v":15,"e":"ts"},{"n":"together.ts","v":15,"e":"ts"},{"n":"vercel-ai-gateway.ts","v":15,"e":"ts"},{"n":"xiaomi-token-plan-ams.ts","v":15,"e":"ts"},{"n":"xiaomi-token-plan-cn.ts","v":15,"e":"ts"},{"n":"xiaomi-token-plan-sgp.ts","v":15,"e":"ts"},{"n":"xiaomi.ts","v":15,"e":"ts"},{"n":"zai-coding-cn.ts","v":15,"e":"ts"},{"n":"zai.ts","v":15,"e":"ts"},{"n":"azure-openai-responses.ts","v":14,"e":"ts"},{"n":"amazon-bedrock.models.ts","v":8,"e":"ts"},{"n":"ant-ling.models.ts","v":8,"e":"ts"},{"n":"anthropic.models.ts","v":8,"e":"ts"},{"n":"azure-openai-responses.models.ts","v":8,"e":"ts"},{"n":"baseten.models.ts","v":8,"e":"ts"},{"n":"cerebras.models.ts","v":8,"e":"ts"},{"n":"cloudflare-ai-gateway.models.ts","v":8,"e":"ts"},{"n":"cloudflare-workers-ai.models.ts","v":8,"e":"ts"},{"n":"deepseek.models.ts","v":8,"e":"ts"},{"n":"fireworks.models.ts","v":8,"e":"ts"},{"n":"github-copilot.models.ts","v":8,"e":"ts"},{"n":"google-vertex.models.ts","v":8,"e":"ts"},{"n":"google.models.ts","v":8,"e":"ts"},{"n":"groq.models.ts","v":8,"e":"ts"},{"n":"huggingface.models.ts","v":8,"e":"ts"},{"n":"kimi-coding.models.ts","v":8,"e":"ts"},{"n":"minimax-cn.models.ts","v":8,"e":"ts"},{"n":"minimax.models.ts","v":8,"e":"ts"},{"n":"mistral.models.ts","v":8,"e":"ts"},{"n":"moonshotai-cn.models.ts","v":8,"e":"ts"},{"n":"moonshotai.models.ts","v":8,"e":"ts"},{"n":"nvidia.models.ts","v":8,"e":"ts"},{"n":"openai-codex.models.ts","v":8,"e":"ts"},{"n":"openai.models.ts","v":8,"e":"ts"},{"n":"opencode-go.models.ts","v":8,"e":"ts"},{"n":"opencode.models.ts","v":8,"e":"ts"},{"n":"openrouter.models.ts","v":8,"e":"ts"},{"n":"qwen-token-plan-cn.models.ts","v":8,"e":"ts"},{"n":"qwen-token-plan-individual.models.ts","v":8,"e":"ts"},{"n":"qwen-token-plan.models.ts","v":8,"e":"ts"},{"n":"together.models.ts","v":8,"e":"ts"},{"n":"vercel-ai-gateway.models.ts","v":8,"e":"ts"},{"n":"xai.models.ts","v":8,"e":"ts"},{"n":"xiaomi-token-plan-ams.models.ts","v":8,"e":"ts"},{"n":"xiaomi-token-plan-cn.models.ts","v":8,"e":"ts"},{"n":"xiaomi-token-plan-sgp.models.ts","v":8,"e":"ts"},{"n":"xiaomi.models.ts","v":8,"e":"ts"},{"n":"zai-coding-cn.models.ts","v":8,"e":"ts"},{"n":"zai.models.ts","v":8,"e":"ts"},{"n":"data-json.d.ts","v":4,"e":"ts"}],"v":2426,"f":87},{"n":"utils","c":[{"n":"validation.ts","v":350,"e":"ts"},{"n":"retry.ts","v":228,"e":"ts"},{"n":"overflow.ts","v":180,"e":"ts"},{"n":"error-body.ts","v":149,"e":"ts"},{"n":"estimate.ts","v":143,"e":"ts"},{"n":"provider-retry.ts","v":125,"e":"ts"},{"n":"json-parse.ts","v":124,"e":"ts"},{"n":"node-http-proxy.ts","v":112,"e":"ts"},{"n":"event-stream.ts","v":88,"e":"ts"},{"n":"provider-env.ts","v":52,"e":"ts"},{"n":"abort.ts","v":50,"e":"ts"},{"n":"uuid.ts","v":48,"e":"ts"},{"n":"diagnostics.ts","v":45,"e":"ts"},{"n":"abort-signals.ts","v":41,"e":"ts"},{"n":"deferred-tools.ts","v":39,"e":"ts"},{"n":"sanitize-unicode.ts","v":25,"e":"ts"},{"n":"typebox-helpers.ts","v":24,"e":"ts"},{"n":"pi-user-agent.ts","v":19,"e":"ts"},{"n":"headers.ts","v":18,"e":"ts"},{"n":"sleep.ts","v":14,"e":"ts"},{"n":"hash.ts","v":13,"e":"ts"},{"n":"text.ts","v":12,"e":"ts"}],"v":1899,"f":22},{"n":"models.ts","v":944,"e":"ts"},{"n":"types.ts","v":857,"e":"ts"},{"n":"image-models.generated.ts","v":759,"e":"ts"},{"n":"compat.ts","v":298,"e":"ts"},{"n":"images-models.ts","v":275,"e":"ts"},{"n":"env-api-keys.ts","v":188,"e":"ts"},{"n":"models.generated.ts","v":124,"e":"ts"},{"n":"cli.ts","v":119,"e":"ts"},{"n":"legacy-api-aliases.ts","v":108,"e":"ts"},{"n":"images-api-registry.ts","v":53,"e":"ts"},{"n":"index.ts","v":47,"e":"ts"},{"n":"compat","c":[{"n":"extension-oauth-types.ts","v":45,"e":"ts"}],"v":45,"f":1},{"n":"models-store.ts","v":45,"e":"ts"},{"n":"image-models.ts","v":42,"e":"ts"},{"n":"model-catalog.ts","v":27,"e":"ts"},{"n":"session-resources.ts","v":24,"e":"ts"},{"n":"bun-oauth.ts","v":21,"e":"ts"},{"n":"images.ts","v":21,"e":"ts"},{"n":"oauth.ts","v":10,"e":"ts"},{"n":"bedrock-provider.ts","v":6,"e":"ts"}],"v":23668,"f":177},{"n":"scripts","c":[{"n":"generate-models.ts","v":3078,"e":"ts"},{"n":"model-data.ts","v":280,"e":"ts"},{"n":"generate-image-models.ts","v":162,"e":"ts"},{"n":"generate-test-image.ts","v":33,"e":"ts"},{"n":"models-dev-reasoning-options.ts","v":30,"e":"ts"},{"n":"openrouter-reasoning-options.ts","v":23,"e":"ts"},{"n":"check-model-data.ts","v":16,"e":"ts"}],"v":3622,"f":7},{"n":"CHANGELOG.md","v":2027,"e":"md"},{"n":"README.md","v":1680,"e":"md"},{"n":"package.json","v":99,"e":"json"},{"n":"vitest.config.ts","v":17,"e":"ts"},{"n":"tsconfig.build.json","v":11,"e":"json"},{"n":"bedrock-provider.d.ts","v":1,"e":"ts"},{"n":"bedrock-provider.js","v":1,"e":"js"}],"v":66673,"f":334}},{"id":"packages/telemetry","dir":"telemetry","kind":"runtime","name":"@earendil-works/pi-telemetry","loc":1715,"files":12,"commits":13,"deps":[],"tree":{"n":"packages/telemetry","c":[{"n":"src","c":[{"n":"index.ts","v":357,"e":"ts"},{"n":"testing","c":[{"n":"conformance.ts","v":315,"e":"ts"},{"n":"types.ts","v":18,"e":"ts"},{"n":"index.ts","v":6,"e":"ts"}],"v":339,"f":3},{"n":"memory.ts","v":219,"e":"ts"},{"n":"noop.ts","v":20,"e":"ts"}],"v":935,"f":6},{"n":"README.md","v":464,"e":"md"},{"n":"test","c":[{"n":"telemetry.test.ts","v":197,"e":"ts"},{"n":"conformance.test.ts","v":46,"e":"ts"}],"v":243,"f":2},{"n":"package.json","v":47,"e":"json"},{"n":"CHANGELOG.md","v":17,"e":"md"},{"n":"tsconfig.build.json","v":9,"e":"json"}],"v":1715,"f":12}},{"id":"packages/agent","dir":"agent","kind":"runtime","name":"@earendil-works/pi-agent-core","loc":26436,"files":86,"commits":539,"deps":["packages/ai","packages/telemetry"],"tree":{"n":"packages/agent","c":[{"n":"src","c":[{"n":"harness","c":[{"n":"session","c":[{"n":"testing","c":[{"n":"conformance.ts","v":1016,"e":"ts"},{"n":"types.ts","v":16,"e":"ts"},{"n":"index.ts","v":6,"e":"ts"}],"v":1038,"f":3},{"n":"jsonl","c":[{"n":"storage.ts","v":277,"e":"ts"},{"n":"repo.ts","v":247,"e":"ts"},{"n":"codec.ts","v":240,"e":"ts"},{"n":"types.ts","v":57,"e":"ts"},{"n":"errors.ts","v":27,"e":"ts"}],"v":848,"f":5},{"n":"types.ts","v":393,"e":"ts"},{"n":"state.ts","v":344,"e":"ts"},{"n":"session.ts","v":299,"e":"ts"},{"n":"memory.ts","v":192,"e":"ts"},{"n":"context.ts","v":100,"e":"ts"},{"n":"index.ts","v":13,"e":"ts"},{"n":"jsonl.ts","v":9,"e":"ts"}],"v":3236,"f":15},{"n":"compaction","c":[{"n":"compaction.ts","v":848,"e":"ts"},{"n":"branch-summarization.ts","v":280,"e":"ts"},{"n":"utils.ts","v":132,"e":"ts"}],"v":1260,"f":3},{"n":"tools","c":[{"n":"edit-diff.ts","v":500,"e":"ts"},{"n":"bash.ts","v":161,"e":"ts"},{"n":"read.ts","v":144,"e":"ts"},{"n":"edit.ts","v":140,"e":"ts"},{"n":"image.ts","v":104,"e":"ts"},{"n":"file-mutation-queue.ts","v":56,"e":"ts"},{"n":"write.ts","v":39,"e":"ts"},{"n":"path-utils.ts","v":30,"e":"ts"},{"n":"index.ts","v":23,"e":"ts"},{"n":"tool-context.ts","v":6,"e":"ts"}],"v":1203,"f":10},{"n":"env","c":[{"n":"nodejs.ts","v":701,"e":"ts"}],"v":701,"f":1},{"n":"reducer.ts","v":667,"e":"ts"},{"n":"telemetry.ts","v":615,"e":"ts"},{"n":"utils","c":[{"n":"truncate.ts","v":350,"e":"ts"},{"n":"shell-output.ts","v":195,"e":"ts"}],"v":545,"f":2},{"n":"agent-harness.ts","v":508,"e":"ts"},{"n":"skills.ts","v":386,"e":"ts"},{"n":"types.ts","v":315,"e":"ts"},{"n":"prompt-templates.ts","v":262,"e":"ts"},{"n":"messages.ts","v":168,"e":"ts"},{"n":"events.ts","v":102,"e":"ts"},{"n":"result.ts","v":63,"e":"ts"},{"n":"system-prompt.ts","v":34,"e":"ts"}],"v":10065,"f":41},{"n":"agent-loop.ts","v":794,"e":"ts"},{"n":"agent.ts","v":592,"e":"ts"},{"n":"types.ts","v":444,"e":"ts"},{"n":"proxy.ts","v":370,"e":"ts"},{"n":"search","c":[{"n":"scanning.ts","v":176,"e":"ts"},{"n":"index.ts","v":32,"e":"ts"}],"v":208,"f":2},{"n":"index.ts","v":145,"e":"ts"},{"n":"stream-fn.ts","v":20,"e":"ts"},{"n":"node.ts","v":2,"e":"ts"}],"v":12640,"f":50},{"n":"test","c":[{"n":"harness","c":[{"n":"session","c":[{"n":"jsonl.test.ts","v":766,"e":"ts"},{"n":"jsonl-storage.test.ts","v":497,"e":"ts"},{"n":"jsonl-codec.test.ts","v":182,"e":"ts"},{"n":"search.test.ts","v":125,"e":"ts"},{"n":"context.test.ts","v":124,"e":"ts"},{"n":"memory.test.ts","v":38,"e":"ts"}],"v":1732,"f":6},{"n":"reducer.test.ts","v":1127,"e":"ts"},{"n":"compaction.test.ts","v":697,"e":"ts"},{"n":"tools.test.ts","v":622,"e":"ts"},{"n":"nodejs-env.test.ts","v":551,"e":"ts"},{"n":"agent-harness-scaffold.test.ts","v":199,"e":"ts"},{"n":"telemetry.test.ts","v":188,"e":"ts"},{"n":"truncate.test.ts","v":178,"e":"ts"},{"n":"skills.test.ts","v":135,"e":"ts"},{"n":"prompt-templates.test.ts","v":90,"e":"ts"},{"n":"system-prompt.test.ts","v":66,"e":"ts"},{"n":"events.test.ts","v":65,"e":"ts"},{"n":"branch-summarization.test.ts","v":39,"e":"ts"},{"n":"resource-formatting.test.ts","v":24,"e":"ts"},{"n":"session-test-utils.ts","v":20,"e":"ts"}],"v":5733,"f":20},{"n":"agent-loop.test.ts","v":1610,"e":"ts"},{"n":"agent.test.ts","v":810,"e":"ts"},{"n":"e2e.test.ts","v":415,"e":"ts"},{"n":"utils","c":[{"n":"get-current-time.ts","v":46,"e":"ts"},{"n":"calculate.ts","v":40,"e":"ts"}],"v":86,"f":2},{"n":"proxy.test.ts","v":79,"e":"ts"}],"v":8733,"f":26},{"n":"docs","c":[{"n":"harness.md","v":2941,"e":"md"},{"n":"telemetry-schema.md","v":381,"e":"md"},{"n":"search.md","v":276,"e":"md"}],"v":3598,"f":3},{"n":"CHANGELOG.md","v":696,"e":"md"},{"n":"README.md","v":513,"e":"md"},{"n":"scripts","c":[{"n":"generate-telemetry-docs.ts","v":117,"e":"ts"}],"v":117,"f":1},{"n":"package.json","v":68,"e":"json"},{"n":"vitest.harness.config.ts","v":32,"e":"ts"},{"n":"vitest.config.ts","v":25,"e":"ts"},{"n":"tsconfig.build.json","v":14,"e":"json"}],"v":26436,"f":86}},{"id":"packages/tui","dir":"tui","kind":"ui","name":"@earendil-works/pi-tui","loc":36805,"files":90,"commits":463,"deps":[],"tree":{"n":"packages/tui","c":[{"n":"test","c":[{"n":"editor.test.ts","v":4152,"e":"ts"},{"n":"markdown.test.ts","v":1760,"e":"ts"},{"n":"tui-alt-screen.test.ts","v":1510,"e":"ts"},{"n":"overlay-non-capturing.test.ts","v":1203,"e":"ts"},{"n":"tui-render.test.ts","v":902,"e":"ts"},{"n":"terminal-image.test.ts","v":694,"e":"ts"},{"n":"input.test.ts","v":647,"e":"ts"},{"n":"keys.test.ts","v":633,"e":"ts"},{"n":"autocomplete.test.ts","v":578,"e":"ts"},{"n":"overlay-options.test.ts","v":541,"e":"ts"},{"n":"stdin-buffer.test.ts","v":526,"e":"ts"},{"n":"latex.test.ts","v":496,"e":"ts"},{"n":"layout.test.ts","v":306,"e":"ts"},{"n":"terminal.test.ts","v":300,"e":"ts"},{"n":"wrap-ansi.test.ts","v":266,"e":"ts"},{"n":"terminal-colors.test.ts","v":252,"e":"ts"},{"n":"bug-regression-isimageline-startswith-bug.test.ts","v":237,"e":"ts"},{"n":"virtual-terminal.ts","v":218,"e":"ts"},{"n":"render-churn-bench.ts","v":203,"e":"ts"},{"n":"word-navigation.test.ts","v":191,"e":"ts"},{"n":"chat-simple.ts","v":130,"e":"ts"},{"n":"truncated-text.test.ts","v":129,"e":"ts"},{"n":"truncate-to-width.test.ts","v":127,"e":"ts"},{"n":"key-tester.ts","v":124,"e":"ts"},{"n":"select-list.test.ts","v":116,"e":"ts"},{"n":"fuzzy.test.ts","v":112,"e":"ts"},{"n":"viewport-overwrite-repro.ts","v":108,"e":"ts"},{"n":"tab-width.test.ts","v":88,"e":"ts"},{"n":"tui-cell-size-input.test.ts","v":82,"e":"ts"},{"n":"keybindings.test.ts","v":81,"e":"ts"},{"n":"tui-overlay-style-leak.test.ts","v":81,"e":"ts"},{"n":"overlay-short-content.test.ts","v":62,"e":"ts"},{"n":"settings-list.test.ts","v":58,"e":"ts"},{"n":"image-test.ts","v":57,"e":"ts"},{"n":"regression-regional-indicator-width.test.ts","v":52,"e":"ts"},{"n":"regression-overlay-cjk-boundary.test.ts","v":46,"e":"ts"},{"n":"native-module-path.test.ts","v":45,"e":"ts"},{"n":"tui-shrink.test.ts","v":45,"e":"ts"},{"n":"editor-history-keybindings.test.ts","v":43,"e":"ts"},{"n":"test-themes.ts","v":38,"e":"ts"}],"v":17239,"f":40},{"n":"src","c":[{"n":"components","c":[{"n":"editor.ts","v":2363,"e":"ts"},{"n":"markdown.ts","v":1015,"e":"ts"},{"n":"input.ts","v":447,"e":"ts"},{"n":"settings-list.ts","v":276,"e":"ts"},{"n":"select-list.ts","v":229,"e":"ts"},{"n":"scroll-view.ts","v":216,"e":"ts"},{"n":"stack.ts","v":154,"e":"ts"},{"n":"box.ts","v":137,"e":"ts"},{"n":"image.ts","v":127,"e":"ts"},{"n":"text.ts","v":107,"e":"ts"},{"n":"loader.ts","v":92,"e":"ts"},{"n":"truncated-text.ts","v":65,"e":"ts"},{"n":"alt-screen-flash.ts","v":51,"e":"ts"},{"n":"h-stack.ts","v":44,"e":"ts"},{"n":"cancellable-loader.ts","v":40,"e":"ts"},{"n":"v-stack.ts","v":33,"e":"ts"},{"n":"spacer.ts","v":28,"e":"ts"}],"v":5424,"f":17},{"n":"keys.ts","v":1401,"e":"ts"},{"n":"latex.ts","v":1380,"e":"ts"},{"n":"tui-alt-screen.ts","v":1378,"e":"ts"},{"n":"utils.ts","v":1326,"e":"ts"},{"n":"tui.ts","v":1263,"e":"ts"},{"n":"autocomplete.ts","v":826,"e":"ts"},{"n":"terminal-image.ts","v":700,"e":"ts"},{"n":"tui-main-screen.ts","v":654,"e":"ts"},{"n":"terminal.ts","v":553,"e":"ts"},{"n":"stdin-buffer.ts","v":444,"e":"ts"},{"n":"layout.ts","v":410,"e":"ts"},{"n":"keybindings.ts","v":320,"e":"ts"},{"n":"alt-screen-search.ts","v":157,"e":"ts"},{"n":"index.ts","v":148,"e":"ts"},{"n":"fuzzy.ts","v":137,"e":"ts"},{"n":"word-navigation.ts","v":117,"e":"ts"},{"n":"editor-component.ts","v":74,"e":"ts"},{"n":"terminal-colors.ts","v":73,"e":"ts"},{"n":"native-modifiers.ts","v":59,"e":"ts"},{"n":"layout-node.ts","v":51,"e":"ts"},{"n":"kill-ring.ts","v":46,"e":"ts"},{"n":"native-module-path.ts","v":31,"e":"ts"},{"n":"undo-stack.ts","v":28,"e":"ts"}],"v":17000,"f":40},{"n":"CHANGELOG.md","v":1126,"e":"md"},{"n":"README.md","v":854,"e":"md"},{"n":"native","c":[{"n":"win32","c":[{"n":"build.mjs","v":229,"e":"mjs"},{"n":"src","c":[{"n":"win32-console-mode.c","v":119,"e":"c"}],"v":119,"f":1},{"n":"README.md","v":22,"e":"md"}],"v":370,"f":3},{"n":"darwin","c":[{"n":"src","c":[{"n":"darwin-modifiers.c","v":70,"e":"c"}],"v":70,"f":1},{"n":"build.sh","v":62,"e":"sh"},{"n":"README.md","v":20,"e":"md"}],"v":152,"f":3}],"v":522,"f":6},{"n":"package.json","v":55,"e":"json"},{"n":"tsconfig.build.json","v":9,"e":"json"}],"v":36805,"f":90}},{"id":"packages/protocol","dir":"protocol","kind":"protocol","name":"@earendil-works/pi-protocol","loc":2120,"files":17,"commits":19,"deps":[],"tree":{"n":"packages/protocol","c":[{"n":"src","c":[{"n":"schemas.ts","v":450,"e":"ts"},{"n":"cbor","c":[{"n":"encoder.ts","v":216,"e":"ts"},{"n":"decoder.ts","v":168,"e":"ts"},{"n":"options.ts","v":52,"e":"ts"},{"n":"index.ts","v":9,"e":"ts"}],"v":445,"f":4},{"n":"codec.ts","v":172,"e":"ts"},{"n":"framing.ts","v":165,"e":"ts"},{"n":"index.ts","v":4,"e":"ts"}],"v":1236,"f":8},{"n":"test","c":[{"n":"protocol.test.ts","v":424,"e":"ts"},{"n":"cbor","c":[{"n":"cbor.test.ts","v":175,"e":"ts"}],"v":175,"f":1},{"n":"framing.test.ts","v":117,"e":"ts"}],"v":716,"f":3},{"n":"README.md","v":69,"e":"md"},{"n":"package.json","v":48,"e":"json"},{"n":"CHANGELOG.md","v":23,"e":"md"},{"n":"tsconfig.test.json","v":10,"e":"json"},{"n":"tsconfig.build.json","v":9,"e":"json"},{"n":"vitest.config.ts","v":9,"e":"ts"}],"v":2120,"f":17}},{"id":"packages/client","dir":"client","kind":"protocol","name":"@earendil-works/pi-client","loc":2637,"files":23,"commits":22,"deps":["packages/protocol"],"tree":{"n":"packages/client","c":[{"n":"test","c":[{"n":"connection.test.ts","v":327,"e":"ts"},{"n":"sessions.test.ts","v":261,"e":"ts"},{"n":"unix.test.ts","v":223,"e":"ts"},{"n":"support.ts","v":153,"e":"ts"},{"n":"state.test.ts","v":146,"e":"ts"},{"n":"requests.test.ts","v":68,"e":"ts"},{"n":"disposal.test.ts","v":54,"e":"ts"}],"v":1232,"f":7},{"n":"src","c":[{"n":"client.ts","v":432,"e":"ts"},{"n":"connection.ts","v":236,"e":"ts"},{"n":"state.ts","v":156,"e":"ts"},{"n":"unix.ts","v":156,"e":"ts"},{"n":"session-handle.ts","v":111,"e":"ts"},{"n":"errors.ts","v":56,"e":"ts"},{"n":"types.ts","v":26,"e":"ts"},{"n":"index.ts","v":18,"e":"ts"},{"n":"transport.ts","v":18,"e":"ts"},{"n":"promise.ts","v":16,"e":"ts"}],"v":1225,"f":10},{"n":"README.md","v":63,"e":"md"},{"n":"package.json","v":56,"e":"json"},{"n":"CHANGELOG.md","v":21,"e":"md"},{"n":"vitest.config.ts","v":15,"e":"ts"},{"n":"tsconfig.test.json","v":13,"e":"json"},{"n":"tsconfig.build.json","v":12,"e":"json"}],"v":2637,"f":23}},{"id":"packages/session-backends/sqlite-node","dir":"sqlite-node","kind":"persistence","name":"Pi SQLite session backend","loc":4511,"files":37,"commits":25,"deps":["packages/agent"],"tree":{"n":"packages/session-backends/sqlite-node","c":[{"n":"src","c":[{"n":"sqlite","c":[{"n":"repo.ts","v":953,"e":"ts"},{"n":"storage","c":[{"n":"branch-entries.ts","v":174,"e":"ts"},{"n":"sessions.ts","v":131,"e":"ts"},{"n":"lanes.ts","v":124,"e":"ts"},{"n":"records.ts","v":95,"e":"ts"},{"n":"entries.ts","v":78,"e":"ts"},{"n":"facts.ts","v":64,"e":"ts"},{"n":"writer-leases.ts","v":58,"e":"ts"},{"n":"session-stats.ts","v":54,"e":"ts"},{"n":"branch-tips.ts","v":35,"e":"ts"},{"n":"session-sequences.ts","v":29,"e":"ts"}],"v":842,"f":10},{"n":"search-backend.ts","v":194,"e":"ts"},{"n":"migrations","c":[{"n":"001_initial.sql","v":122,"e":"sql"}],"v":122,"f":1},{"n":"branch-cache.ts","v":101,"e":"ts"},{"n":"sql.ts","v":66,"e":"ts"},{"n":"types.ts","v":52,"e":"ts"},{"n":"migrations.ts","v":49,"e":"ts"},{"n":"index.ts","v":18,"e":"ts"}],"v":2397,"f":18},{"n":"index.ts","v":114,"e":"ts"}],"v":2511,"f":19},{"n":"test","c":[{"n":"repository.test.ts","v":496,"e":"ts"},{"n":"search.test.ts","v":314,"e":"ts"},{"n":"branch-cache.test.ts","v":220,"e":"ts"},{"n":"writer-leases.test.ts","v":217,"e":"ts"},{"n":"test-utils.ts","v":144,"e":"ts"},{"n":"branch-query.test.ts","v":139,"e":"ts"},{"n":"migrations.test.ts","v":61,"e":"ts"},{"n":"adapter.test.ts","v":57,"e":"ts"},{"n":"conformance.test.ts","v":54,"e":"ts"},{"n":"sql.test.ts","v":39,"e":"ts"},{"n":"log-query.test.ts","v":35,"e":"ts"},{"n":"facts-query.test.ts","v":31,"e":"ts"}],"v":1807,"f":12},{"n":"CHANGELOG.md","v":48,"e":"md"},{"n":"package.json","v":44,"e":"json"},{"n":"scripts","c":[{"n":"prepare-dist.mjs","v":35,"e":"mjs"}],"v":35,"f":1},{"n":"vitest.config.ts","v":33,"e":"ts"},{"n":"README.md","v":22,"e":"md"},{"n":"tsconfig.build.json","v":11,"e":"json"}],"v":4511,"f":37}},{"id":"packages/server","dir":"server","kind":"service","name":"@earendil-works/pi-server","loc":3952,"files":31,"commits":41,"deps":["packages/protocol","packages/agent","packages/session-backends/sqlite-node"],"tree":{"n":"packages/server","c":[{"n":"src","c":[{"n":"transports","c":[{"n":"unix","c":[{"n":"listener.ts","v":434,"e":"ts"},{"n":"preset.ts","v":23,"e":"ts"},{"n":"types.ts","v":15,"e":"ts"},{"n":"index.ts","v":3,"e":"ts"}],"v":475,"f":4}],"v":475,"f":4},{"n":"testing","c":[{"n":"service.ts","v":287,"e":"ts"},{"n":"client.ts","v":147,"e":"ts"},{"n":"server.ts","v":27,"e":"ts"},{"n":"index.ts","v":5,"e":"ts"}],"v":466,"f":4},{"n":"server.ts","v":396,"e":"ts"},{"n":"protocol.ts","v":382,"e":"ts"},{"n":"sessions.ts","v":346,"e":"ts"},{"n":"types.ts","v":63,"e":"ts"},{"n":"snapshots.ts","v":62,"e":"ts"},{"n":"errors.ts","v":58,"e":"ts"},{"n":"connection.ts","v":36,"e":"ts"},{"n":"listener.ts","v":10,"e":"ts"},{"n":"index.ts","v":5,"e":"ts"}],"v":2299,"f":17},{"n":"test","c":[{"n":"sessions.test.ts","v":429,"e":"ts"},{"n":"conformance.test.ts","v":378,"e":"ts"},{"n":"protocol.test.ts","v":301,"e":"ts"},{"n":"unix.test.ts","v":117,"e":"ts"},{"n":"server.test.ts","v":100,"e":"ts"},{"n":"unix-connection.test.ts","v":65,"e":"ts"},{"n":"listener.test.ts","v":57,"e":"ts"},{"n":"fixtures","c":[{"n":"stale-socket-server.mjs","v":9,"e":"mjs"}],"v":9,"f":1}],"v":1456,"f":8},{"n":"package.json","v":57,"e":"json"},{"n":"CHANGELOG.md","v":53,"e":"md"},{"n":"README.md","v":50,"e":"md"},{"n":"vitest.config.ts","v":15,"e":"ts"},{"n":"tsconfig.test.json","v":13,"e":"json"},{"n":"tsconfig.build.json","v":9,"e":"json"}],"v":3952,"f":31}},{"id":"packages/coding-agent","dir":"coding-agent","kind":"app","name":"@earendil-works/pi-coding-agent","loc":157254,"files":654,"commits":1497,"deps":["packages/agent","packages/ai","packages/tui","packages/client","packages/protocol","packages/telemetry"],"tree":{"n":"packages/coding-agent","c":[{"n":"src","c":[{"n":"core","c":[{"n":"tools","c":[{"n":"edit-diff.ts","v":556,"e":"ts"},{"n":"bash.ts","v":544,"e":"ts"},{"n":"edit.ts","v":461,"e":"ts"},{"n":"grep.ts","v":390,"e":"ts"},{"n":"find.ts","v":380,"e":"ts"},{"n":"read.ts","v":358,"e":"ts"},{"n":"truncate.ts","v":276,"e":"ts"},{"n":"write.ts","v":274,"e":"ts"},{"n":"ls.ts","v":230,"e":"ts"},{"n":"index.ts","v":224,"e":"ts"},{"n":"output-accumulator.ts","v":222,"e":"ts"},{"n":"path-utils.ts","v":118,"e":"ts"},{"n":"render-utils.ts","v":85,"e":"ts"},{"n":"powershell.ts","v":67,"e":"ts"},{"n":"file-mutation-queue.ts","v":61,"e":"ts"},{"n":"tool-definition-wrapper.ts","v":47,"e":"ts"}],"v":4293,"f":16},{"n":"extensions","c":[{"n":"types.ts","v":1791,"e":"ts"},{"n":"runner.ts","v":1286,"e":"ts"},{"n":"loader.ts","v":806,"e":"ts"},{"n":"index.ts","v":193,"e":"ts"},{"n":"wrapper.ts","v":45,"e":"ts"}],"v":4121,"f":5},{"n":"export-html","c":[{"n":"template.js","v":1864,"e":"js"},{"n":"template.css","v":1066,"e":"css"},{"n":"index.ts","v":316,"e":"ts"},{"n":"ansi-to-html.ts","v":258,"e":"ts"},{"n":"tool-renderer.ts","v":172,"e":"ts"},{"n":"template.html","v":55,"e":"html"}],"v":3731,"f":6},{"n":"agent-session.ts","v":3516,"e":"ts"},{"n":"package-manager.ts","v":2699,"e":"ts"},{"n":"session-manager.ts","v":1716,"e":"ts"},{"n":"compaction","c":[{"n":"compaction.ts","v":1012,"e":"ts"},{"n":"branch-summarization.ts","v":380,"e":"ts"},{"n":"utils.ts","v":158,"e":"ts"},{"n":"index.ts","v":7,"e":"ts"}],"v":1557,"f":4},{"n":"settings-manager.ts","v":1371,"e":"ts"},{"n":"resource-loader.ts","v":1097,"e":"ts"},{"n":"model-runtime.ts","v":787,"e":"ts"},{"n":"model-resolver.ts","v":782,"e":"ts"},{"n":"provider-composer.ts","v":572,"e":"ts"},{"n":"skills.ts","v":507,"e":"ts"},{"n":"auth-storage.ts","v":506,"e":"ts"},{"n":"agent-session-runtime.ts","v":441,"e":"ts"},{"n":"sdk.ts","v":410,"e":"ts"},{"n":"keybindings.ts","v":396,"e":"ts"},{"n":"footer-data-provider.ts","v":388,"e":"ts"},{"n":"model-config.ts","v":300,"e":"ts"},{"n":"resolve-config-value.ts","v":287,"e":"ts"},{"n":"prompt-templates.ts","v":285,"e":"ts"},{"n":"trust-manager.ts","v":245,"e":"ts"},{"n":"agent-session-services.ts","v":221,"e":"ts"},{"n":"messages.ts","v":195,"e":"ts"},{"n":"system-prompt.ts","v":169,"e":"ts"},{"n":"cache-stats.ts","v":164,"e":"ts"},{"n":"model-registry.ts","v":157,"e":"ts"},{"n":"bash-executor.ts","v":156,"e":"ts"},{"n":"models-store.ts","v":147,"e":"ts"},{"n":"remote-catalog-provider.ts","v":137,"e":"ts"},{"n":"http-dispatcher.ts","v":111,"e":"ts"},{"n":"output-guard.ts","v":108,"e":"ts"},{"n":"exec.ts","v":107,"e":"ts"},{"n":"provider-attribution.ts","v":97,"e":"ts"},{"n":"project-trust.ts","v":96,"e":"ts"},{"n":"index.ts","v":80,"e":"ts"},{"n":"usage-totals.ts","v":70,"e":"ts"},{"n":"session-cwd.ts","v":59,"e":"ts"},{"n":"runtime-credentials.ts","v":52,"e":"ts"},{"n":"timings.ts","v":50,"e":"ts"},{"n":"slash-commands.ts","v":43,"e":"ts"},{"n":"session-export.ts","v":42,"e":"ts"},{"n":"source-info.ts","v":40,"e":"ts"},{"n":"pi-manifest.ts","v":35,"e":"ts"},{"n":"event-bus.ts","v":33,"e":"ts"},{"n":"auth-guidance.ts","v":25,"e":"ts"},{"n":"settings-diagnostics.ts","v":25,"e":"ts"},{"n":"diagnostics.ts","v":15,"e":"ts"},{"n":"telemetry.ts","v":13,"e":"ts"},{"n":"defaults.ts","v":12,"e":"ts"},{"n":"experimental.ts","v":9,"e":"ts"},{"n":"radius.ts","v":1,"e":"ts"}],"v":32476,"f":79},{"n":"modes","c":[{"n":"interactive","c":[{"n":"components","c":[{"n":"tree-selector.ts","v":1427,"e":"ts"},{"n":"session-selector.ts","v":1031,"e":"ts"},{"n":"config-selector.ts","v":942,"e":"ts"},{"n":"settings-selector.ts","v":941,"e":"ts"},{"n":"model-selector.ts","v":423,"e":"ts"},{"n":"scoped-models-selector.ts","v":403,"e":"ts"},{"n":"tool-execution.ts","v":388,"e":"ts"},{"n":"armin.ts","v":382,"e":"ts"},{"n":"settings-submenu.ts","v":258,"e":"ts"},{"n":"footer.ts","v":245,"e":"ts"},{"n":"login-dialog.ts","v":233,"e":"ts"},{"n":"bash-execution.ts","v":220,"e":"ts"},{"n":"oauth-selector.ts","v":214,"e":"ts"},{"n":"assistant-message.ts","v":197,"e":"ts"},{"n":"session-selector-search.ts","v":194,"e":"ts"},{"n":"daxnuts.ts","v":164,"e":"ts"},{"n":"user-message-selector.ts","v":155,"e":"ts"},{"n":"diff.ts","v":147,"e":"ts"},{"n":"thinking-selector.ts","v":146,"e":"ts"},{"n":"first-time-setup.ts","v":145,"e":"ts"},{"n":"trust-selector.ts","v":134,"e":"ts"},{"n":"extension-editor.ts","v":132,"e":"ts"},{"n":"status-indicator.ts","v":114,"e":"ts"},{"n":"custom-message.ts","v":113,"e":"ts"},{"n":"extension-selector.ts","v":112,"e":"ts"},{"n":"custom-editor.ts","v":90,"e":"ts"},{"n":"mermaid.ts","v":89,"e":"ts"},{"n":"extension-input.ts","v":87,"e":"ts"},{"n":"user-message.ts","v":70,"e":"ts"},{"n":"bordered-loader.ts","v":68,"e":"ts"},{"n":"theme-selector.ts","v":67,"e":"ts"},{"n":"custom-entry.ts","v":62,"e":"ts"},{"n":"compaction-summary-message.ts","v":59,"e":"ts"},{"n":"branch-summary-message.ts","v":58,"e":"ts"},{"n":"skill-invocation-message.ts","v":55,"e":"ts"},{"n":"earendil-announcement.ts","v":53,"e":"ts"},{"n":"show-images-selector.ts","v":50,"e":"ts"},{"n":"visual-truncate.ts","v":50,"e":"ts"},{"n":"keybinding-hints.ts","v":48,"e":"ts"},{"n":"countdown-timer.ts","v":39,"e":"ts"},{"n":"index.ts","v":38,"e":"ts"},{"n":"markdown-transform.ts","v":29,"e":"ts"},{"n":"dynamic-border.ts","v":25,"e":"ts"}],"v":9897,"f":43},{"n":"interactive-mode.ts","v":6575,"e":"ts"},{"n":"theme","c":[{"n":"theme.ts","v":1336,"e":"ts"},{"n":"theme-schema.json","v":352,"e":"json"},{"n":"theme-controller.ts","v":166,"e":"ts"},{"n":"dark.json","v":90,"e":"json"},{"n":"light.json","v":89,"e":"json"}],"v":2033,"f":5},{"n":"session-share.ts","v":210,"e":"ts"},{"n":"model-catalog-refresh.ts","v":51,"e":"ts"},{"n":"external-editor.ts","v":46,"e":"ts"},{"n":"model-search.ts","v":21,"e":"ts"}],"v":18833,"f":53},{"n":"rpc","c":[{"n":"rpc-mode.ts","v":821,"e":"ts"},{"n":"rpc-client.ts","v":609,"e":"ts"},{"n":"rpc-types.ts","v":297,"e":"ts"},{"n":"jsonl.ts","v":58,"e":"ts"}],"v":1785,"f":4},{"n":"print-mode.ts","v":169,"e":"ts"},{"n":"json-event.ts","v":61,"e":"ts"},{"n":"index.ts","v":16,"e":"ts"}],"v":20864,"f":60},{"n":"utils","c":[{"n":"tools-manager.ts","v":374,"e":"ts"},{"n":"clipboard-image.ts","v":300,"e":"ts"},{"n":"shell.ts","v":247,"e":"ts"},{"n":"git.ts","v":226,"e":"ts"},{"n":"syntax-highlight.ts","v":212,"e":"ts"},{"n":"changelog.ts","v":196,"e":"ts"},{"n":"exif-orientation.ts","v":183,"e":"ts"},{"n":"clipboard.ts","v":175,"e":"ts"},{"n":"image-resize-core.ts","v":164,"e":"ts"},{"n":"paths.ts","v":139,"e":"ts"},{"n":"photon.ts","v":139,"e":"ts"},{"n":"child-process.ts","v":137,"e":"ts"},{"n":"image-resize.ts","v":123,"e":"ts"},{"n":"image-process.ts","v":119,"e":"ts"},{"n":"mime.ts","v":116,"e":"ts"},{"n":"version-check.ts","v":109,"e":"ts"},{"n":"windows-self-update.ts","v":84,"e":"ts"},{"n":"management-http.ts","v":78,"e":"ts"},{"n":"tool-result-images.ts","v":62,"e":"ts"},{"n":"ansi.ts","v":60,"e":"ts"},{"n":"html.ts","v":51,"e":"ts"},{"n":"image-convert.ts","v":49,"e":"ts"},{"n":"abort.ts","v":48,"e":"ts"},{"n":"image-resize-worker.ts","v":42,"e":"ts"},{"n":"frontmatter.ts","v":40,"e":"ts"},{"n":"highlight-js.d.ts","v":36,"e":"ts"},{"n":"clipboard-native.ts","v":33,"e":"ts"},{"n":"fs-watch.ts","v":30,"e":"ts"},{"n":"open-browser.ts","v":24,"e":"ts"},{"n":"sleep.ts","v":18,"e":"ts"},{"n":"deprecation.ts","v":14,"e":"ts"},{"n":"text.ts","v":9,"e":"ts"},{"n":"json.ts","v":6,"e":"ts"},{"n":"pi-user-agent.ts","v":4,"e":"ts"}],"v":3647,"f":34},{"n":"cli","c":[{"n":"experimental","c":[{"n":"command.ts","v":205,"e":"ts"},{"n":"commands","c":[{"n":"pi.ts","v":47,"e":"ts"},{"n":"client.ts","v":44,"e":"ts"},{"n":"server.ts","v":44,"e":"ts"}],"v":135,"f":3},{"n":"transport-address.ts","v":48,"e":"ts"},{"n":"command-options.ts","v":38,"e":"ts"},{"n":"auth.ts","v":21,"e":"ts"},{"n":"cli.ts","v":7,"e":"ts"}],"v":454,"f":8},{"n":"args.ts","v":447,"e":"ts"},{"n":"startup-ui.ts","v":246,"e":"ts"},{"n":"auth-command.ts","v":126,"e":"ts"},{"n":"list-models.ts","v":115,"e":"ts"},{"n":"file-processor.ts","v":88,"e":"ts"},{"n":"credential-print.ts","v":87,"e":"ts"},{"n":"auth-check.ts","v":73,"e":"ts"},{"n":"project-trust.ts","v":62,"e":"ts"},{"n":"config-selector.ts","v":56,"e":"ts"},{"n":"session-picker.ts","v":55,"e":"ts"},{"n":"initial-message.ts","v":43,"e":"ts"}],"v":1852,"f":19},{"n":"extensions","c":[{"n":"llama","c":[{"n":"ui.ts","v":542,"e":"ts"},{"n":"client.ts","v":343,"e":"ts"},{"n":"index.ts","v":230,"e":"ts"},{"n":"provider.ts","v":180,"e":"ts"},{"n":"huggingface.ts","v":158,"e":"ts"}],"v":1453,"f":5},{"n":"index.ts","v":4,"e":"ts"}],"v":1457,"f":6},{"n":"package-manager-cli.ts","v":1102,"e":"ts"},{"n":"main.ts","v":978,"e":"ts"},{"n":"config.ts","v":575,"e":"ts"},{"n":"client","c":[{"n":"remote-session.ts","v":420,"e":"ts"},{"n":"transcript.ts","v":101,"e":"ts"},{"n":"index.ts","v":15,"e":"ts"}],"v":536,"f":3},{"n":"index.ts","v":423,"e":"ts"},{"n":"migrations.ts","v":316,"e":"ts"},{"n":"server","c":[{"n":"create-harness.ts","v":161,"e":"ts"}],"v":161,"f":1},{"n":"bun","c":[{"n":"restore-sandbox-env.ts","v":36,"e":"ts"},{"n":"cli.ts","v":15,"e":"ts"},{"n":"register-bedrock.ts","v":4,"e":"ts"}],"v":55,"f":3},{"n":"cli.ts","v":21,"e":"ts"},{"n":"rpc-entry.ts","v":13,"e":"ts"}],"v":64476,"f":212},{"n":"test","c":[{"n":"suite","c":[{"n":"regressions","c":[{"n":"5943-session-start-notify.test.ts","v":519,"e":"ts"},{"n":"2860-replaced-session-context.test.ts","v":279,"e":"ts"},{"n":"6162-extension-active-tools-next-turn.test.ts","v":192,"e":"ts"},{"n":"6647-compaction-retries-transient-stream-drop.test.ts","v":192,"e":"ts"},{"n":"5080-signal-shutdown-extension-cleanup.test.ts","v":185,"e":"ts"},{"n":"4167-thinking-toggle-pending-tool-render.test.ts","v":182,"e":"ts"},{"n":"6949-unavailable-scoped-model.test.ts","v":160,"e":"ts"},{"n":"6363-agent-settled-event.test.ts","v":158,"e":"ts"},{"n":"8537-custom-message-tool-result-ordering.test.ts","v":144,"e":"ts"},{"n":"7301-stalled-availability-refresh.test.ts","v":133,"e":"ts"},{"n":"extension-factory-cache.test.ts","v":131,"e":"ts"},{"n":"7209-model-selector-filter-resets-selection.test.ts","v":126,"e":"ts"},{"n":"7027-credential-refresh-hang.test.ts","v":125,"e":"ts"},{"n":"2781-skill-collision-precedence.test.ts","v":120,"e":"ts"},{"n":"3592-no-builtin-tools-keeps-extension-tools.test.ts","v":119,"e":"ts"},{"n":"5433-extension-oauth-prompt-input.test.ts","v":119,"e":"ts"},{"n":"6260-inline-extension-naming.test.ts","v":119,"e":"ts"},{"n":"6768-copilot-compaction-base-url.test.ts","v":114,"e":"ts"},{"n":"5868-rpc-unknown-command-id.test.ts","v":113,"e":"ts"},{"n":"7153-scoped-models-refresh.test.ts","v":107,"e":"ts"},{"n":"2791-fswatch-error-crash.test.ts","v":106,"e":"ts"},{"n":"2753-reload-stale-resource-settings.test.ts","v":105,"e":"ts"},{"n":"3217-scoped-model-order.test.ts","v":103,"e":"ts"},{"n":"1717-2113-agent-session-event-settlement.test.ts","v":95,"e":"ts"},{"n":"5217-compaction-reason.test.ts","v":95,"e":"ts"},{"n":"2835-tools-allowlist-filters-extension-tools.test.ts","v":94,"e":"ts"},{"n":"5724-sigterm-signal-exit.test.ts","v":94,"e":"ts"},{"n":"5661-uppercase-header-values.test.ts","v":91,"e":"ts"},{"n":"6104-find-root-relativization.test.ts","v":91,"e":"ts"},{"n":"7150-rpc-prompt-during-compaction.test.ts","v":91,"e":"ts"},{"n":"5596-missing-theme-export.test.ts","v":90,"e":"ts"},{"n":"8423-extension-factory-failure.test.ts","v":88,"e":"ts"},{"n":"3616-settings-inmemory-reload.test.ts","v":86,"e":"ts"},{"n":"3303-find-nested-gitignore.test.ts","v":83,"e":"ts"},{"n":"7253-manual-compact-during-response.test.ts","v":83,"e":"ts"},{"n":"5303-bash-output-truncation.test.ts","v":82,"e":"ts"},{"n":"6999-models-json-hot-reload.test.ts","v":82,"e":"ts"},{"n":"8261-subagent-project-trust.test.ts","v":82,"e":"ts"},{"n":"5109-exclude-tools.test.ts","v":81,"e":"ts"},{"n":"2023-queued-slash-command-followup.test.ts","v":80,"e":"ts"},{"n":"8328-zero-usage-auto-compaction.test.ts","v":80,"e":"ts"},{"n":"startup-session-rebind-duplicate-subscription.test.ts","v":77,"e":"ts"},{"n":"7497-session-discovery-symlink.test.ts","v":75,"e":"ts"},{"n":"pre-prompt-compaction-no-continue.test.ts","v":75,"e":"ts"},{"n":"3302-find-path-glob.test.ts","v":72,"e":"ts"},{"n":"7193-event-bus-lifecycle.test.ts","v":70,"e":"ts"},{"n":"8611-thinking-toggle-pending-bash-output.test.ts","v":68,"e":"ts"},{"n":"6324-branch-summary-ambient-auth.test.ts","v":62,"e":"ts"},{"n":"3686-session-name-event.test.ts","v":61,"e":"ts"},{"n":"3982-message-end-cost-override.test.ts","v":56,"e":"ts"},{"n":"7829-invalid-settings-warning.test.ts","v":56,"e":"ts"},{"n":"5998-blocked-tool-terminate.test.ts","v":53,"e":"ts"},{"n":"6596-taskkill-enoent.test.ts","v":52,"e":"ts"},{"n":"8237-node-sea-extension-loading.test.ts","v":50,"e":"ts"},{"n":"8337-utf8-bom-parsing.test.ts","v":49,"e":"ts"},{"n":"7048-compaction-truncated-summary.test.ts","v":48,"e":"ts"},{"n":"7187-malformed-package-manifest.test.ts","v":47,"e":"ts"},{"n":"7443-model-command-cached-match.test.ts","v":46,"e":"ts"},{"n":"7290-json-stream-linear.test.ts","v":44,"e":"ts"},{"n":"7925-toolcall-start-metadata.test.ts","v":43,"e":"ts"},{"n":"5996-session-name-newlines.test.ts","v":40,"e":"ts"},{"n":"7269-cli-end-of-options.test.ts","v":39,"e":"ts"},{"n":"3688-tree-cancel-compacting.test.ts","v":36,"e":"ts"},{"n":"7572-provider-retry-settings-merge.test.ts","v":35,"e":"ts"},{"n":"tree-during-streaming.test.ts","v":35,"e":"ts"},{"n":"3317-network-connection-lost-retry.test.ts","v":33,"e":"ts"},{"n":"7911-json-stream-usage.test.ts","v":32,"e":"ts"},{"n":"6019-explicit-provider-retry-message.test.ts","v":31,"e":"ts"},{"n":"7731-tui-method-wrapping.test.ts","v":31,"e":"ts"},{"n":"5208-late-bash-output.test.ts","v":29,"e":"ts"},{"n":"6904-dns-transport-retry.test.ts","v":28,"e":"ts"}],"v":6692,"f":71},{"n":"agent-session-compaction.test.ts","v":912,"e":"ts"},{"n":"agent-session-runtime.test.ts","v":660,"e":"ts"},{"n":"agent-session-model-extension.test.ts","v":518,"e":"ts"},{"n":"agent-session-prompt.test.ts","v":506,"e":"ts"},{"n":"agent-session-queue.test.ts","v":445,"e":"ts"},{"n":"agent-session-retry-events.test.ts","v":364,"e":"ts"},{"n":"agent-session-bash-persistence.test.ts","v":337,"e":"ts"},{"n":"harness.ts","v":225,"e":"ts"},{"n":"lax-message-content.test.ts","v":162,"e":"ts"},{"n":"agent-session-tool-result-images.test.ts","v":52,"e":"ts"},{"n":"README.md","v":10,"e":"md"}],"v":10883,"f":82},{"n":"package-manager.test.ts","v":2686,"e":"ts"},{"n":"model-registry.test.ts","v":2009,"e":"ts"},{"n":"session-manager","c":[{"n":"tree-traversal.test.ts","v":598,"e":"ts"},{"n":"file-operations.test.ts","v":406,"e":"ts"},{"n":"build-context.test.ts","v":305,"e":"ts"},{"n":"labels.test.ts","v":211,"e":"ts"},{"n":"custom-session-id.test.ts","v":169,"e":"ts"},{"n":"migration.test.ts","v":78,"e":"ts"},{"n":"save-entry.test.ts","v":55,"e":"ts"}],"v":1822,"f":7},{"n":"interactive-mode-status.test.ts","v":1251,"e":"ts"},{"n":"tools.test.ts","v":1212,"e":"ts"},{"n":"resource-loader.test.ts","v":1121,"e":"ts"},{"n":"extensions-runner.test.ts","v":1038,"e":"ts"},{"n":"package-command-paths.test.ts","v":975,"e":"ts"},{"n":"model-resolver.test.ts","v":916,"e":"ts"},{"n":"client","c":[{"n":"transcript.test.ts","v":220,"e":"ts"},{"n":"remote-session.test.ts","v":196,"e":"ts"},{"n":"remote-session-lifecycle.test.ts","v":190,"e":"ts"},{"n":"remote-session-ownership.test.ts","v":174,"e":"ts"},{"n":"support.ts","v":111,"e":"ts"}],"v":891,"f":5},{"n":"tree-selector.test.ts","v":702,"e":"ts"},{"n":"agent-session-concurrent.test.ts","v":629,"e":"ts"},{"n":"settings-manager.test.ts","v":628,"e":"ts"},{"n":"prompt-templates.test.ts","v":624,"e":"ts"},{"n":"compaction.test.ts","v":596,"e":"ts"},{"n":"auth-storage.test.ts","v":551,"e":"ts"},{"n":"tool-execution-component.test.ts","v":547,"e":"ts"},{"n":"extensions-discovery.test.ts","v":532,"e":"ts"},{"n":"args.test.ts","v":500,"e":"ts"},{"n":"sdk-codex-cache-probe-tool-loop.ts","v":499,"e":"ts"},{"n":"test-harness.ts","v":471,"e":"ts"},{"n":"config.test.ts","v":451,"e":"ts"},{"n":"agent-session-auto-compaction-queue.test.ts","v":449,"e":"ts"},{"n":"skills.test.ts","v":432,"e":"ts"},{"n":"compaction-extensions.test.ts","v":416,"e":"ts"},{"n":"rpc.test.ts","v":399,"e":"ts"},{"n":"model-runtime-credential-sync.test.ts","v":375,"e":"ts"},{"n":"llama-extension.test.ts","v":374,"e":"ts"},{"n":"session-selector-path-delete.test.ts","v":354,"e":"ts"},{"n":"server","c":[{"n":"create-harness.test.ts","v":352,"e":"ts"}],"v":352,"f":1},{"n":"interactive-tui.test.ts","v":350,"e":"ts"},{"n":"rpc-prompt-response-semantics.test.ts","v":342,"e":"ts"},{"n":"test-harness.test.ts","v":335,"e":"ts"},{"n":"model-runtime-modify-models-compat.test.ts","v":332,"e":"ts"},{"n":"model-runtime-auth-options.test.ts","v":326,"e":"ts"},{"n":"agent-session-tree-navigation.test.ts","v":323,"e":"ts"},{"n":"agent-session-retry.test.ts","v":322,"e":"ts"},{"n":"utilities.ts","v":321,"e":"ts"},{"n":"compaction-summary-reasoning.test.ts","v":297,"e":"ts"},{"n":"agent-session-stats.test.ts","v":283,"e":"ts"},{"n":"git-update.test.ts","v":282,"e":"ts"},{"n":"file-mutation-queue.test.ts","v":274,"e":"ts"},{"n":"sdk-openrouter-attribution.test.ts","v":267,"e":"ts"},{"n":"footer-data-provider.test.ts","v":265,"e":"ts"},{"n":"plan-mode-utils.test.ts","v":261,"e":"ts"},{"n":"agent-session-runtime-events.test.ts","v":257,"e":"ts"},{"n":"agent-session-dynamic-tools.test.ts","v":256,"e":"ts"},{"n":"interactive-mode-compaction.test.ts","v":256,"e":"ts"},{"n":"footer-width.test.ts","v":252,"e":"ts"},{"n":"test-theme-colors.ts","v":249,"e":"ts"},{"n":"assistant-message.test.ts","v":241,"e":"ts"},{"n":"remote-catalog-provider.test.ts","v":241,"e":"ts"},{"n":"edit-tool-no-full-redraw.test.ts","v":235,"e":"ts"},{"n":"clipboard.test.ts","v":210,"e":"ts"},{"n":"agent-session-compaction.test.ts","v":209,"e":"ts"},{"n":"git-merge-and-resolve-extension.test.ts","v":206,"e":"ts"},{"n":"sdk-stream-options.test.ts","v":197,"e":"ts"},{"n":"session-selector-search.test.ts","v":195,"e":"ts"},{"n":"clipboard-image.test.ts","v":184,"e":"ts"},{"n":"paths.test.ts","v":184,"e":"ts"},{"n":"agent-session-dynamic-provider.test.ts","v":179,"e":"ts"},{"n":"config-value-migration.test.ts","v":178,"e":"ts"},{"n":"fixtures","c":[{"n":"skills","c":[{"n":"multiline-description","c":[{"n":"SKILL.md","v":11,"e":"md"}],"v":11,"f":1},{"n":"unknown-field","c":[{"n":"SKILL.md","v":10,"e":"md"}],"v":10,"f":1},{"n":"disable-model-invocation","c":[{"n":"SKILL.md","v":9,"e":"md"}],"v":9,"f":1},{"n":"consecutive-hyphens","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"invalid-name-chars","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"invalid-yaml","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"long-name","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"name-mismatch","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"nested","c":[{"n":"child-skill","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1}],"v":8,"f":1},{"n":"valid-skill","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1},{"n":"missing-description","c":[{"n":"SKILL.md","v":7,"e":"md"}],"v":7,"f":1},{"n":"root-skill-preferred","c":[{"n":"SKILL.md","v":3,"e":"md"},{"n":"nested-child","c":[{"n":"SKILL.md","v":3,"e":"md"}],"v":3,"f":1}],"v":6,"f":2},{"n":"no-frontmatter","c":[{"n":"SKILL.md","v":3,"e":"md"}],"v":3,"f":1}],"v":102,"f":14},{"n":"assistant-message-with-thinking-code.json","v":33,"e":"json"},{"n":"fake-external-editor.mjs","v":25,"e":"mjs"},{"n":"skills-collision","c":[{"n":"first","c":[{"n":"calendar","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1}],"v":8,"f":1},{"n":"second","c":[{"n":"calendar","c":[{"n":"SKILL.md","v":8,"e":"md"}],"v":8,"f":1}],"v":8,"f":1}],"v":16,"f":2}],"v":176,"f":18},{"n":"path-utils.test.ts","v":174,"e":"ts"},{"n":"theme-detection.test.ts","v":174,"e":"ts"},{"n":"session-id-readonly.test.ts","v":173,"e":"ts"},{"n":"auth-check.test.ts","v":171,"e":"ts"},{"n":"radius.test.ts","v":171,"e":"ts"},{"n":"image-processing.test.ts","v":170,"e":"ts"},{"n":"plan-mode-extension.test.ts","v":167,"e":"ts"},{"n":"experimental-cli-command.test.ts","v":165,"e":"ts"},{"n":"default-tools-setting.test.ts","v":159,"e":"ts"},{"n":"agent-session-branching.test.ts","v":156,"e":"ts"},{"n":"compaction-extensions-example.test.ts","v":152,"e":"ts"},{"n":"interactive-mode-suspend.test.ts","v":149,"e":"ts"},{"n":"block-images.test.ts","v":148,"e":"ts"},{"n":"models-store.test.ts","v":147,"e":"ts"},{"n":"oauth-selector.test.ts","v":147,"e":"ts"},{"n":"settings-manager-bug.test.ts","v":147,"e":"ts"},{"n":"cache-stats.test.ts","v":143,"e":"ts"},{"n":"interactive-mode-import-command.test.ts","v":143,"e":"ts"},{"n":"print-mode.test.ts","v":142,"e":"ts"},{"n":"tool-result-images.test.ts","v":137,"e":"ts"},{"n":"format-resume-command.test.ts","v":135,"e":"ts"},{"n":"sdk-session-manager.test.ts","v":131,"e":"ts"},{"n":"version-check.test.ts","v":131,"e":"ts"},{"n":"credential-print.test.ts","v":130,"e":"ts"},{"n":"system-prompt.test.ts","v":129,"e":"ts"},{"n":"bash-close-hang-windows.test.ts","v":126,"e":"ts"},{"n":"extensions-input-event.test.ts","v":125,"e":"ts"},{"n":"theme-controller.test.ts","v":125,"e":"ts"},{"n":"export-jsonl-share.test.ts","v":122,"e":"ts"},{"n":"startup-session-name.test.ts","v":122,"e":"ts"},{"n":"resolve-config-value.test.ts","v":121,"e":"ts"},{"n":"edit-tool-legacy-input.test.ts","v":116,"e":"ts"},{"n":"branch-summarization.test.ts","v":114,"e":"ts"},{"n":"http-dispatcher.test.ts","v":113,"e":"ts"},{"n":"sdk-skills.test.ts","v":113,"e":"ts"},{"n":"syntax-highlight.test.ts","v":113,"e":"ts"},{"n":"session-selector-rename.test.ts","v":111,"e":"ts"},{"n":"ansi-utils.test.ts","v":110,"e":"ts"},{"n":"stdout-cleanliness.test.ts","v":107,"e":"ts"},{"n":"theme-export.test.ts","v":104,"e":"ts"},{"n":"model-runtime-cloudflare-compat.test.ts","v":102,"e":"ts"},{"n":"mermaid.test.ts","v":99,"e":"ts"},{"n":"package-manager-ssh.test.ts","v":97,"e":"ts"},{"n":"streaming-render-debug.ts","v":97,"e":"ts"},{"n":"experimental-cli-resolution.test.ts","v":96,"e":"ts"},{"n":"first-time-setup.test.ts","v":95,"e":"ts"},{"n":"git-ssh-url.test.ts","v":91,"e":"ts"},{"n":"session-cwd.test.ts","v":91,"e":"ts"},{"n":"interactive-mode-startup-input.test.ts","v":90,"e":"ts"},{"n":"interactive-mode-anthropic-warning.test.ts","v":89,"e":"ts"},{"n":"clipboard-image-bmp-conversion.test.ts","v":88,"e":"ts"},{"n":"keybindings-migration.test.ts","v":88,"e":"ts"},{"n":"trust-selector.test.ts","v":87,"e":"ts"},{"n":"rpc-example.ts","v":86,"e":"ts"},{"n":"runtime-credentials.test.ts","v":86,"e":"ts"},{"n":"input-transform-streaming-example.test.ts","v":84,"e":"ts"},{"n":"session-info-modified-timestamp.test.ts","v":83,"e":"ts"},{"n":"model-catalog-refresh.test.ts","v":81,"e":"ts"},{"n":"truncate-to-width.test.ts","v":81,"e":"ts"},{"n":"bash-execution-width.test.ts","v":80,"e":"ts"},{"n":"compaction-serialization.test.ts","v":79,"e":"ts"},{"n":"restore-sandbox-env.test.ts","v":77,"e":"ts"},{"n":"management-http.test.ts","v":73,"e":"ts"},{"n":"interactive-mode-clone-command.test.ts","v":72,"e":"ts"},{"n":"scrollbar-theme.test.ts","v":70,"e":"ts"},{"n":"export-html-xss.test.ts","v":67,"e":"ts"},{"n":"trust-manager.test.ts","v":67,"e":"ts"},{"n":"rpc-jsonl.test.ts","v":65,"e":"ts"},{"n":"session-file-invalid.test.ts","v":65,"e":"ts"},{"n":"external-editor.test.ts","v":63,"e":"ts"},{"n":"frontmatter.test.ts","v":60,"e":"ts"},{"n":"trigger-compact-extension.test.ts","v":60,"e":"ts"},{"n":"user-message.test.ts","v":58,"e":"ts"},{"n":"branch-summary-extensions.test.ts","v":57,"e":"ts"},{"n":"image-process.test.ts","v":53,"e":"ts"},{"n":"image-resize-callers.test.ts","v":53,"e":"ts"},{"n":"settings-selector.test.ts","v":51,"e":"ts"},{"n":"theme-picker.test.ts","v":51,"e":"ts"},{"n":"changelog.test.ts","v":49,"e":"ts"},{"n":"initial-message.test.ts","v":48,"e":"ts"},{"n":"model-selector.test.ts","v":48,"e":"ts"},{"n":"settings-diagnostics.test.ts","v":47,"e":"ts"},{"n":"tools-manager.test.ts","v":47,"e":"ts"},{"n":"max-thinking.test.ts","v":45,"e":"ts"},{"n":"custom-message.test.ts","v":44,"e":"ts"},{"n":"experimental.test.ts","v":44,"e":"ts"},{"n":"tool-system-prompt-contributions.test.ts","v":44,"e":"ts"},{"n":"export-html-whitespace.test.ts","v":42,"e":"ts"},{"n":"keybindings.test.ts","v":42,"e":"ts"},{"n":"experimental-tool-strict-mode.test.ts","v":40,"e":"ts"},{"n":"export-html-skill-block.test.ts","v":40,"e":"ts"},{"n":"first-time-setup-fork.test.ts","v":39,"e":"ts"},{"n":"rpc-client-process-exit.test.ts","v":38,"e":"ts"},{"n":"custom-editor-history-keybindings.test.ts","v":34,"e":"ts"},{"n":"model-runtime-test-utils.ts","v":34,"e":"ts"},{"n":"clipboard-native.test.ts","v":32,"e":"ts"},{"n":"status-indicator.test.ts","v":32,"e":"ts"},{"n":"powershell-tool.test.ts","v":30,"e":"ts"},{"n":"rpc-client-clear-queue.test.ts","v":29,"e":"ts"},{"n":"rpc-client-clone.test.ts","v":29,"e":"ts"},{"n":"package-distribution.test.ts","v":26,"e":"ts"},{"n":"pi-user-agent.test.ts","v":12,"e":"ts"},{"n":"test-network-env.ts","v":6,"e":"ts"}],"v":52556,"f":275},{"n":"examples","c":[{"n":"extensions","c":[{"n":"subagent","c":[{"n":"index.ts","v":1038,"e":"ts"},{"n":"README.md","v":177,"e":"md"},{"n":"agents.ts","v":157,"e":"ts"},{"n":"agents","c":[{"n":"scout.md","v":50,"e":"md"},{"n":"planner.md","v":37,"e":"md"},{"n":"reviewer.md","v":35,"e":"md"},{"n":"worker.md","v":24,"e":"md"}],"v":146,"f":4},{"n":"prompts","c":[{"n":"implement-and-review.md","v":10,"e":"md"},{"n":"implement.md","v":10,"e":"md"},{"n":"scout-and-plan.md","v":9,"e":"md"}],"v":29,"f":3}],"v":1547,"f":10},{"n":"overlay-qa-tests.ts","v":1450,"e":"ts"},{"n":"tic-tac-toe.ts","v":1008,"e":"ts"},{"n":"doom-overlay","c":[{"n":"doom","c":[{"n":"build.sh","v":152,"e":"sh"},{"n":"doomgeneric_pi.c","v":72,"e":"c"}],"v":224,"f":2},{"n":"doom-engine.ts","v":173,"e":"ts"},{"n":"doom-component.ts","v":132,"e":"ts"},{"n":"doom-keys.ts","v":104,"e":"ts"},{"n":"index.ts","v":74,"e":"ts"},{"n":"wad-finder.ts","v":55,"e":"ts"},{"n":"README.md","v":46,"e":"md"}],"v":808,"f":8},{"n":"gondolin","c":[{"n":"index.ts","v":531,"e":"ts"},{"n":"package-lock.json","v":185,"e":"json"},{"n":"package.json","v":19,"e":"json"}],"v":735,"f":3},{"n":"custom-provider-anthropic","c":[{"n":"index.ts","v":611,"e":"ts"},{"n":"package-lock.json","v":24,"e":"json"},{"n":"package.json","v":19,"e":"json"}],"v":654,"f":3},{"n":"plan-mode","c":[{"n":"index.ts","v":390,"e":"ts"},{"n":"utils.ts","v":168,"e":"ts"},{"n":"README.md","v":66,"e":"md"}],"v":624,"f":3},{"n":"space-invaders.ts","v":560,"e":"ts"},{"n":"custom-provider-gitlab-duo","c":[{"n":"index.ts","v":405,"e":"ts"},{"n":"test.ts","v":82,"e":"ts"},{"n":"package.json","v":16,"e":"json"}],"v":503,"f":3},{"n":"questionnaire.ts","v":448,"e":"ts"},{"n":"preset.ts","v":436,"e":"ts"},{"n":"sandbox","c":[{"n":"index.ts","v":321,"e":"ts"},{"n":"package-lock.json","v":92,"e":"json"},{"n":"package.json","v":19,"e":"json"}],"v":432,"f":3},{"n":"minimal-mode.ts","v":426,"e":"ts"},{"n":"snake.ts","v":343,"e":"ts"},{"n":"todo.ts","v":297,"e":"ts"},{"n":"question.ts","v":286,"e":"ts"},{"n":"built-in-tool-renderer.ts","v":249,"e":"ts"},{"n":"ssh.ts","v":220,"e":"ts"},{"n":"README.md","v":213,"e":"md"},{"n":"summarize.ts","v":199,"e":"ts"},{"n":"interactive-shell.ts","v":196,"e":"ts"},{"n":"truncated-tool.ts","v":195,"e":"ts"},{"n":"handoff.ts","v":190,"e":"ts"},{"n":"github-issue-autocomplete.ts","v":185,"e":"ts"},{"n":"overlay-test.ts","v":153,"e":"ts"},{"n":"border-status-editor.ts","v":150,"e":"ts"},{"n":"tools.ts","v":146,"e":"ts"},{"n":"tool-override.ts","v":144,"e":"ts"},{"n":"working-indicator.ts","v":123,"e":"ts"},{"n":"qna.ts","v":118,"e":"ts"},{"n":"rpc-demo.ts","v":118,"e":"ts"},{"n":"custom-compaction.ts","v":117,"e":"ts"},{"n":"git-merge-and-resolve.ts","v":115,"e":"ts"},{"n":"dynamic-resources","c":[{"n":"dynamic.json","v":79,"e":"json"},{"n":"index.ts","v":15,"e":"ts"},{"n":"SKILL.md","v":8,"e":"md"},{"n":"dynamic.md","v":5,"e":"md"}],"v":107,"f":4},{"n":"prompt-customizer.ts","v":97,"e":"ts"},{"n":"send-user-message.ts","v":97,"e":"ts"},{"n":"inline-bash.ts","v":94,"e":"ts"},{"n":"rainbow-editor.ts","v":88,"e":"ts"},{"n":"claude-rules.ts","v":86,"e":"ts"},{"n":"modal-editor.ts","v":85,"e":"ts"},{"n":"with-deps","c":[{"n":"index.ts","v":32,"e":"ts"},{"n":"package-lock.json","v":31,"e":"json"},{"n":"package.json","v":22,"e":"json"}],"v":85,"f":3},{"n":"dynamic-tools.ts","v":74,"e":"ts"},{"n":"custom-header.ts","v":73,"e":"ts"},{"n":"commands.ts","v":72,"e":"ts"},{"n":"timed-confirm.ts","v":70,"e":"ts"},{"n":"structured-output.ts","v":65,"e":"ts"},{"n":"custom-footer.ts","v":64,"e":"ts"},{"n":"project-trust.ts","v":64,"e":"ts"},{"n":"shutdown-command.ts","v":63,"e":"ts"},{"n":"kimi-deferred-tools.ts","v":61,"e":"ts"},{"n":"confirm-destructive.ts","v":59,"e":"ts"},{"n":"message-renderer.ts","v":59,"e":"ts"},{"n":"titlebar-spinner.ts","v":58,"e":"ts"},{"n":"notify.ts","v":57,"e":"ts"},{"n":"dirty-repo-guard.ts","v":56,"e":"ts"},{"n":"git-checkpoint.ts","v":53,"e":"ts"},{"n":"hidden-thinking-label.ts","v":53,"e":"ts"},{"n":"bookmark.ts","v":50,"e":"ts"},{"n":"trigger-compact.ts","v":50,"e":"ts"},{"n":"auto-commit-on-exit.ts","v":49,"e":"ts"},{"n":"mac-system-theme.ts","v":47,"e":"ts"},{"n":"pirate.ts","v":47,"e":"ts"},{"n":"event-bus.ts","v":43,"e":"ts"},{"n":"input-transform.ts","v":43,"e":"ts"},{"n":"entry-renderer.ts","v":41,"e":"ts"},{"n":"file-trigger.ts","v":41,"e":"ts"},{"n":"input-transform-streaming.ts","v":39,"e":"ts"},{"n":"reload-runtime.ts","v":37,"e":"ts"},{"n":"permission-gate.ts","v":34,"e":"ts"},{"n":"status-line.ts","v":32,"e":"ts"},{"n":"model-status.ts","v":31,"e":"ts"},{"n":"bash-spawn-hook.ts","v":30,"e":"ts"},{"n":"protected-paths.ts","v":30,"e":"ts"},{"n":"session-name.ts","v":27,"e":"ts"},{"n":"hello.ts","v":26,"e":"ts"},{"n":"working-message-test.ts","v":25,"e":"ts"},{"n":"provider-payload.ts","v":18,"e":"ts"},{"n":"system-prompt-header.ts","v":17,"e":"ts"},{"n":"widget-placement.ts","v":9,"e":"ts"}],"v":15894,"f":110},{"n":"sdk","c":[{"n":"README.md","v":140,"e":"md"},{"n":"06-extensions.ts","v":99,"e":"ts"},{"n":"03-custom-prompt.ts","v":75,"e":"ts"},{"n":"12-full-control.ts","v":74,"e":"ts"},{"n":"13-session-runtime.ts","v":67,"e":"ts"},{"n":"04-skills.ts","v":55,"e":"ts"},{"n":"10-settings.ts","v":53,"e":"ts"},{"n":"11-sessions.ts","v":52,"e":"ts"},{"n":"08-prompt-templates.ts","v":51,"e":"ts"},{"n":"02-custom-model.ts","v":49,"e":"ts"},{"n":"05-tools.ts","v":48,"e":"ts"},{"n":"07-context-files.ts","v":47,"e":"ts"},{"n":"09-api-keys-and-oauth.ts","v":34,"e":"ts"},{"n":"01-minimal.ts","v":26,"e":"ts"}],"v":870,"f":14},{"n":"rpc-extension-ui.ts","v":641,"e":"ts"},{"n":"README.md","v":25,"e":"md"}],"v":17430,"f":126},{"n":"docs","c":[{"n":"extensions.md","v":3020,"e":"md"},{"n":"rpc.md","v":1618,"e":"md"},{"n":"sdk.md","v":1219,"e":"md"},{"n":"tui.md","v":942,"e":"md"},{"n":"custom-provider.md","v":777,"e":"md"},{"n":"models.md","v":571,"e":"md"},{"n":"session-format.md","v":438,"e":"md"},{"n":"compaction.md","v":418,"e":"md"},{"n":"settings.md","v":369,"e":"md"},{"n":"themes.md","v":320,"e":"md"},{"n":"providers.md","v":317,"e":"md"},{"n":"usage.md","v":311,"e":"md"},{"n":"keybindings.md","v":236,"e":"md"},{"n":"skills.md","v":232,"e":"md"},{"n":"packages.md","v":228,"e":"md"},{"n":"terminal-setup.md","v":177,"e":"md"},{"n":"quickstart.md","v":167,"e":"md"},{"n":"docs.json","v":156,"e":"json"},{"n":"sessions.md","v":145,"e":"md"},{"n":"termux.md","v":127,"e":"md"},{"n":"containerization.md","v":111,"e":"md"},{"n":"llama-cpp.md","v":101,"e":"md"},{"n":"json.md","v":98,"e":"md"},{"n":"environment-variables.md","v":97,"e":"md"},{"n":"prompt-templates.md","v":96,"e":"md"},{"n":"index.md","v":84,"e":"md"},{"n":"development.md","v":71,"e":"md"},{"n":"tmux.md","v":63,"e":"md"},{"n":"security.md","v":59,"e":"md"},{"n":"windows.md","v":39,"e":"md"},{"n":"shell-aliases.md","v":13,"e":"md"}],"v":12620,"f":31},{"n":"CHANGELOG.md","v":5621,"e":"md"},{"n":"install-lock","c":[{"n":"package-lock.json","v":1775,"e":"json"},{"n":"package.json","v":19,"e":"json"}],"v":1794,"f":2},{"n":"npm-shrinkwrap.json","v":1765,"e":"json"},{"n":"README.md","v":718,"e":"md"},{"n":"package.json","v":106,"e":"json"},{"n":"scripts","c":[{"n":"migrate-sessions.sh","v":93,"e":"sh"}],"v":93,"f":1},{"n":"vitest.config.ts","v":40,"e":"ts"},{"n":"tsconfig.build.json","v":19,"e":"json"},{"n":"tsconfig.examples.json","v":16,"e":"json"}],"v":157254,"f":654}},{"id":"packages/evals","dir":"evals","kind":"eval","name":"Pi evals","loc":2054,"files":18,"commits":35,"deps":["packages/coding-agent","packages/agent","packages/ai"],"tree":{"n":"packages/evals","c":[{"n":"src","c":[{"n":"vitest-evals","c":[{"n":"summary.ts","v":438,"e":"ts"},{"n":"harness-table.ts","v":193,"e":"ts"},{"n":"artifacts.ts","v":113,"e":"ts"},{"n":"reporter.ts","v":111,"e":"ts"},{"n":"setup.ts","v":8,"e":"ts"}],"v":863,"f":5},{"n":"pi-harness.ts","v":257,"e":"ts"},{"n":"extensions.eval.ts","v":140,"e":"ts"},{"n":"smoke.eval.ts","v":17,"e":"ts"}],"v":1277,"f":8},{"n":"test","c":[{"n":"vitest-evals","c":[{"n":"summary.test.ts","v":232,"e":"ts"},{"n":"artifacts.test.ts","v":103,"e":"ts"},{"n":"harness-table.test.ts","v":94,"e":"ts"}],"v":429,"f":3},{"n":"pi-harness.test.ts","v":34,"e":"ts"}],"v":463,"f":4},{"n":"README.md","v":153,"e":"md"},{"n":"scripts","c":[{"n":"run-evals.mjs","v":97,"e":"mjs"}],"v":97,"f":1},{"n":"package.json","v":20,"e":"json"},{"n":"vitest.config.ts","v":20,"e":"ts"},{"n":"vitest.test.config.ts","v":14,"e":"ts"},{"n":"tsconfig.json","v":10,"e":"json"}],"v":2054,"f":18}}],"totals":{"loc":304157,"files":1302,"modules":10}},"meta":{"flow":[["CLI dispatch","main selects interactive, print, JSON, or stdio RPC mode."],["Session assembly","The SDK creates AgentSession, resources, tools, model, and SessionManager."],["Agent loop","Agent core streams the provider and executes ordered tool batches."],["Persistence","Production CLI appends a v3 JSONL tree; experimental server uses durable sessions."],["Presentation","TUI, print, RPC, and client/server surfaces consume the same runtime state."]],"runtimeStory":"The current production path is coding-agent → AgentSession → Agent → agent-loop → pi-ai. The protocol/client/server and durable harness packages are a parallel, partially implemented architecture; do not infer that the production CLI already uses every durable operation.","testSegments":["test","examples"],"modules":{"packages/ai":{"purpose":"Unified multi-provider model catalog, authentication, and streaming APIs.","runtime":"Loaded by agent-core and coding-agent on every model request.","keyAreas":["src/models.ts — provider/model/auth dispatch","src/providers — built-in provider factories","src/api — wire API implementations"]},"packages/telemetry":{"purpose":"Vendor-neutral agent telemetry contracts and reference adapters.","runtime":"Receives lifecycle signals from runtime packages."},"packages/agent":{"purpose":"Agent state, tool-calling loop, events, and experimental durable harness.","runtime":"Core execution below AgentSession.","keyAreas":["src/agent-loop.ts — production sampling/tool loop","src/agent.ts — state and steering queues","src/harness — durable sessions and operations"]},"packages/tui":{"purpose":"Differential terminal rendering and reusable UI components.","runtime":"Interactive CLI presentation layer."},"packages/protocol":{"purpose":"Strict CBOR wire schemas and framing for the new remote surface.","runtime":"Shared by the new client and server."},"packages/client":{"purpose":"Transport-neutral snapshot client with session leases.","runtime":"Experimental/new remote client surface."},"packages/session-backends/sqlite-node":{"purpose":"SQLite-backed durable session storage implementation.","runtime":"Storage provider for the new harness/server line."},"packages/server":{"purpose":"Hello-first server core, framing, leases, and service boundary.","runtime":"Requires an application-provided service and transport authentication."},"packages/coding-agent":{"purpose":"Production Pi CLI, AgentSession orchestration, tools, resources, extensions, sessions, and modes.","runtime":"The shipped pi binary and SDK.","keyAreas":["src/core/agent-session.ts — production orchestrator","src/core/session-manager.ts — v3 JSONL tree","src/core/extensions — host extension system","src/modes — TUI/print/JSON/RPC"]},"packages/evals":{"purpose":"Agent/model evaluation utilities and scenarios.","runtime":"Development and evaluation only.","testOnly":true}}},"facets":[{"id":"runtime","nav":"Runtime surfaces","title":"Production and durable runtime surfaces","headline":"one production path · one experimental path","hero":{"v":"2","l":"runtime lines","s":"production + durable"},"columns":2,"sections":[{"kind":"groups","groups":[{"title":"Production CLI","accent":true,"chips":["AgentSession","Agent","agent-loop","v3 JSONL SessionManager","interactive","print","JSONL RPC"]},{"title":"Durable/server line","chips":["AgentHarness","Session lanes","CBOR protocol","snapshot client","session leases","server core"]}]},{"kind":"groups","groups":[{"title":"Built-in tools","chips":["read","bash","edit","write","grep","find","ls","powershell"]},{"title":"Extension-owned by design","chips":["MCP","subagent","permission popup","plan","todo","background bash"]}]}]},{"id":"integration","nav":"Integration","title":"Integration and extension surface","headline":"SDK · RPC · TUI · packages","sections":[{"kind":"tree","title":"Interfaces","items":[{"label":"CLI","badge":"app","children":[{"label":"interactive TUI","badge":"stable"},{"label":"print / JSON","badge":"stable"},{"label":"stdio JSONL RPC","badge":"stable"}]},{"label":"TypeScript SDK","badge":"stable"},{"label":"CBOR client/server","badge":"new"}]},{"kind":"groups","groups":[{"title":"Extension registrations","chips":["tools","providers","commands","events","UI","prompt transforms"]},{"title":"Resource packages","chips":["extensions","skills","prompts","themes"]}]}]},{"id":"providers","nav":"Providers","title":"Provider registry signals","headline":"40 factory-name matches","hero":{"v":"40","l":"provider symbols","s":"regex inventory, not model count"},"sections":[{"kind":"groups","groups":[{"title":"Factory symbols found","chips":["amazonBedrock","antLing","anthropic","azureOpenAIResponses","baseten","cerebras","cloudflareAIGateway","cloudflareWorkersAI","deepseek","fireworks","githubCopilot","google","googleVertex","groq","huggingface","kimiCoding","minimax","minimaxCn","mistral","moonshotai","moonshotaiCn","nvidia","openai","openaiCodex","opencode","opencodeGo","openrouter","qwenTokenPlan","qwenTokenPlanCn","qwenTokenPlanIndividual","radius","together","vercelAIGateway","xai","xiaomi","xiaomiTokenPlanAms","xiaomiTokenPlanCn","xiaomiTokenPlanSgp","zai","zaiCodingCn"]}]},{"kind":"groups","groups":[{"title":"Provider contract","accent":true,"chips":["model catalog","authentication","stream","lazy API module"]},{"title":"Caution","chips":["factory count ≠ model count","catalog is generated","feature parity varies"]}]}]}]};
+
+/* ---------- helpers ---------- */
+const $ = (s, el) => (el || document).querySelector(s);
+const MODS = EMBED.scan.modules;
+const MOD = new Map(MODS.map((m) => [m.id, m]));
+const META_MOD = (EMBED.meta && EMBED.meta.modules) || {};
+const fmtNum = (n) => n.toLocaleString("en-US");
+const fmtLoc = (n) => n >= 10000 ? Math.round(n / 1000) + "k" : n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const SLOTS = ["--slot-1", "--slot-2", "--slot-3", "--slot-4", "--slot-5", "--slot-7", "--slot-8", "--slot-6"];
+
+const tip = $("#tip");
+function showTip(html, ev) { tip.innerHTML = html; tip.style.display = "block"; moveTip(ev); }
+function moveTip(ev) {
+  const pad = 14;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+function tipify(el, html) {
+  el.onmouseenter = (ev) => showTip(html, ev);
+  el.onmousemove = moveTip;
+  el.onmouseleave = hideTip;
+}
+
+/* ---------- theme ---------- */
+const themeBtn = $("#themeBtn");
+const THEMES = ["auto", "light", "dark"];
+let theme = localStorage.getItem("cbmap-theme") || "auto";
+function applyTheme() {
+  if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  themeBtn.textContent = "theme: " + theme;
+  localStorage.setItem("cbmap-theme", theme);
+}
+themeBtn.onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; applyTheme(); };
+applyTheme();
+
+/* ---------- header ---------- */
+document.title = `${EMBED.title} · Codebase Map`;
+$("#kicker").textContent = EMBED.subtitle || "codebase atlas";
+$("#pageTitle").innerHTML = `${esc(EMBED.title)} <span class="dim">/ codebase map</span>`;
+$("#snapshot").textContent = `snapshot ${EMBED.generated}${EMBED.commit ? ` · ${EMBED.branch ? EMBED.branch + " @ " : ""}${EMBED.commit}` : ""}`;
+
+const kindCounts = {};
+for (const m of MODS) kindCounts[m.kind] = (kindCounts[m.kind] || 0) + 1;
+const kindSummary = Object.entries(kindCounts).sort((a, b) => b[1] - a[1]).slice(0, 3)
+  .map(([k, n]) => `${n} ${k}`).join(" · ");
+const tiles = [
+  [fmtLoc(EMBED.scan.totals.loc), "lines of code", "counted source only"],
+  [fmtNum(EMBED.scan.totals.files), "source files", "see footer for scope"],
+  [EMBED.scan.totals.modules, "modules", kindSummary],
+  ...EMBED.facets.filter((f) => f.hero).map((f) => [f.hero.v, f.hero.l, f.hero.s || ""]),
+].slice(0, 6);
+$("#stats").innerHTML = tiles.map(([v, l, s]) =>
+  `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div><div class="s">${esc(s)}</div></div>`).join("");
+$("#footNote").textContent =
+  `Generated ${EMBED.generated} from a static scan${EMBED.commit ? ` @ ${EMBED.commit} (${EMBED.commitDate})` : ""}. ` +
+  `Line counts cover source files only; dependency dirs, build output, and configured generated paths are excluded. ` +
+  `Module descriptions were written from reading each module's entry points at generation time.`;
+
+/* ---------- tabs ---------- */
+const tabDefs = [
+  { id: "arch", label: "Architecture" },
+  { id: "files", label: "File explorer" },
+  ...EMBED.facets.map((f) => ({ id: "facet-" + f.id, label: f.nav || f.title })),
+];
+$("#tabs").innerHTML = tabDefs.map((t, i) =>
+  `<button role="tab" data-view="${t.id}" aria-selected="${i === 0}">${esc(t.label)}</button>`).join("");
+function switchTab(view) {
+  for (const b of $("#tabs").querySelectorAll("button")) b.setAttribute("aria-selected", String(b.dataset.view === view));
+  for (const s of document.querySelectorAll("section.view")) s.classList.toggle("active", s.id === "view-" + view);
+  if (view === "files") renderTreemap();
+  if (view === "arch") renderGraph();
+  if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
+}
+$("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) switchTab(b.dataset.view); });
+
+/* =========================================================
+   ARCHITECTURE GRAPH
+   ========================================================= */
+const stripKinds = new Set(EMBED.stripKinds);
+const gnodes = MODS.filter((m) => !stripKinds.has(m.kind));
+const gids = new Set(gnodes.map((n) => n.id));
+const importsOf = new Map(gnodes.map((n) => [n.id, n.deps.filter((d) => gids.has(d))]));
+const importedBy = new Map(gnodes.map((n) => [n.id, []]));
+for (const [id, deps] of importsOf) for (const d of deps) importedBy.get(d).push(id);
+const isTestOnly = (id) => !!META_MOD[id]?.testOnly;
+
+const topKinds = new Set(EMBED.topKinds);
+const layerMemo = new Map();
+function layerOf(id, seen = new Set()) {
+  if (layerMemo.has(id)) return layerMemo.get(id);
+  if (seen.has(id)) return 0;
+  seen.add(id);
+  const deps = importsOf.get(id).filter((d) => !topKinds.has(MOD.get(d).kind));
+  const l = deps.length ? 1 + Math.max(...deps.map((d) => layerOf(d, seen))) : 0;
+  layerMemo.set(id, l);
+  return l;
+}
+for (const n of gnodes) if (!topKinds.has(n.kind)) layerOf(n.id);
+const maxBase = Math.max(0, ...[...layerMemo.values()]);
+for (const n of gnodes) if (topKinds.has(n.kind)) layerMemo.set(n.id, maxBase + 1);
+
+const rows = [];
+for (const n of gnodes) {
+  const l = layerMemo.get(n.id) ?? 0;
+  (rows[l] = rows[l] || []).push(n);
+}
+for (let i = 0; i < rows.length; i++) if (!rows[i]) rows[i] = [];
+for (const row of rows) row.sort((a, b) => b.loc - a.loc);
+
+// barycenter ordering: nudge each row toward the mean position of its neighbors
+(function orderRows() {
+  const posOf = new Map();
+  const refresh = () => rows.forEach((row) => row.forEach((n, i) => posOf.set(n.id, (i + 0.5) / row.length)));
+  refresh();
+  for (let pass = 0; pass < 4; pass++) {
+    const order = pass % 2 === 0 ? rows : [...rows].reverse();
+    for (const row of order) {
+      row.sort((a, b) => bary(a) - bary(b));
+      refresh();
+    }
+  }
+  function bary(n) {
+    const nb = [...importsOf.get(n.id), ...importedBy.get(n.id)];
+    const ps = nb.map((id) => posOf.get(id)).filter((p) => p !== undefined);
+    return ps.length ? ps.reduce((s, p) => s + p, 0) / ps.length : posOf.get(n.id);
+  }
+})();
+
+// kind colors: top kinds first, then by aggregate loc
+const kindOrder = [...new Set([
+  ...EMBED.topKinds.filter((k) => kindCounts[k]),
+  ...Object.keys(kindCounts).filter((k) => !stripKinds.has(k)).sort((a, b) => {
+    const loc = (k) => MODS.filter((m) => m.kind === k).reduce((s, m) => s + m.loc, 0);
+    return loc(b) - loc(a);
+  }),
+])].filter((k) => !stripKinds.has(k));
+const kindColor = new Map(kindOrder.map((k, i) => [k, `var(${SLOTS[i % SLOTS.length]})`]));
+
+$("#graphLegend").innerHTML =
+  kindOrder.map((k) => `<span class="li"><span class="sw" style="background:${kindColor.get(k)}"></span> ${esc(k)}</span>`).join("") +
+  (gnodes.some((n) => isTestOnly(n.id)) ? `<span class="li"><span class="sw dashed"></span> test-time only</span>` : "") +
+  `<span class="li"><span class="sw line" style="background:var(--slot-1)"></span> imports (what it uses)</span>
+   <span class="li"><span class="sw line" style="background:var(--slot-8)"></span> imported by (who uses it)</span>`;
+
+const graphEl = $("#graph");
+let selectedNode = null;
+const ROW_H = 92, NODE_H = 46, PAD_TOP = 34, PAD_BOT = 26;
+
+function renderGraph() {
+  const W = Math.max(860, graphEl.clientWidth || graphEl.parentElement.clientWidth);
+  const nLayers = rows.length;
+  const H = PAD_TOP + PAD_BOT + (nLayers - 1) * ROW_H + NODE_H;
+  graphEl.style.height = H + "px";
+  graphEl.innerHTML = "";
+
+  const pos = new Map();
+  rows.forEach((row, layer) => {
+    const y = PAD_TOP + (nLayers - 1 - layer) * ROW_H;
+    const widths = row.map((n) => Math.max(100, n.dir.length * 8.4 + 52));
+    const gap = 26;
+    const total = widths.reduce((a, b) => a + b, 0) + gap * (row.length - 1);
+    let x = Math.max(64, (W - total) / 2);
+    row.forEach((n, i) => { pos.set(n.id, { x, y, w: widths[i] }); x += widths[i] + gap; });
+  });
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  const edgeEls = [];
+  for (const [from, deps] of importsOf) {
+    const a = pos.get(from);
+    for (const to of deps) {
+      const b = pos.get(to);
+      if (!a || !b) continue;
+      const x1 = a.x + a.w / 2, y1 = a.y + NODE_H, x2 = b.x + b.w / 2, y2 = b.y;
+      const dy = Math.max(34, (y2 - y1) * 0.45);
+      const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      p.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`);
+      p.dataset.from = from; p.dataset.to = to;
+      svg.appendChild(p);
+      edgeEls.push(p);
+    }
+  }
+  graphEl.appendChild(svg);
+
+  rows.forEach((row, layer) => {
+    if (!row.length) return;
+    const y = PAD_TOP + (nLayers - 1 - layer) * ROW_H;
+    const lab = document.createElement("div");
+    lab.className = "row-label";
+    lab.style.top = (y + NODE_H / 2 - 6) + "px";
+    const kinds = [...new Set(row.map((n) => n.kind))];
+    lab.textContent = layer === nLayers - 1 && EMBED.topKinds.length && kinds.every((k) => topKinds.has(k))
+      ? kinds.join("·") : "L" + layer;
+    graphEl.appendChild(lab);
+  });
+
+  const nodeEls = new Map();
+  for (const n of gnodes) {
+    const p = pos.get(n.id);
+    if (!p) continue;
+    const el = document.createElement("div");
+    el.className = "gnode" + (isTestOnly(n.id) ? " testpkg" : "");
+    el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;--kc:${kindColor.get(n.kind) || "var(--c-other)"}`;
+    el.innerHTML = `<span class="gname">${esc(n.dir)}</span><span class="gmeta">${fmtLoc(n.loc)} loc</span>`;
+    el.onmouseenter = (ev) => { focusNode(n.id); showTip(nodeTip(n), ev); };
+    el.onmousemove = moveTip;
+    el.onmouseleave = () => { hideTip(); focusNode(selectedNode); };
+    el.onclick = (ev) => { ev.stopPropagation(); selectNode(n.id); };
+    graphEl.appendChild(el);
+    nodeEls.set(n.id, el);
+  }
+  graphEl._edgeEls = edgeEls;
+  graphEl._nodeEls = nodeEls;
+  focusNode(selectedNode);
+}
+
+function nodeTip(n) {
+  return `<b>${esc(n.name)}</b><br>` +
+    `<span class="t2">${fmtNum(n.loc)} loc · ${fmtNum(n.files)} files · ${fmtNum(n.commits)} commits (${esc(EMBED.scan.since)})</span><br>` +
+    `<span class="t2">imports ${importsOf.get(n.id).length} · imported by ${importedBy.get(n.id).length} — click for details</span>`;
+}
+
+function focusNode(id) {
+  const edgeEls = graphEl._edgeEls || [], nodeEls = graphEl._nodeEls || new Map();
+  graphEl.classList.toggle("focused", !!id);
+  if (!id) {
+    for (const p of edgeEls) p.classList.remove("is-imports", "is-imported");
+    for (const el of nodeEls.values()) el.classList.remove("dimmed");
+    for (const [nid, el] of nodeEls) el.classList.toggle("selected", nid === selectedNode);
+    return;
+  }
+  const related = new Set([id, ...importsOf.get(id), ...importedBy.get(id)]);
+  for (const p of edgeEls) {
+    p.classList.toggle("is-imports", p.dataset.from === id);
+    p.classList.toggle("is-imported", p.dataset.to === id);
+  }
+  for (const [nid, el] of nodeEls) {
+    el.classList.toggle("dimmed", !related.has(nid));
+    el.classList.toggle("selected", nid === selectedNode);
+  }
+}
+
+function selectNode(id) { selectedNode = id; focusNode(id); renderArchPanel(id); }
+graphEl.addEventListener("click", () => { selectedNode = null; focusNode(null); renderArchPanel(null); });
+addEventListener("keydown", (e) => { if (e.key === "Escape") { selectedNode = null; focusNode(null); renderArchPanel(null); } });
+
+function renderArchPanel(id) {
+  const panel = $("#archPanel");
+  if (!id) {
+    const flow = EMBED.meta.flow || [];
+    panel.innerHTML =
+      (flow.length ? `<div class="kicker">how it runs</div>
+        <h3 style="font-size:14px">Request → response → background</h3>
+        <ol class="flow-steps">${flow.map(([b, t]) => `<li><b>${esc(b)}</b><br>${esc(t)}</li>`).join("")}</ol>` : "") +
+      (EMBED.meta.runtimeStory ? `<details class="story"><summary>full runtime story</summary><p>${esc(EMBED.meta.runtimeStory)}</p></details>` : "") +
+      `<h4>reading the graph</h4>
+       <p style="font-size:12px;color:var(--ink-2)">Every module sits one layer above the deepest thing it imports, so height = dependency depth.
+       Hover any node: <span style="color:var(--slot-1)">blue edges</span> point at what it imports,
+       <span style="color:var(--slot-8)">orange edges</span> come from who imports it. Click to pin details here.</p>`;
+    return;
+  }
+  const n = MOD.get(id);
+  const m = META_MOD[id] || {};
+  const chips = (ids, rev) =>
+    `<div class="dep-chips${rev ? " rev" : ""}">${ids.map((d) =>
+      `<button data-id="${d}">${esc(MOD.get(d).dir)}</button>`).join("") || `<span style="font-size:11px;color:var(--ink-3)">none</span>`}</div>`;
+  panel.innerHTML =
+    `<div class="kicker">${esc(id)}</div>
+     <h3>${esc(n.name)}</h3>
+     <div class="badges">
+       <span class="badge kind" style="--kc:${kindColor.get(n.kind) || "var(--c-other)"}">${esc(n.kind)}</span>
+       ${isTestOnly(id) ? `<span class="badge">test-time</span>` : ""}
+     </div>
+     <p class="purpose">${esc(m.purpose || "")}</p>
+     ${m.runtime ? `<div class="runtime"><b>Runs:</b> ${esc(m.runtime)}</div>` : ""}
+     <div class="pstats">
+       <div><div class="v">${fmtLoc(n.loc)}</div><div class="l">loc</div></div>
+       <div><div class="v">${fmtNum(n.files)}</div><div class="l">files</div></div>
+       <div><div class="v">${fmtNum(n.commits)}</div><div class="l">commits</div></div>
+     </div>
+     ${m.keyAreas ? `<h4>key areas</h4><ul class="areas">${m.keyAreas.map((a) => {
+       const i = a.indexOf(" — ");
+       return `<li>${i > 0 ? `<b>${esc(a.slice(0, i))}</b> — ${esc(a.slice(i + 3))}` : esc(a)}</li>`;
+     }).join("")}</ul>` : ""}
+     <h4>imports (${importsOf.get(id).length})</h4>${chips(importsOf.get(id), false)}
+     <h4>imported by (${importedBy.get(id).length})</h4>${chips(importedBy.get(id), true)}
+     <button class="explore-btn">Explore files →</button>`;
+  panel.querySelectorAll(".dep-chips button").forEach((b) => (b.onclick = () => selectNode(b.dataset.id)));
+  panel.querySelector(".explore-btn").onclick = () => { setTreemapPkg(id); switchTab("files"); };
+}
+
+/* stripped-kind chip row */
+const stripped = MODS.filter((m) => stripKinds.has(m.kind));
+if (stripped.length) {
+  const row = $("#stripRow");
+  row.style.display = "";
+  row.innerHTML = `<span class="kicker" style="margin-right:2px">${esc([...stripKinds].join("/"))}</span>` +
+    stripped.map((m) => `<span class="chip" data-id="${m.id}">${esc(m.dir)}</span>`).join("");
+  row.querySelectorAll(".chip").forEach((c) => {
+    const m = META_MOD[c.dataset.id];
+    tipify(c, esc(m?.purpose || MOD.get(c.dataset.id).name));
+  });
+}
+
+/* =========================================================
+   FILE TREEMAP
+   ========================================================= */
+const TYPE_DEFS = [
+  ["code", "Code", "--slot-1", ["ts", "js", "mjs", "cjs", "py", "go", "rs", "java", "rb", "php", "c", "cc", "cpp", "h", "hpp", "cs", "swift", "kt", "scala", "ex", "exs", "sh", "proto", "graphql", "tf"]],
+  ["ui", "UI / markup", "--slot-2", ["tsx", "jsx", "vue", "svelte", "html", "heex", "eex", "erb"]],
+  ["data", "Data / config", "--slot-3", ["json", "yaml", "yml", "toml"]],
+  ["docs", "Docs", "--slot-4", ["md", "mdx", "rst"]],
+  ["sql", "SQL", "--slot-5", ["sql"]],
+  ["styles", "Styles", "--slot-7", ["css", "scss", "sass", "less"]],
+  ["other", "Other", "--c-other", []],
+];
+const EXT2TYPE = new Map();
+for (const [k, , , exts] of TYPE_DEFS) for (const e of exts) EXT2TYPE.set(e, k);
+const TYPE_VAR = Object.fromEntries(TYPE_DEFS.map(([k, , v]) => [k, v]));
+const typeOf = (ext) => EXT2TYPE.get(ext) || "other";
+const TESTY_SEG = new Set(["__tests__", "test", "tests", "testing", "spec", "specs", "fixtures", "__fixtures__", "__mocks__", "mocks", ...(EMBED.meta.testSegments || [])]);
+const isTestFile = (name, segs) => segs.slice(0, -1).some((s) => TESTY_SEG.has(s)) || /\.(test|spec|stories)\.|_test\.|Test\.(java|kt)$|test_.*\.py$/.test(name);
+
+const tmState = { pkg: MODS.slice().sort((a, b) => b.loc - a.loc)[0].id, path: [] };
+const tmEl = $("#treemap");
+
+const pkgSelect = $("#pkgSelect");
+{
+  const kinds = [...new Set(MODS.map((m) => m.kind))];
+  pkgSelect.innerHTML = kinds.map((kind) =>
+    `<optgroup label="${esc(kind)}">` +
+    MODS.filter((m) => m.kind === kind).sort((a, b) => b.loc - a.loc)
+      .map((m) => `<option value="${m.id}">${esc(m.dir)} — ${fmtLoc(m.loc)} loc</option>`).join("") +
+    `</optgroup>`).join("");
+  pkgSelect.value = tmState.pkg;
+  pkgSelect.onchange = () => setTreemapPkg(pkgSelect.value);
+}
+function setTreemapPkg(id) {
+  tmState.pkg = id;
+  tmState.path = [];
+  pkgSelect.value = id;
+  if ($("#view-files").classList.contains("active")) renderTreemap();
+}
+
+$("#typeLegend").innerHTML = TYPE_DEFS.map(([k, label, v]) =>
+  `<span class="li" data-type="${k}"><span class="sw" style="background:var(${v})"></span>${label}</span>`).join("") +
+  `<span class="li"><span class="sw" style="background:var(--surface-2);background-image:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 7px)"></span>tests / fixtures</span>`;
+$("#typeLegend").querySelectorAll(".li[data-type]").forEach((li) => {
+  li.onmouseenter = () => { tmEl.classList.add("type-focus"); tmEl.querySelectorAll(`.tm-file[data-type="${li.dataset.type}"]`).forEach((c) => c.classList.add("type-hit")); };
+  li.onmouseleave = () => { tmEl.classList.remove("type-focus"); tmEl.querySelectorAll(".type-hit").forEach((c) => c.classList.remove("type-hit")); };
+});
+
+function squarify(children, x, y, w, h, out) {
+  const items = children.filter((c) => c.v > 0);
+  const total = items.reduce((s, c) => s + c.v, 0);
+  if (!total || w <= 2 || h <= 2) return out;
+  const scale = (w * h) / total;
+  const areas = items.map((c) => ({ node: c, area: c.v * scale }));
+  let cx = x, cy = y, cw = w, ch = h, row = [];
+  const worst = (r, side) => {
+    const s = r.reduce((a, b) => a + b.area, 0);
+    let mx = 0, mn = Infinity;
+    for (const it of r) { if (it.area > mx) mx = it.area; if (it.area < mn) mn = it.area; }
+    return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn));
+  };
+  const layoutRow = (r) => {
+    const s = r.reduce((a, b) => a + b.area, 0);
+    if (cw >= ch) {
+      const rw = s / ch; let yy = cy;
+      for (const it of r) { const hh = it.area / rw; out.push({ node: it.node, x: cx, y: yy, w: rw, h: hh }); yy += hh; }
+      cx += rw; cw -= rw;
+    } else {
+      const rh = s / cw; let xx = cx;
+      for (const it of r) { const ww = it.area / rh; out.push({ node: it.node, x: xx, y: cy, w: ww, h: rh }); xx += ww; }
+      cy += rh; ch -= rh;
+    }
+  };
+  let i = 0;
+  while (i < areas.length) {
+    const side = Math.min(cw, ch);
+    if (row.length === 0 || worst([...row, areas[i]], side) <= worst(row, side)) { row.push(areas[i]); i++; }
+    else { layoutRow(row); row = []; }
+  }
+  if (row.length) layoutRow(row);
+  return out;
+}
+
+function currentRoot() {
+  let node = MOD.get(tmState.pkg).tree;
+  for (const name of tmState.path) {
+    const next = (node.c || []).find((c) => c.n === name && c.c);
+    if (!next) break;
+    node = next;
+  }
+  return node;
+}
+
+function cellTip(node, segs, pctBase) {
+  const pct = pctBase ? ` · ${((node.v / pctBase) * 100).toFixed(1)}% of view` : "";
+  if (node.c) return `<b>${esc(segs.join("/"))}/</b><br><span class="t2">${fmtNum(node.v)} loc · ${fmtNum(node.f)} files${pct} — click to zoom</span>`;
+  return `<b>${esc(segs.join("/"))}</b><br><span class="t2">${fmtNum(node.v)} loc${pct}</span>`;
+}
+
+function renderTreemap() {
+  if (!tmEl.clientWidth) return;
+  const root = currentRoot();
+  const W = tmEl.clientWidth, H = tmEl.clientHeight;
+  tmEl.innerHTML = "";
+  const viewTotal = root.v;
+
+  const mkFileCell = (r, node, segs, parent) => {
+    const el = document.createElement("div");
+    const t = typeOf(node.e);
+    el.className = "tm-cell tm-file" + (isTestFile(node.n, segs) ? " hatched" : "");
+    el.dataset.type = t;
+    el.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${Math.max(1, r.w - 2)}px;height:${Math.max(1, r.h - 2)}px;background-color:var(${TYPE_VAR[t]})`;
+    if (r.w > 56 && r.h > 17) el.innerHTML = `<span class="lbl">${esc(node.n)}</span>`;
+    tipify(el, cellTip(node, segs, viewTotal));
+    parent.appendChild(el);
+  };
+  const mkDirCell = (r, node, segs, pathNames, parent) => {
+    const el = document.createElement("div");
+    el.className = "tm-cell tm-dircell";
+    el.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${Math.max(1, r.w - 2)}px;height:${Math.max(1, r.h - 2)}px`;
+    if (r.w > 56 && r.h > 17) el.innerHTML = `<span class="lbl">${esc(node.n)}/</span>`;
+    tipify(el, cellTip(node, segs, viewTotal));
+    el.onclick = (ev) => { ev.stopPropagation(); tmState.path = pathNames; renderTreemap(); };
+    parent.appendChild(el);
+  };
+
+  function renderChildren(node, parent, w, h, segs, pathNames, depth) {
+    const inset = depth === 0 ? 4 : 1;
+    const rects = squarify(node.c || [], inset, inset, w - inset * 2, h - inset * 2, []);
+    for (const r of rects) {
+      const ch = r.node;
+      const chSegs = [...segs, ch.n];
+      if (!ch.c) { mkFileCell(r, ch, chSegs, parent); continue; }
+      const chPath = [...pathNames, ch.n];
+      if (r.w < 90 || r.h < 64) { mkDirCell(r, ch, chSegs, chPath, parent); continue; }
+      const g = document.createElement("div");
+      g.className = "tm-group";
+      g.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${r.w - 2}px;height:${r.h - 2}px`;
+      g.innerHTML = `<div class="hd">${esc(ch.n)}/ <span style="opacity:.55;font-weight:400">${fmtLoc(ch.v)}</span></div><div class="body"></div>`;
+      const hd = g.querySelector(".hd");
+      hd.onclick = (ev) => { ev.stopPropagation(); tmState.path = chPath; renderTreemap(); };
+      tipify(hd, cellTip(ch, chSegs, viewTotal));
+      parent.appendChild(g);
+      renderChildren(ch, g.querySelector(".body"), r.w - 2, r.h - 2 - 17, chSegs, chPath, depth + 1);
+    }
+  }
+  renderChildren(root, tmEl, W, H, [], tmState.path, 0);
+
+  const hint = document.createElement("div");
+  hint.className = "tm-hint";
+  hint.textContent = "area = lines of code";
+  tmEl.appendChild(hint);
+
+  renderCrumbs();
+  renderTmSidebar(root);
+}
+
+function renderCrumbs() {
+  const c = $("#crumbs");
+  const parts = [MOD.get(tmState.pkg).dir, ...tmState.path];
+  c.innerHTML = parts.map((p, i) =>
+    i === parts.length - 1
+      ? `<span class="here">${esc(p)}</span>`
+      : `<button data-i="${i}">${esc(p)}</button><span class="sep">/</span>`).join("");
+  c.querySelectorAll("button").forEach((b) => (b.onclick = () => { tmState.path = tmState.path.slice(0, +b.dataset.i); renderTreemap(); }));
+}
+
+function collectFiles(node, prefix, out) {
+  for (const ch of node.c || []) {
+    if (ch.c) collectFiles(ch, prefix ? prefix + "/" + ch.n : ch.n, out);
+    else out.push({ path: prefix ? prefix + "/" + ch.n : ch.n, v: ch.v, e: ch.e });
+  }
+  return out;
+}
+
+function renderTmSidebar(root) {
+  const pkg = MOD.get(tmState.pkg);
+  const files = collectFiles(root, "", []);
+  const byType = {};
+  for (const f of files) byType[typeOf(f.e)] = (byType[typeOf(f.e)] || 0) + f.v;
+  const total = root.v || 1;
+  const m = META_MOD[tmState.pkg];
+  $("#tmInfo").innerHTML =
+    `<h4>current view</h4>
+     <div class="bigpath">${esc([pkg.dir, ...tmState.path].join("/"))}/</div>
+     ${tmState.path.length === 0 && m?.purpose ? `<p style="font-size:12px;color:var(--ink-2);margin-bottom:8px">${esc(m.purpose)}</p>` : ""}
+     <div class="kv"><span>lines of code</span><b>${fmtNum(root.v)}</b></div>
+     <div class="kv"><span>files</span><b>${fmtNum(root.f)}</b></div>
+     <div class="kv"><span>share of ${esc(pkg.dir)}</span><b>${((root.v / pkg.loc) * 100).toFixed(1)}%</b></div>
+     <div class="typebar">${TYPE_DEFS.filter(([k]) => byType[k]).map(([k, , v]) =>
+       `<div style="width:${((byType[k] / total) * 100).toFixed(2)}%;background:var(${v})"></div>`).join("")}</div>
+     ${TYPE_DEFS.filter(([k]) => byType[k]).map(([k, label, v]) =>
+       `<div class="typerow"><span class="sw" style="background:var(${v})"></span>${label}<b>${Math.round((byType[k] / total) * 100)}% · ${fmtLoc(byType[k])}</b></div>`).join("")}`;
+
+  files.sort((a, b) => b.v - a.v);
+  $("#topFiles").innerHTML = files.slice(0, 12).map((f) =>
+    `<li data-p="${esc(f.path)}"><span class="fp">${esc(f.path)}</span><span class="fl">${fmtLoc(f.v)}</span></li>`).join("");
+  $("#topFiles").querySelectorAll("li").forEach((li) => (li.onclick = () => {
+    const segs = li.dataset.p.split("/");
+    segs.pop();
+    tmState.path = [...tmState.path, ...segs];
+    renderTreemap();
+  }));
+}
+
+/* =========================================================
+   FACETS — data-driven extra tabs
+   ========================================================= */
+const BADGE_SLOTS = ["--slot-1", "--slot-8", "--slot-2", "--slot-5", "--slot-3"];
+
+function renderSection(sec, host) {
+  const card = document.createElement("div");
+  const bare = sec.kind === "tiles";
+  card.className = bare ? "" : "facet-card";
+  if (!bare && sec.title) card.innerHTML = `<h3>${esc(sec.title)}</h3>${sec.sub ? `<div class="sub">${escBadges(sec.sub, sec)}</div>` : ""}`;
+  host.appendChild(card);
+  const body = document.createElement("div");
+  card.appendChild(body);
+
+  if (sec.kind === "tiles") {
+    body.className = "tiles-row";
+    body.innerHTML = (sec.tiles || []).map((t) =>
+      `<div class="tile"><div class="v">${esc(t.v)}</div><div class="l">${esc(t.l)}</div><div class="s">${esc(t.s || "")}</div></div>`).join("");
+  } else if (sec.kind === "barlist") {
+    renderBarlist(sec, body);
+  } else if (sec.kind === "groups") {
+    body.className = "group-cols";
+    body.innerHTML = (sec.groups || []).map((g) =>
+      `<div class="db-group${g.accent ? " accent" : ""}"><h4>${esc(g.title)} <span class="cnt">${(g.chips || []).length}</span></h4>
+       <div class="tchips">${(g.chips || []).map((c) => `<span>${esc(c)}</span>`).join("")}</div></div>`).join("");
+  } else if (sec.kind === "tree") {
+    body.className = "rt-tree";
+    const badgeColor = badgeColors(sec);
+    const renderNode = (item, depth) => {
+      const badge = item.badge ? `<span class="rt-badge" style="--bc:var(${badgeColor(item.badge)})">${esc(item.badge)}</span>` : "";
+      if (!item.children?.length) return `<div class="rt-leaf"><span class="p">${esc(item.label)}</span>${badge}</div>`;
+      return `<details${depth < 1 ? " open" : ""}><summary>${esc(item.label)}${badge ? " " + badge : ""}</summary>` +
+        item.children.map((c) => renderNode(c, depth + 1)).join("") + `</details>`;
+    };
+    body.innerHTML = (sec.items || []).map((i) => renderNode(i, 0)).join("");
+  } else if (sec.kind === "loclist") {
+    body.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "job-list";
+    const max = Math.max(1, ...(sec.rows || []).map((r) => r.bar ?? 0));
+    let html = "";
+    for (const r of sec.rows || []) {
+      if (r.section) { html += `</ul><h5 class="subhead">${esc(r.section)}</h5><ul class="job-list">`; continue; }
+      html += `<li${r.muted ? ` class="muted"` : ""}>
+        <span class="jn">${esc(r.label)}</span>
+        <span class="jm">${esc(r.meta || "")}</span>
+        ${r.bar != null ? `<span class="jbar"><div style="width:${((r.bar / max) * 100).toFixed(1)}%"></div></span>` : ""}
+      </li>`;
+    }
+    body.innerHTML = `<ul class="job-list">${html}</ul>`;
+  }
+}
+
+function badgeColors(sec) {
+  const seen = new Map();
+  (function scan(items) {
+    for (const i of items || []) {
+      if (i.badge && !seen.has(i.badge)) seen.set(i.badge, BADGE_SLOTS[seen.size % BADGE_SLOTS.length]);
+      scan(i.children);
+    }
+  })(sec.items);
+  return (b) => seen.get(b) || "--c-other";
+}
+function escBadges(s) { return esc(s); }
+
+function renderBarlist(sec, body) {
+  const series = sec.series || [];
+  body.innerHTML =
+    `<div class="chart-legend">${series.map((s, i) =>
+      `<span class="li"><span class="sw" style="background:var(${SLOTS[i % SLOTS.length]})"></span>${esc(s.label)}</span>`).join("")}
+      ${sec.note ? `<span class="li" style="color:var(--ink-3)">${esc(sec.note)}</span>` : ""}</div>
+     <div class="sortbar"><button data-k="value" class="on">by value</button><button data-k="name">a–z</button></div>
+     <div class="rbar-list"></div>`;
+  const list = body.querySelector(".rbar-list");
+  const total = (r) => series.reduce((s, sr) => s + (r.values[sr.k] || 0), 0);
+  let sortKey = "value";
+  const draw = () => {
+    const rows = [...(sec.rows || [])];
+    if (sortKey === "value") rows.sort((a, b) => total(b) - total(a));
+    else rows.sort((a, b) => a.label.localeCompare(b.label));
+    const max = Math.max(1, ...rows.map(total));
+    list.innerHTML = rows.map((r) => {
+      const segs = series.map((sr, i) => {
+        const v = r.values[sr.k] || 0;
+        return v ? `<div style="width:${((v / max) * 100).toFixed(2)}%;background:var(${SLOTS[i % SLOTS.length]})"></div>` : "";
+      }).join("");
+      return `<div class="rbar" data-label="${esc(r.label)}">
+        <div class="rn">${esc(r.label)}</div>
+        <div class="track">${segs}</div>
+        <div class="vals"><b>${total(r)}</b>${r.meta ? ` · ${esc(r.meta)}` : ""}</div>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".rbar").forEach((el) => {
+      const r = (sec.rows || []).find((x) => x.label === el.dataset.label);
+      if (r?.tip) tipify(el, esc(r.tip));
+    });
+  };
+  body.querySelector(".sortbar").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    sortKey = b.dataset.k;
+    body.querySelectorAll(".sortbar button").forEach((x) => x.classList.toggle("on", x === b));
+    draw();
+  });
+  draw();
+}
+
+const facetHost = $("#facetViews");
+for (const f of EMBED.facets) {
+  const sec = document.createElement("section");
+  sec.className = "view";
+  sec.id = "view-facet-" + f.id;
+  sec.innerHTML = `<div class="view-head"><h2>${esc(f.title)}${f.headline ? ` — <span style="font-weight:400">${esc(f.headline)}</span>` : ""}</h2>
+    ${f.sub ? `<div class="sub">${esc(f.sub)}</div>` : ""}</div>`;
+  const grid = document.createElement("div");
+  grid.className = "facet-grid" + (f.columns === 2 ? " cols-2" : "");
+  sec.appendChild(grid);
+  for (const s of f.sections || []) renderSection(s, grid);
+  facetHost.appendChild(sec);
+}
+
+/* ---------- boot ---------- */
+let resizeT;
+addEventListener("resize", () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    if ($("#view-arch").classList.contains("active")) renderGraph();
+    if ($("#view-files").classList.contains("active")) renderTreemap();
+  }, 150);
+});
+renderArchPanel(null);
+const initial = location.hash.replace("#", "");
+switchTab(tabDefs.some((t) => t.id === initial) ? initial : "arch");
+</script>
+</body>
+</html>

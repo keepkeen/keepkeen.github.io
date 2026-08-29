@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codebase Map</title>
+<style>
+/* ============ theme (validated palette — see dataviz references) ============ */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-2: #f2f1ed;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --hairline: #e1e0d9;
+  --baseline: #c3c2b7;
+  --ring: rgba(11,11,11,0.10);
+  --grid-dot: #dddcd4;
+  --slot-1: #2a78d6; --slot-2: #1baf7a; --slot-3: #eda100; --slot-4: #008300;
+  --slot-5: #4a3aa7; --slot-6: #e34948; --slot-7: #e87ba4; --slot-8: #eb6834;
+  --c-other: #a5a39b;
+  --hatch: rgba(11,11,11,0.20);
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+    --hairline: #2c2c2a;
+    --baseline: #383835;
+    --ring: rgba(255,255,255,0.10);
+    --grid-dot: #262624;
+    --slot-1: #3987e5; --slot-2: #199e70; --slot-3: #c98500; --slot-4: #008300;
+    --slot-5: #9085e9; --slot-6: #e66767; --slot-7: #d55181; --slot-8: #d95926;
+    --c-other: #6b6a64;
+    --hatch: rgba(255,255,255,0.22);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --ink-1: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --hairline: #2c2c2a;
+  --baseline: #383835;
+  --ring: rgba(255,255,255,0.10);
+  --grid-dot: #262624;
+  --slot-1: #3987e5; --slot-2: #199e70; --slot-3: #c98500; --slot-4: #008300;
+  --slot-5: #9085e9; --slot-6: #e66767; --slot-7: #d55181; --slot-8: #d95926;
+  --c-other: #6b6a64;
+  --hatch: rgba(255,255,255,0.22);
+}
+
+/* ============ base ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--page);
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1480px; margin: 0 auto; padding: 0 28px; }
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+/* ============ header ============ */
+header.site { border-bottom: 1px solid var(--hairline); background: var(--surface-1); position: relative; }
+header.site::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: .5;
+  pointer-events: none;
+}
+.masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 30px 0 22px; position: relative; z-index: 1; flex-wrap: wrap; }
+.masthead h1 { font-family: var(--font-mono); font-size: clamp(24px, 3.4vw, 38px); font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; margin-top: 8px; }
+.masthead h1 .dim { color: var(--ink-3); font-weight: 450; }
+.meta-right { text-align: right; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.meta-right .snapshot { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.theme-btn { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--hairline); border-radius: 999px; padding: 4px 12px; color: var(--ink-2); background: var(--surface-1); }
+.theme-btn:hover { border-color: var(--baseline); color: var(--ink-1); }
+
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); position: relative; z-index: 1; border-top: 1px solid var(--hairline); }
+.stat { padding: 14px 18px 16px 18px; border-left: 1px solid var(--hairline); }
+.stat:first-child { border-left: none; padding-left: 0; }
+.stat .v { font-family: var(--font-mono); font-size: 26px; font-weight: 620; letter-spacing: -0.02em; line-height: 1.15; }
+.stat .l { font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+.stat .s { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 1px; }
+@media (max-width: 980px) { .stats { grid-template-columns: repeat(3, 1fr); } .stat:nth-child(4) { border-left: none; padding-left: 0; } }
+
+nav.tabs { display: flex; gap: 2px; position: relative; z-index: 1; overflow-x: auto; }
+nav.tabs button { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); padding: 12px 16px 10px; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs button:hover { color: var(--ink-1); }
+nav.tabs button[aria-selected="true"] { color: var(--ink-1); border-bottom-color: var(--ink-1); }
+
+/* ============ views ============ */
+main { padding: 26px 0 60px; }
+section.view { display: none; }
+section.view.active { display: block; animation: viewin .25s ease; }
+@keyframes viewin { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.view-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.view-head h2 { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
+.view-head .sub { font-size: 12.5px; color: var(--ink-2); }
+
+/* ============ architecture ============ */
+.arch-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .arch-layout { grid-template-columns: 1fr; } }
+.graph-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; overflow-x: auto; }
+#graph { position: relative; min-width: 860px; background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px); background-size: 22px 22px; }
+#graph svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#graph svg path { fill: none; stroke: var(--baseline); stroke-width: 1; opacity: .28; transition: opacity .15s, stroke .15s; }
+#graph.focused svg path { opacity: .05; }
+#graph.focused svg path.is-imports { stroke: var(--slot-1); stroke-width: 1.6; opacity: .95; }
+#graph.focused svg path.is-imported { stroke: var(--slot-8); stroke-width: 1.6; opacity: .95; }
+.gnode { position: absolute; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 7px; box-shadow: 0 1px 2px var(--ring); padding: 6px 10px 6px 13px; cursor: pointer; transition: opacity .15s, border-color .15s, transform .1s; user-select: none; }
+.gnode::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 7px 0 0 7px; background: var(--kc, var(--c-other)); }
+.gnode.testpkg { border-style: dashed; }
+.gnode.testpkg::before { background: var(--c-other); }
+.gnode:hover { border-color: var(--baseline); transform: translateY(-1px); }
+.gnode.selected { border-color: var(--ink-1); box-shadow: 0 0 0 1px var(--ink-1), 0 2px 8px var(--ring); }
+#graph.focused .gnode.dimmed { opacity: .3; }
+.gnode .gname { display: block; font-family: var(--font-mono); font-size: 12.5px; font-weight: 620; line-height: 1.3; }
+.gnode .gmeta { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); line-height: 1.4; }
+.row-label { position: absolute; left: 10px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .8; user-select: none; }
+.graph-legend { display: flex; gap: 18px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--ink-2); position: sticky; left: 0; }
+.graph-legend .li { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
+.sw.line { height: 2px; border-radius: 1px; }
+.sw.dashed { border: 1px dashed var(--ink-3); background: transparent; height: 10px; }
+.tooling-strip { margin-top: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tooling-strip .chip { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 10px; background: var(--surface-1); cursor: default; }
+.tooling-strip .chip:hover { border-color: var(--baseline); color: var(--ink-1); }
+
+.panel { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 18px 18px 20px; position: sticky; top: 16px; max-height: calc(100vh - 40px); overflow-y: auto; }
+.panel h3 { font-family: var(--font-mono); font-size: 17px; font-weight: 650; margin: 3px 0 2px; overflow-wrap: anywhere; }
+.panel .badges { display: flex; gap: 6px; margin: 6px 0 10px; flex-wrap: wrap; }
+.badge { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--hairline); color: var(--ink-2); }
+.badge.kind { border-color: var(--kc); color: var(--kc); }
+.panel p.purpose { font-size: 13px; color: var(--ink-1); }
+.panel .runtime { font-size: 12px; color: var(--ink-2); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--hairline); }
+.panel .pstats { display: flex; margin: 12px 0; border: 1px solid var(--hairline); border-radius: 8px; overflow: hidden; }
+.panel .pstats div { flex: 1; padding: 8px 10px; border-left: 1px solid var(--hairline); }
+.panel .pstats div:first-child { border-left: none; }
+.panel .pstats .v { font-family: var(--font-mono); font-size: 15px; font-weight: 620; }
+.panel .pstats .l { font-size: 9.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.panel h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 16px 0 6px; }
+.panel ul.areas { list-style: none; }
+.panel ul.areas li { font-size: 12px; color: var(--ink-2); padding: 5px 0 5px 14px; border-left: 2px solid var(--hairline); margin-bottom: 4px; }
+.panel ul.areas li b { font-family: var(--font-mono); font-weight: 620; color: var(--ink-1); font-size: 11.5px; }
+.dep-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.dep-chips button { font-family: var(--font-mono); font-size: 11px; padding: 2px 9px; border: 1px solid var(--hairline); border-radius: 999px; color: var(--ink-2); background: var(--surface-1); }
+.dep-chips button:hover { border-color: var(--slot-1); color: var(--slot-1); }
+.dep-chips.rev button:hover { border-color: var(--slot-8); color: var(--slot-8); }
+.explore-btn { margin-top: 16px; width: 100%; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 9px 12px; border-radius: 8px; background: var(--ink-1); color: var(--page); transition: transform .1s; }
+.explore-btn:hover { transform: translateY(-1px); }
+.flow-steps { list-style: none; counter-reset: fs; }
+.flow-steps li { counter-increment: fs; position: relative; padding: 6px 0 6px 34px; font-size: 12.5px; color: var(--ink-2); }
+.flow-steps li b { color: var(--ink-1); font-family: var(--font-mono); font-size: 12px; }
+.flow-steps li::before { content: counter(fs, decimal-leading-zero); position: absolute; left: 0; top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); border: 1px solid var(--hairline); border-radius: 4px; padding: 0 4px; }
+details.story { margin-top: 14px; }
+details.story summary { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); cursor: pointer; text-transform: uppercase; letter-spacing: .1em; }
+details.story p { font-size: 12px; color: var(--ink-2); margin-top: 8px; }
+
+/* ============ files / treemap ============ */
+.files-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.files-toolbar select { font-family: var(--font-mono); font-size: 12.5px; background: var(--surface-1); color: var(--ink-1); border: 1px solid var(--hairline); border-radius: 7px; padding: 6px 10px; max-width: 320px; }
+.crumbs { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; }
+.crumbs button { color: var(--slot-1); padding: 2px 4px; border-radius: 4px; }
+.crumbs button:hover { background: var(--surface-2); }
+.crumbs .sep { color: var(--ink-3); }
+.crumbs .here { color: var(--ink-1); font-weight: 620; padding: 2px 4px; }
+.type-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto; font-size: 11px; color: var(--ink-2); }
+.type-legend .li { display: inline-flex; align-items: center; gap: 5px; cursor: default; }
+.type-legend .li:hover { color: var(--ink-1); }
+.files-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+@media (max-width: 1100px) { .files-layout { grid-template-columns: 1fr; } }
+#treemap { position: relative; height: clamp(480px, calc(100vh - 320px), 860px); background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; }
+.tm-cell { position: absolute; border-radius: 3px; overflow: hidden; }
+.tm-file.hatched { background-image: repeating-linear-gradient(45deg, var(--hatch) 0 2px, transparent 2px 7px); }
+.tm-file .lbl, .tm-dircell .lbl {
+  position: absolute; top: 2px; left: 3px; right: 3px;
+  font-family: var(--font-mono); font-size: 10px; line-height: 1.35;
+  color: var(--ink-1);
+  background: color-mix(in srgb, var(--surface-1) 82%, transparent);
+  border-radius: 3px; padding: 0 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  width: fit-content; max-width: calc(100% - 6px);
+  pointer-events: none;
+}
+.tm-dircell { background: var(--surface-2); border: 1px solid var(--baseline); cursor: pointer; }
+.tm-dircell:hover { border-color: var(--ink-2); }
+.tm-group { position: absolute; border: 1px solid var(--baseline); border-radius: 4px; background: var(--surface-1); }
+.tm-group > .hd { position: absolute; top: 0; left: 0; right: 0; height: 17px; font-family: var(--font-mono); font-size: 10px; font-weight: 620; line-height: 17px; padding: 0 5px; color: var(--ink-2); background: var(--surface-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.tm-group > .hd:hover { color: var(--ink-1); background: color-mix(in srgb, var(--surface-2) 60%, var(--surface-1)); }
+.tm-group > .body { position: absolute; top: 17px; left: 0; right: 0; bottom: 0; }
+#treemap.type-focus .tm-file:not(.type-hit) { opacity: .18; }
+.tm-hint { position: absolute; inset: auto 8px 6px auto; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); pointer-events: none; }
+.side-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 16px 16px 18px; }
+.side-card + .side-card { margin-top: 14px; }
+.side-card h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.side-card .bigpath { font-family: var(--font-mono); font-size: 12.5px; font-weight: 620; overflow-wrap: anywhere; margin-bottom: 8px; }
+.kv { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); padding: 3px 0; }
+.kv b { font-family: var(--font-mono); color: var(--ink-1); font-weight: 620; }
+.typebar { display: flex; height: 12px; gap: 2px; border-radius: 3px; overflow: hidden; margin: 8px 0; }
+.typebar div { border-radius: 2px; min-width: 2px; }
+.typerow { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--ink-2); padding: 2px 0; }
+.typerow .sw { width: 10px; height: 10px; border-radius: 2px; }
+.typerow b { font-family: var(--font-mono); color: var(--ink-1); margin-left: auto; font-weight: 600; }
+.topfiles { list-style: none; }
+.topfiles li { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-top: 1px dashed var(--hairline); cursor: pointer; }
+.topfiles li:first-child { border-top: none; }
+.topfiles li:hover .fp { color: var(--slot-1); }
+.topfiles .fp { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); overflow-wrap: anywhere; }
+.topfiles .fl { font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); font-weight: 620; margin-left: auto; white-space: nowrap; }
+
+/* ============ facets ============ */
+.facet-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.facet-grid.cols-2 { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); }
+@media (max-width: 1000px) { .facet-grid.cols-2 { grid-template-columns: 1fr; } }
+.facet-card { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 16px 18px 18px; }
+.facet-card > h3 { font-family: var(--font-mono); font-size: 13px; font-weight: 650; margin-bottom: 2px; }
+.facet-card > .sub { font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+.tiles-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 900px; }
+@media (max-width: 800px) { .tiles-row { grid-template-columns: repeat(2, 1fr); } }
+.tile { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 14px 16px; }
+.tile .v { font-family: var(--font-mono); font-size: 28px; font-weight: 640; letter-spacing: -0.02em; }
+.tile .l { font-size: 11.5px; color: var(--ink-2); }
+.tile .s { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-2); margin: 0 0 12px; }
+.chart-legend .li { display: inline-flex; align-items: center; gap: 5px; }
+.sortbar { display: flex; gap: 4px; margin-bottom: 10px; }
+.sortbar button { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--hairline); color: var(--ink-3); }
+.sortbar button.on { border-color: var(--ink-1); color: var(--ink-1); }
+.rbar-list { padding: 2px 0; }
+.rbar { display: grid; grid-template-columns: 180px minmax(0,1fr) minmax(90px,auto); align-items: center; gap: 12px; padding: 5px 0; border-top: 1px dashed var(--hairline); }
+.rbar:first-child { border-top: none; }
+.rbar:hover { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+.rbar .rn { font-family: var(--font-mono); font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rbar .track { display: flex; gap: 2px; height: 13px; }
+.rbar .track div { border-radius: 3px; min-width: 3px; }
+.rbar .vals { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); text-align: right; white-space: nowrap; }
+.rbar .vals b { color: var(--ink-1); font-weight: 620; }
+.group-cols { columns: 3 300px; column-gap: 14px; }
+.db-group { break-inside: avoid; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 13px 15px 14px; margin-bottom: 14px; }
+.db-group.accent { border-left: 3px solid var(--slot-1); }
+.db-group h4 { font-family: var(--font-mono); font-size: 11px; font-weight: 650; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.db-group h4 .cnt { color: var(--ink-3); font-weight: 400; font-size: 10px; }
+.tchips { display: flex; flex-wrap: wrap; gap: 4px; }
+.tchips span { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); background: var(--surface-2); border-radius: 5px; padding: 2px 7px; }
+.rt-tree details { margin-left: 14px; }
+.rt-tree > details { margin-left: 0; }
+.rt-tree summary { font-family: var(--font-mono); font-size: 12px; cursor: pointer; padding: 2px 0; color: var(--ink-1); list-style: none; display: flex; align-items: center; gap: 6px; }
+.rt-tree summary::before { content: "▸"; font-size: 9px; color: var(--ink-3); transition: transform .12s; }
+.rt-tree details[open] > summary::before { transform: rotate(90deg); }
+.rt-leaf { display: flex; align-items: center; gap: 7px; padding: 2px 0 2px 15px; margin-left: 14px; }
+.rt-tree > .rt-leaf { margin-left: 0; padding-left: 0; }
+.rt-badge { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .08em; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--bc, var(--ink-3)); color: var(--bc, var(--ink-3)); text-transform: uppercase; }
+.rt-leaf .p { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.job-list { list-style: none; }
+.job-list li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px dashed var(--hairline); }
+.job-list li:first-child { border-top: none; }
+.job-list .jn { font-family: var(--font-mono); font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.job-list .jm { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+.job-list .jbar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.job-list .jbar div { height: 100%; background: var(--slot-5); border-radius: 2px; }
+.job-list li.muted .jn { color: var(--ink-3); font-weight: 450; }
+.job-list li.muted .jbar div { background: var(--c-other); }
+h5.subhead { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 16px 0 6px; }
+
+#tip { position: fixed; z-index: 50; display: none; max-width: 380px; background: var(--ink-1); color: var(--page); font-family: var(--font-mono); font-size: 11px; line-height: 1.5; padding: 7px 10px; border-radius: 7px; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,.25); overflow-wrap: anywhere; }
+#tip .t2 { opacity: .65; }
+footer.site { border-top: 1px solid var(--hairline); padding: 18px 0 30px; margin-top: 20px; }
+footer.site p { font-size: 11px; color: var(--ink-3); max-width: 900px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="masthead">
+      <div>
+        <div class="kicker" id="kicker"></div>
+        <h1 id="pageTitle"></h1>
+      </div>
+      <div class="meta-right">
+        <button class="theme-btn" id="themeBtn">theme: auto</button>
+        <div class="snapshot" id="snapshot"></div>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="view-arch">
+    <div class="view-head">
+      <h2>Module dependency graph</h2>
+      <div class="sub">Hover a module to trace its imports · click for details · layers = dependency depth (a module only imports downward)</div>
+    </div>
+    <div class="arch-layout">
+      <div>
+        <div class="graph-card">
+          <div id="graph"></div>
+          <div class="graph-legend" id="graphLegend"></div>
+        </div>
+        <div class="tooling-strip" id="stripRow" style="display:none"></div>
+      </div>
+      <aside class="panel" id="archPanel"></aside>
+    </div>
+  </section>
+
+  <section class="view" id="view-files">
+    <div class="view-head">
+      <h2>File explorer — lines of code treemap</h2>
+      <div class="sub">Cell area = lines of code · click a directory to zoom in · breadcrumb to zoom out</div>
+    </div>
+    <div class="files-toolbar">
+      <select id="pkgSelect"></select>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="type-legend" id="typeLegend"></div>
+    </div>
+    <div class="files-layout">
+      <div id="treemap"></div>
+      <aside>
+        <div class="side-card" id="tmInfo"></div>
+        <div class="side-card">
+          <h4>Largest files in view</h4>
+          <ul class="topfiles" id="topFiles"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="facetViews"></div>
+</main>
+
+<footer class="site"><div class="wrap"><p id="footNote"></p></div></footer>
+<div id="tip"></div>
+
+<script>
+const EMBED = {"title":"Claude Code 2.1.88","subtitle":"source-map recovered release artifact · implementation map","generated":"2026-08-29","commit":"2ca5dda","commitDate":"2026-04-01","branch":"main","topKinds":["app","ui"],"stripKinds":[],"scan":{"repoName":"Claude Code 2.1.88","since":"180 days ago","modules":[{"id":"src/entrypoints","dir":"entrypoints","kind":"app","name":"CLI entrypoints","loc":4052,"files":8,"commits":1,"deps":[],"tree":{"n":"src/entrypoints","c":[{"n":"sdk","c":[{"n":"coreSchemas.ts","v":1889,"e":"ts"},{"n":"controlSchemas.ts","v":663,"e":"ts"},{"n":"coreTypes.ts","v":62,"e":"ts"}],"v":2614,"f":3},{"n":"agentSdkTypes.ts","v":443,"e":"ts"},{"n":"init.ts","v":340,"e":"ts"},{"n":"cli.tsx","v":303,"e":"tsx"},{"n":"mcp.ts","v":196,"e":"ts"},{"n":"sandboxTypes.ts","v":156,"e":"ts"}],"v":4052,"f":8}},{"id":"src/cli","dir":"cli","kind":"app","name":"headless and stream-json","loc":12355,"files":19,"commits":1,"deps":[],"tree":{"n":"src/cli","c":[{"n":"print.ts","v":5594,"e":"ts"},{"n":"transports","c":[{"n":"ccrClient.ts","v":998,"e":"ts"},{"n":"WebSocketTransport.ts","v":800,"e":"ts"},{"n":"SSETransport.ts","v":711,"e":"ts"},{"n":"HybridTransport.ts","v":282,"e":"ts"},{"n":"SerialBatchEventUploader.ts","v":275,"e":"ts"},{"n":"WorkerStateUploader.ts","v":131,"e":"ts"},{"n":"transportUtils.ts","v":45,"e":"ts"}],"v":3242,"f":7},{"n":"handlers","c":[{"n":"plugins.ts","v":878,"e":"ts"},{"n":"mcp.tsx","v":362,"e":"tsx"},{"n":"auth.ts","v":330,"e":"ts"},{"n":"autoMode.ts","v":170,"e":"ts"},{"n":"util.tsx","v":110,"e":"tsx"},{"n":"agents.ts","v":70,"e":"ts"}],"v":1920,"f":6},{"n":"structuredIO.ts","v":859,"e":"ts"},{"n":"update.ts","v":422,"e":"ts"},{"n":"remoteIO.ts","v":255,"e":"ts"},{"n":"ndjsonSafeStringify.ts","v":32,"e":"ts"},{"n":"exit.ts","v":31,"e":"ts"}],"v":12355,"f":19}},{"id":"src/screens","dir":"screens","kind":"ui","name":"React/Ink screens","loc":5980,"files":3,"commits":1,"deps":[],"tree":{"n":"src/screens","c":[{"n":"REPL.tsx","v":5006,"e":"tsx"},{"n":"Doctor.tsx","v":575,"e":"tsx"},{"n":"ResumeConversation.tsx","v":399,"e":"tsx"}],"v":5980,"f":3}},{"id":"src/components","dir":"components","kind":"ui","name":"UI components","loc":81892,"files":389,"commits":1,"deps":[],"tree":{"n":"src/components","c":[{"n":"permissions","c":[{"n":"rules","c":[{"n":"PermissionRuleList.tsx","v":1179,"e":"tsx"},{"n":"AddWorkspaceDirectory.tsx","v":340,"e":"tsx"},{"n":"RecentDenialsTab.tsx","v":207,"e":"tsx"},{"n":"AddPermissionRules.tsx","v":180,"e":"tsx"},{"n":"WorkspaceTab.tsx","v":150,"e":"tsx"},{"n":"PermissionRuleInput.tsx","v":138,"e":"tsx"},{"n":"RemoveWorkspaceDirectory.tsx","v":110,"e":"tsx"},{"n":"PermissionRuleDescription.tsx","v":76,"e":"tsx"}],"v":2380,"f":8},{"n":"AskUserQuestionPermissionRequest","c":[{"n":"AskUserQuestionPermissionRequest.tsx","v":645,"e":"tsx"},{"n":"QuestionView.tsx","v":465,"e":"tsx"},{"n":"PreviewQuestionView.tsx","v":328,"e":"tsx"},{"n":"PreviewBox.tsx","v":229,"e":"tsx"},{"n":"use-multiple-choice-state.ts","v":179,"e":"ts"},{"n":"QuestionNavigationBar.tsx","v":178,"e":"tsx"},{"n":"SubmitQuestionsView.tsx","v":144,"e":"tsx"}],"v":2168,"f":7},{"n":"FilePermissionDialog","c":[{"n":"useFilePermissionDialog.ts","v":212,"e":"ts"},{"n":"FilePermissionDialog.tsx","v":204,"e":"tsx"},{"n":"usePermissionHandler.ts","v":185,"e":"ts"},{"n":"permissionOptions.tsx","v":177,"e":"tsx"},{"n":"ideDiffConfig.ts","v":42,"e":"ts"}],"v":820,"f":5},{"n":"ExitPlanModePermissionRequest","c":[{"n":"ExitPlanModePermissionRequest.tsx","v":768,"e":"tsx"}],"v":768,"f":1},{"n":"BashPermissionRequest","c":[{"n":"BashPermissionRequest.tsx","v":482,"e":"tsx"},{"n":"bashToolUseOptions.tsx","v":147,"e":"tsx"}],"v":629,"f":2},{"n":"PermissionDecisionDebugInfo.tsx","v":460,"e":"tsx"},{"n":"ComputerUseApproval","c":[{"n":"ComputerUseApproval.tsx","v":441,"e":"tsx"}],"v":441,"f":1},{"n":"NotebookEditPermissionRequest","c":[{"n":"NotebookEditToolDiff.tsx","v":235,"e":"tsx"},{"n":"NotebookEditPermissionRequest.tsx","v":166,"e":"tsx"}],"v":401,"f":2},{"n":"SkillPermissionRequest","c":[{"n":"SkillPermissionRequest.tsx","v":369,"e":"tsx"}],"v":369,"f":1},{"n":"PermissionPrompt.tsx","v":336,"e":"tsx"},{"n":"FallbackPermissionRequest.tsx","v":333,"e":"tsx"},{"n":"PowerShellPermissionRequest","c":[{"n":"PowerShellPermissionRequest.tsx","v":235,"e":"tsx"},{"n":"powershellToolUseOptions.tsx","v":91,"e":"tsx"}],"v":326,"f":2},{"n":"PermissionExplanation.tsx","v":272,"e":"tsx"},{"n":"WebFetchPermissionRequest","c":[{"n":"WebFetchPermissionRequest.tsx","v":258,"e":"tsx"}],"v":258,"f":1},{"n":"FileWritePermissionRequest","c":[{"n":"FileWritePermissionRequest.tsx","v":161,"e":"tsx"},{"n":"FileWriteToolDiff.tsx","v":89,"e":"tsx"}],"v":250,"f":2},{"n":"SedEditPermissionRequest","c":[{"n":"SedEditPermissionRequest.tsx","v":230,"e":"tsx"}],"v":230,"f":1},{"n":"PermissionRequest.tsx","v":217,"e":"tsx"},{"n":"hooks.ts","v":209,"e":"ts"},{"n":"FileEditPermissionRequest","c":[{"n":"FileEditPermissionRequest.tsx","v":182,"e":"tsx"}],"v":182,"f":1},{"n":"shellPermissionHelpers.tsx","v":164,"e":"tsx"},{"n":"SandboxPermissionRequest.tsx","v":163,"e":"tsx"},{"n":"useShellPermissionFeedback.ts","v":148,"e":"ts"},{"n":"EnterPlanModePermissionRequest","c":[{"n":"EnterPlanModePermissionRequest.tsx","v":122,"e":"tsx"}],"v":122,"f":1},{"n":"PermissionRuleExplanation.tsx","v":121,"e":"tsx"},{"n":"FilesystemPermissionRequest","c":[{"n":"FilesystemPermissionRequest.tsx","v":115,"e":"tsx"}],"v":115,"f":1},{"n":"WorkerPendingPermission.tsx","v":105,"e":"tsx"},{"n":"PermissionDialog.tsx","v":72,"e":"tsx"},{"n":"PermissionRequestTitle.tsx","v":66,"e":"tsx"},{"n":"WorkerBadge.tsx","v":49,"e":"tsx"},{"n":"utils.ts","v":25,"e":"ts"}],"v":12199,"f":51},{"n":"messages","c":[{"n":"SystemTextMessage.tsx","v":827,"e":"tsx"},{"n":"AttachmentMessage.tsx","v":536,"e":"tsx"},{"n":"UserToolResultMessage","c":[{"n":"UserToolResultMessage.tsx","v":106,"e":"tsx"},{"n":"UserToolSuccessMessage.tsx","v":104,"e":"tsx"},{"n":"UserToolErrorMessage.tsx","v":103,"e":"tsx"},{"n":"UserToolRejectMessage.tsx","v":95,"e":"tsx"},{"n":"utils.tsx","v":44,"e":"tsx"},{"n":"RejectedPlanMessage.tsx","v":31,"e":"tsx"},{"n":"RejectedToolUseMessage.tsx","v":16,"e":"tsx"},{"n":"UserToolCanceledMessage.tsx","v":16,"e":"tsx"}],"v":515,"f":8},{"n":"CollapsedReadSearchContent.tsx","v":484,"e":"tsx"},{"n":"AssistantToolUseMessage.tsx","v":368,"e":"tsx"},{"n":"UserTextMessage.tsx","v":275,"e":"tsx"},{"n":"AssistantTextMessage.tsx","v":270,"e":"tsx"},{"n":"PlanApprovalMessage.tsx","v":222,"e":"tsx"},{"n":"UserTeammateMessage.tsx","v":206,"e":"tsx"},{"n":"UserLocalCommandOutputMessage.tsx","v":167,"e":"tsx"},{"n":"HighlightedThinkingText.tsx","v":162,"e":"tsx"},{"n":"RateLimitMessage.tsx","v":161,"e":"tsx"},{"n":"AdvisorMessage.tsx","v":158,"e":"tsx"},{"n":"SystemAPIErrorMessage.tsx","v":141,"e":"tsx"},{"n":"teamMemCollapsed.tsx","v":140,"e":"tsx"},{"n":"UserChannelMessage.tsx","v":137,"e":"tsx"},{"n":"ShutdownMessage.tsx","v":132,"e":"tsx"},{"n":"UserResourceUpdateMessage.tsx","v":121,"e":"tsx"},{"n":"HookProgressMessage.tsx","v":116,"e":"tsx"},{"n":"UserCommandMessage.tsx","v":108,"e":"tsx"},{"n":"AssistantThinkingMessage.tsx","v":86,"e":"tsx"},{"n":"UserAgentNotificationMessage.tsx","v":83,"e":"tsx"},{"n":"UserPromptMessage.tsx","v":80,"e":"tsx"},{"n":"TaskAssignmentMessage.tsx","v":76,"e":"tsx"},{"n":"UserMemoryInputMessage.tsx","v":75,"e":"tsx"},{"n":"nullRenderingAttachments.ts","v":70,"e":"ts"},{"n":"UserImageMessage.tsx","v":59,"e":"tsx"},{"n":"GroupedToolUseContent.tsx","v":58,"e":"tsx"},{"n":"UserBashInputMessage.tsx","v":58,"e":"tsx"},{"n":"UserBashOutputMessage.tsx","v":54,"e":"tsx"},{"n":"UserPlanMessage.tsx","v":42,"e":"tsx"},{"n":"AssistantRedactedThinkingMessage.tsx","v":31,"e":"tsx"},{"n":"teamMemSaved.ts","v":19,"e":"ts"},{"n":"CompactBoundaryMessage.tsx","v":18,"e":"tsx"}],"v":6055,"f":41},{"n":"PromptInput","c":[{"n":"PromptInput.tsx","v":2339,"e":"tsx"},{"n":"PromptInputFooterLeftSide.tsx","v":517,"e":"tsx"},{"n":"PromptInputHelpMenu.tsx","v":358,"e":"tsx"},{"n":"Notifications.tsx","v":332,"e":"tsx"},{"n":"PromptInputFooterSuggestions.tsx","v":293,"e":"tsx"},{"n":"PromptInputFooter.tsx","v":191,"e":"tsx"},{"n":"useSwarmBanner.ts","v":155,"e":"ts"},{"n":"ShimmeredInput.tsx","v":143,"e":"tsx"},{"n":"VoiceIndicator.tsx","v":137,"e":"tsx"},{"n":"PromptInputQueuedCommands.tsx","v":117,"e":"tsx"},{"n":"PromptInputModeIndicator.tsx","v":93,"e":"tsx"},{"n":"inputPaste.ts","v":90,"e":"ts"},{"n":"usePromptInputPlaceholder.ts","v":76,"e":"ts"},{"n":"SandboxPromptFooterHint.tsx","v":64,"e":"tsx"},{"n":"utils.ts","v":60,"e":"ts"},{"n":"useMaybeTruncateInput.ts","v":58,"e":"ts"},{"n":"HistorySearchInput.tsx","v":51,"e":"tsx"},{"n":"inputModes.ts","v":33,"e":"ts"},{"n":"useShowFastIconHint.ts","v":31,"e":"ts"},{"n":"PromptInputStashNotice.tsx","v":25,"e":"tsx"},{"n":"IssueFlagBanner.tsx","v":12,"e":"tsx"}],"v":5175,"f":21},{"n":"agents","c":[{"n":"new-agent-creation","c":[{"n":"wizard-steps","c":[{"n":"ConfirmStep.tsx","v":378,"e":"tsx"},{"n":"GenerateStep.tsx","v":143,"e":"tsx"},{"n":"PromptStep.tsx","v":128,"e":"tsx"},{"n":"DescriptionStep.tsx","v":123,"e":"tsx"},{"n":"MemoryStep.tsx","v":113,"e":"tsx"},{"n":"TypeStep.tsx","v":103,"e":"tsx"},{"n":"ColorStep.tsx","v":84,"e":"tsx"},{"n":"LocationStep.tsx","v":80,"e":"tsx"},{"n":"MethodStep.tsx","v":80,"e":"tsx"},{"n":"ConfirmStepWrapper.tsx","v":74,"e":"tsx"},{"n":"ToolsStep.tsx","v":61,"e":"tsx"},{"n":"ModelStep.tsx","v":52,"e":"tsx"}],"v":1419,"f":12},{"n":"CreateAgentWizard.tsx","v":97,"e":"tsx"}],"v":1516,"f":13},{"n":"AgentsMenu.tsx","v":800,"e":"tsx"},{"n":"ToolSelector.tsx","v":562,"e":"tsx"},{"n":"AgentsList.tsx","v":440,"e":"tsx"},{"n":"agentFileUtils.ts","v":272,"e":"ts"},{"n":"AgentDetail.tsx","v":220,"e":"tsx"},{"n":"generateAgent.ts","v":197,"e":"ts"},{"n":"AgentEditor.tsx","v":178,"e":"tsx"},{"n":"ColorPicker.tsx","v":112,"e":"tsx"},{"n":"validateAgent.ts","v":109,"e":"ts"},{"n":"ModelSelector.tsx","v":68,"e":"tsx"},{"n":"types.ts","v":27,"e":"ts"},{"n":"AgentNavigationFooter.tsx","v":26,"e":"tsx"},{"n":"utils.ts","v":18,"e":"ts"}],"v":4545,"f":26},{"n":"tasks","c":[{"n":"RemoteSessionDetailDialog.tsx","v":904,"e":"tsx"},{"n":"BackgroundTasksDialog.tsx","v":652,"e":"tsx"},{"n":"BackgroundTaskStatus.tsx","v":429,"e":"tsx"},{"n":"ShellDetailDialog.tsx","v":404,"e":"tsx"},{"n":"BackgroundTask.tsx","v":345,"e":"tsx"},{"n":"InProcessTeammateDetailDialog.tsx","v":266,"e":"tsx"},{"n":"DreamDetailDialog.tsx","v":251,"e":"tsx"},{"n":"RemoteSessionProgress.tsx","v":243,"e":"tsx"},{"n":"AsyncAgentDetailDialog.tsx","v":229,"e":"tsx"},{"n":"taskStatusUtils.tsx","v":107,"e":"tsx"},{"n":"ShellProgress.tsx","v":87,"e":"tsx"},{"n":"renderToolActivity.tsx","v":33,"e":"tsx"}],"v":3950,"f":12},{"n":"mcp","c":[{"n":"ElicitationDialog.tsx","v":1169,"e":"tsx"},{"n":"MCPRemoteServerMenu.tsx","v":649,"e":"tsx"},{"n":"MCPListPanel.tsx","v":504,"e":"tsx"},{"n":"MCPSettings.tsx","v":398,"e":"tsx"},{"n":"McpParsingWarnings.tsx","v":213,"e":"tsx"},{"n":"MCPToolDetailView.tsx","v":212,"e":"tsx"},{"n":"MCPAgentServerMenu.tsx","v":183,"e":"tsx"},{"n":"MCPStdioServerMenu.tsx","v":177,"e":"tsx"},{"n":"MCPReconnect.tsx","v":167,"e":"tsx"},{"n":"MCPToolListView.tsx","v":141,"e":"tsx"},{"n":"CapabilitiesSection.tsx","v":61,"e":"tsx"},{"n":"utils","c":[{"n":"reconnectHelpers.tsx","v":49,"e":"tsx"}],"v":49,"f":1},{"n":"index.ts","v":9,"e":"ts"}],"v":3932,"f":13},{"n":"CustomSelect","c":[{"n":"select.tsx","v":690,"e":"tsx"},{"n":"use-select-navigation.ts","v":653,"e":"ts"},{"n":"select-input-option.tsx","v":488,"e":"tsx"},{"n":"use-multi-select-state.ts","v":414,"e":"ts"},{"n":"use-select-input.ts","v":287,"e":"ts"},{"n":"SelectMulti.tsx","v":213,"e":"tsx"},{"n":"use-select-state.ts","v":157,"e":"ts"},{"n":"select-option.tsx","v":68,"e":"tsx"},{"n":"option-map.ts","v":50,"e":"ts"},{"n":"index.ts","v":3,"e":"ts"}],"v":3023,"f":10},{"n":"Settings","c":[{"n":"Config.tsx","v":1822,"e":"tsx"},{"n":"Usage.tsx","v":377,"e":"tsx"},{"n":"Status.tsx","v":241,"e":"tsx"},{"n":"Settings.tsx","v":137,"e":"tsx"}],"v":2577,"f":4},{"n":"LogoV2","c":[{"n":"LogoV2.tsx","v":543,"e":"tsx"},{"n":"WelcomeV2.tsx","v":433,"e":"tsx"},{"n":"ChannelsNotice.tsx","v":266,"e":"tsx"},{"n":"Clawd.tsx","v":240,"e":"tsx"},{"n":"OverageCreditUpsell.tsx","v":166,"e":"tsx"},{"n":"CondensedLogo.tsx","v":161,"e":"tsx"},{"n":"AnimatedClawd.tsx","v":124,"e":"tsx"},{"n":"Feed.tsx","v":112,"e":"tsx"},{"n":"feedConfigs.tsx","v":92,"e":"tsx"},{"n":"GuestPassesUpsell.tsx","v":70,"e":"tsx"},{"n":"VoiceModeNotice.tsx","v":68,"e":"tsx"},{"n":"FeedColumn.tsx","v":59,"e":"tsx"},{"n":"EmergencyTip.tsx","v":58,"e":"tsx"},{"n":"Opus1mMergeNotice.tsx","v":55,"e":"tsx"},{"n":"AnimatedAsterisk.tsx","v":50,"e":"tsx"}],"v":2497,"f":15},{"n":"design-system","c":[{"n":"Tabs.tsx","v":340,"e":"tsx"},{"n":"FuzzyPicker.tsx","v":312,"e":"tsx"},{"n":"ListItem.tsx","v":244,"e":"tsx"},{"n":"ThemeProvider.tsx","v":170,"e":"tsx"},{"n":"ThemedBox.tsx","v":156,"e":"tsx"},{"n":"Divider.tsx","v":149,"e":"tsx"},{"n":"Dialog.tsx","v":138,"e":"tsx"},{"n":"ThemedText.tsx","v":124,"e":"tsx"},{"n":"StatusIcon.tsx","v":95,"e":"tsx"},{"n":"LoadingState.tsx","v":94,"e":"tsx"},{"n":"ProgressBar.tsx","v":86,"e":"tsx"},{"n":"KeyboardShortcutHint.tsx","v":81,"e":"tsx"},{"n":"Ratchet.tsx","v":80,"e":"tsx"},{"n":"Byline.tsx","v":77,"e":"tsx"},{"n":"Pane.tsx","v":77,"e":"tsx"},{"n":"color.ts","v":30,"e":"ts"}],"v":2253,"f":16},{"n":"LogSelector.tsx","v":1575,"e":"tsx"},{"n":"Spinner","c":[{"n":"GlimmerMessage.tsx","v":328,"e":"tsx"},{"n":"TeammateSpinnerTree.tsx","v":272,"e":"tsx"},{"n":"SpinnerAnimationRow.tsx","v":265,"e":"tsx"},{"n":"TeammateSpinnerLine.tsx","v":233,"e":"tsx"},{"n":"utils.ts","v":84,"e":"ts"},{"n":"SpinnerGlyph.tsx","v":80,"e":"tsx"},{"n":"useStalledAnimation.ts","v":75,"e":"ts"},{"n":"FlashingChar.tsx","v":61,"e":"tsx"},{"n":"ShimmerChar.tsx","v":36,"e":"tsx"},{"n":"useShimmerAnimation.ts","v":31,"e":"ts"},{"n":"index.ts","v":10,"e":"ts"},{"n":"teammateSelectHint.ts","v":1,"e":"ts"}],"v":1476,"f":12},{"n":"FeedbackSurvey","c":[{"n":"useFeedbackSurvey.tsx","v":296,"e":"tsx"},{"n":"useMemorySurvey.tsx","v":213,"e":"tsx"},{"n":"usePostCompactSurvey.tsx","v":206,"e":"tsx"},{"n":"FeedbackSurvey.tsx","v":174,"e":"tsx"},{"n":"submitTranscriptShare.ts","v":112,"e":"ts"},{"n":"FeedbackSurveyView.tsx","v":108,"e":"tsx"},{"n":"useSurveyState.tsx","v":100,"e":"tsx"},{"n":"TranscriptSharePrompt.tsx","v":88,"e":"tsx"},{"n":"useDebouncedDigitInput.ts","v":82,"e":"ts"}],"v":1379,"f":9},{"n":"hooks","c":[{"n":"HooksConfigMenu.tsx","v":578,"e":"tsx"},{"n":"ViewHookMode.tsx","v":199,"e":"tsx"},{"n":"SelectMatcherMode.tsx","v":144,"e":"tsx"},{"n":"SelectEventMode.tsx","v":127,"e":"tsx"},{"n":"SelectHookMode.tsx","v":112,"e":"tsx"},{"n":"PromptDialog.tsx","v":90,"e":"tsx"}],"v":1250,"f":6},{"n":"Stats.tsx","v":1228,"e":"tsx"},{"n":"VirtualMessageList.tsx","v":1082,"e":"tsx"},{"n":"ScrollKeybindingHandler.tsx","v":1012,"e":"tsx"},{"n":"diff","c":[{"n":"DiffDialog.tsx","v":383,"e":"tsx"},{"n":"DiffFileList.tsx","v":292,"e":"tsx"},{"n":"DiffDetailView.tsx","v":281,"e":"tsx"}],"v":956,"f":3},{"n":"Messages.tsx","v":834,"e":"tsx"},{"n":"MessageSelector.tsx","v":831,"e":"tsx"},{"n":"teams","c":[{"n":"TeamsDialog.tsx","v":715,"e":"tsx"},{"n":"TeamStatus.tsx","v":80,"e":"tsx"}],"v":795,"f":2},{"n":"sandbox","c":[{"n":"SandboxSettings.tsx","v":296,"e":"tsx"},{"n":"SandboxOverridesTab.tsx","v":193,"e":"tsx"},{"n":"SandboxDependenciesTab.tsx","v":120,"e":"tsx"},{"n":"SandboxDoctorSection.tsx","v":46,"e":"tsx"},{"n":"SandboxConfigTab.tsx","v":45,"e":"tsx"}],"v":700,"f":5},{"n":"FullscreenLayout.tsx","v":637,"e":"tsx"},{"n":"ConsoleOAuthFlow.tsx","v":631,"e":"tsx"},{"n":"Message.tsx","v":627,"e":"tsx"},{"n":"Feedback.tsx","v":592,"e":"tsx"},{"n":"Spinner.tsx","v":562,"e":"tsx"},{"n":"TrustDialog","c":[{"n":"TrustDialog.tsx","v":290,"e":"tsx"},{"n":"utils.ts","v":245,"e":"ts"}],"v":535,"f":2},{"n":"StructuredDiff","c":[{"n":"Fallback.tsx","v":487,"e":"tsx"},{"n":"colorDiff.ts","v":37,"e":"ts"}],"v":524,"f":2},{"n":"ui","c":[{"n":"TreeSelect.tsx","v":397,"e":"tsx"},{"n":"OrderedList.tsx","v":71,"e":"tsx"},{"n":"OrderedListItem.tsx","v":45,"e":"tsx"}],"v":513,"f":3},{"n":"ContextVisualization.tsx","v":489,"e":"tsx"},{"n":"memory","c":[{"n":"MemoryFileSelector.tsx","v":438,"e":"tsx"},{"n":"MemoryUpdateNotification.tsx","v":45,"e":"tsx"}],"v":483,"f":2},{"n":"grove","c":[{"n":"Grove.tsx","v":463,"e":"tsx"}],"v":463,"f":1},{"n":"messageActions.tsx","v":450,"e":"tsx"},{"n":"ModelPicker.tsx","v":448,"e":"tsx"},{"n":"BridgeDialog.tsx","v":401,"e":"tsx"},{"n":"MessageRow.tsx","v":383,"e":"tsx"},{"n":"TaskListV2.tsx","v":378,"e":"tsx"},{"n":"shell","c":[{"n":"ShellProgressMessage.tsx","v":150,"e":"tsx"},{"n":"OutputLine.tsx","v":118,"e":"tsx"},{"n":"ShellTimeDisplay.tsx","v":74,"e":"tsx"},{"n":"ExpandShellOutputContext.tsx","v":36,"e":"tsx"}],"v":378,"f":4},{"n":"GlobalSearchDialog.tsx","v":343,"e":"tsx"},{"n":"RemoteEnvironmentDialog.tsx","v":340,"e":"tsx"},{"n":"ThemePicker.tsx","v":333,"e":"tsx"},{"n":"StatusLine.tsx","v":324,"e":"tsx"},{"n":"wizard","c":[{"n":"WizardProvider.tsx","v":213,"e":"tsx"},{"n":"WizardDialogLayout.tsx","v":65,"e":"tsx"},{"n":"WizardNavigationFooter.tsx","v":24,"e":"tsx"},{"n":"useWizard.ts","v":13,"e":"ts"},{"n":"index.ts","v":9,"e":"ts"}],"v":324,"f":5},{"n":"MarkdownTable.tsx","v":322,"e":"tsx"},{"n":"ManagedSettingsSecurityDialog","c":[{"n":"ManagedSettingsSecurityDialog.tsx","v":149,"e":"tsx"},{"n":"utils.ts","v":144,"e":"ts"}],"v":293,"f":2},{"n":"HelpV2","c":[{"n":"HelpV2.tsx","v":184,"e":"tsx"},{"n":"Commands.tsx","v":82,"e":"tsx"},{"n":"General.tsx","v":23,"e":"tsx"}],"v":289,"f":3},{"n":"CoordinatorAgentStatus.tsx","v":273,"e":"tsx"},{"n":"ResumeTask.tsx","v":268,"e":"tsx"},{"n":"EffortCallout.tsx","v":265,"e":"tsx"},{"n":"Onboarding.tsx","v":244,"e":"tsx"},{"n":"QuickOpenDialog.tsx","v":244,"e":"tsx"},{"n":"skills","c":[{"n":"SkillsMenu.tsx","v":237,"e":"tsx"}],"v":237,"f":1},{"n":"Markdown.tsx","v":236,"e":"tsx"},{"n":"WorktreeExitDialog.tsx","v":231,"e":"tsx"},{"n":"MCPServerDesktopImportDialog.tsx","v":203,"e":"tsx"},{"n":"AutoUpdater.tsx","v":198,"e":"tsx"},{"n":"SessionPreview.tsx","v":194,"e":"tsx"},{"n":"DesktopHandoff.tsx","v":193,"e":"tsx"},{"n":"HighlightedCode","c":[{"n":"Fallback.tsx","v":193,"e":"tsx"}],"v":193,"f":1},{"n":"NativeAutoUpdater.tsx","v":193,"e":"tsx"},{"n":"HighlightedCode.tsx","v":190,"e":"tsx"},{"n":"StructuredDiff.tsx","v":190,"e":"tsx"},{"n":"TeleportError.tsx","v":189,"e":"tsx"},{"n":"Passes","c":[{"n":"Passes.tsx","v":184,"e":"tsx"}],"v":184,"f":1},{"n":"FileEditToolDiff.tsx","v":181,"e":"tsx"},{"n":"TokenWarning.tsx","v":179,"e":"tsx"},{"n":"DesktopUpsell","c":[{"n":"DesktopUpsellStartup.tsx","v":171,"e":"tsx"}],"v":171,"f":1},{"n":"FileEditToolUseRejectedMessage.tsx","v":170,"e":"tsx"},{"n":"ShowInIDEPrompt.tsx","v":170,"e":"tsx"},{"n":"IdeOnboardingDialog.tsx","v":167,"e":"tsx"},{"n":"TeleportResumeWrapper.tsx","v":167,"e":"tsx"},{"n":"InvalidConfigDialog.tsx","v":156,"e":"tsx"},{"n":"IdeAutoConnectDialog.tsx","v":154,"e":"tsx"},{"n":"ThinkingToggle.tsx","v":153,"e":"tsx"},{"n":"SkillImprovementSurvey.tsx","v":152,"e":"tsx"},{"n":"ValidationErrorsList.tsx","v":148,"e":"tsx"},{"n":"AutoModeOptInDialog.tsx","v":142,"e":"tsx"},{"n":"TeleportProgress.tsx","v":140,"e":"tsx"},{"n":"VimTextInput.tsx","v":140,"e":"tsx"},{"n":"TagTabs.tsx","v":139,"e":"tsx"},{"n":"ClaudeMdExternalIncludesDialog.tsx","v":137,"e":"tsx"},{"n":"AgentProgressLine.tsx","v":136,"e":"tsx"},{"n":"BaseTextInput.tsx","v":136,"e":"tsx"},{"n":"MCPServerMultiselectDialog.tsx","v":133,"e":"tsx"},{"n":"ExportDialog.tsx","v":128,"e":"tsx"},{"n":"WorkflowMultiselectDialog.tsx","v":128,"e":"tsx"},{"n":"FileEditToolUpdatedMessage.tsx","v":124,"e":"tsx"},{"n":"TextInput.tsx","v":124,"e":"tsx"},{"n":"ApproveApiKey.tsx","v":123,"e":"tsx"},{"n":"ClaudeInChromeOnboarding.tsx","v":121,"e":"tsx"},{"n":"CompactSummary.tsx","v":118,"e":"tsx"},{"n":"HistorySearchDialog.tsx","v":118,"e":"tsx"},{"n":"IdleReturnDialog.tsx","v":118,"e":"tsx"},{"n":"FallbackToolUseErrorMessage.tsx","v":116,"e":"tsx"},{"n":"TeleportStash.tsx","v":116,"e":"tsx"},{"n":"MCPServerApprovalDialog.tsx","v":115,"e":"tsx"},{"n":"OutputStylePicker.tsx","v":112,"e":"tsx"},{"n":"SessionBackgroundHint.tsx","v":108,"e":"tsx"},{"n":"DevChannelsDialog.tsx","v":105,"e":"tsx"},{"n":"PackageManagerAutoUpdater.tsx","v":104,"e":"tsx"},{"n":"TeleportRepoMismatchDialog.tsx","v":104,"e":"tsx"},{"n":"ChannelDowngradeDialog.tsx","v":102,"e":"tsx"},{"n":"SandboxViolationExpandedView.tsx","v":99,"e":"tsx"},{"n":"PrBadge.tsx","v":97,"e":"tsx"},{"n":"DiagnosticsDisplay.tsx","v":95,"e":"tsx"},{"n":"NotebookEditToolUseRejectedMessage.tsx","v":92,"e":"tsx"},{"n":"AutoUpdaterWrapper.tsx","v":91,"e":"tsx"},{"n":"InvalidSettingsDialog.tsx","v":89,"e":"tsx"},{"n":"LspRecommendation","c":[{"n":"LspRecommendationMenu.tsx","v":88,"e":"tsx"}],"v":88,"f":1},{"n":"BypassPermissionsModeDialog.tsx","v":87,"e":"tsx"},{"n":"LanguagePicker.tsx","v":86,"e":"tsx"},{"n":"AwsAuthStatusBox.tsx","v":82,"e":"tsx"},{"n":"TeammateViewHeader.tsx","v":82,"e":"tsx"},{"n":"ClaudeCodeHint","c":[{"n":"PluginHintMenu.tsx","v":78,"e":"tsx"}],"v":78,"f":1},{"n":"MessageResponse.tsx","v":78,"e":"tsx"},{"n":"RemoteCallout.tsx","v":76,"e":"tsx"},{"n":"ClickableImageRef.tsx","v":73,"e":"tsx"},{"n":"SearchBox.tsx","v":72,"e":"tsx"},{"n":"MessageTimestamp.tsx","v":63,"e":"tsx"},{"n":"IdeStatusIndicator.tsx","v":58,"e":"tsx"},{"n":"ConfigurableShortcutHint.tsx","v":57,"e":"tsx"},{"n":"App.tsx","v":56,"e":"tsx"},{"n":"BashModeProgress.tsx","v":56,"e":"tsx"},{"n":"KeybindingWarnings.tsx","v":55,"e":"tsx"},{"n":"StatusNotices.tsx","v":55,"e":"tsx"},{"n":"CtrlOToExpand.tsx","v":51,"e":"tsx"},{"n":"CostThresholdDialog.tsx","v":50,"e":"tsx"},{"n":"DevBar.tsx","v":49,"e":"tsx"},{"n":"ExitFlow.tsx","v":48,"e":"tsx"},{"n":"ContextSuggestions.tsx","v":47,"e":"tsx"},{"n":"FastIcon.tsx","v":46,"e":"tsx"},{"n":"OffscreenFreeze.tsx","v":44,"e":"tsx"},{"n":"FilePathLink.tsx","v":43,"e":"tsx"},{"n":"MessageModel.tsx","v":43,"e":"tsx"},{"n":"EffortIndicator.ts","v":42,"e":"ts"},{"n":"ToolUseLoader.tsx","v":42,"e":"tsx"},{"n":"MemoryUsageIndicator.tsx","v":37,"e":"tsx"},{"n":"StructuredDiffList.tsx","v":30,"e":"tsx"},{"n":"SentryErrorBoundary.ts","v":28,"e":"ts"},{"n":"FallbackToolUseRejectedMessage.tsx","v":16,"e":"tsx"},{"n":"InterruptedByUser.tsx","v":15,"e":"tsx"},{"n":"MCPServerDialogCopy.tsx","v":15,"e":"tsx"},{"n":"PressEnterToContinue.tsx","v":15,"e":"tsx"}],"v":81892,"f":389}},{"id":"src/ink","dir":"ink","kind":"ui","name":"Ink runtime","loc":19859,"files":96,"commits":1,"deps":[],"tree":{"n":"src/ink","c":[{"n":"termio","c":[{"n":"osc.ts","v":493,"e":"ts"},{"n":"parser.ts","v":394,"e":"ts"},{"n":"csi.ts","v":319,"e":"ts"},{"n":"tokenize.ts","v":319,"e":"ts"},{"n":"sgr.ts","v":308,"e":"ts"},{"n":"types.ts","v":236,"e":"ts"},{"n":"ansi.ts","v":75,"e":"ts"},{"n":"esc.ts","v":67,"e":"ts"},{"n":"dec.ts","v":60,"e":"ts"}],"v":2271,"f":9},{"n":"components","c":[{"n":"App.tsx","v":658,"e":"tsx"},{"n":"Text.tsx","v":254,"e":"tsx"},{"n":"ScrollBox.tsx","v":237,"e":"tsx"},{"n":"Box.tsx","v":214,"e":"tsx"},{"n":"Button.tsx","v":192,"e":"tsx"},{"n":"ClockContext.tsx","v":112,"e":"tsx"},{"n":"ErrorOverview.tsx","v":109,"e":"tsx"},{"n":"AlternateScreen.tsx","v":80,"e":"tsx"},{"n":"NoSelect.tsx","v":68,"e":"tsx"},{"n":"RawAnsi.tsx","v":57,"e":"tsx"},{"n":"TerminalFocusContext.tsx","v":52,"e":"tsx"},{"n":"StdinContext.ts","v":49,"e":"ts"},{"n":"Link.tsx","v":42,"e":"tsx"},{"n":"Newline.tsx","v":39,"e":"tsx"},{"n":"CursorDeclarationContext.ts","v":32,"e":"ts"},{"n":"AppContext.ts","v":21,"e":"ts"},{"n":"Spacer.tsx","v":20,"e":"tsx"},{"n":"TerminalSizeContext.tsx","v":7,"e":"tsx"}],"v":2243,"f":18},{"n":"ink.tsx","v":1723,"e":"tsx"},{"n":"screen.ts","v":1486,"e":"ts"},{"n":"render-node-to-output.ts","v":1462,"e":"ts"},{"n":"selection.ts","v":917,"e":"ts"},{"n":"parse-keypress.ts","v":801,"e":"ts"},{"n":"events","c":[{"n":"dispatcher.ts","v":233,"e":"ts"},{"n":"input-event.ts","v":205,"e":"ts"},{"n":"terminal-event.ts","v":107,"e":"ts"},{"n":"event-handlers.ts","v":73,"e":"ts"},{"n":"keyboard-event.ts","v":51,"e":"ts"},{"n":"emitter.ts","v":39,"e":"ts"},{"n":"click-event.ts","v":38,"e":"ts"},{"n":"focus-event.ts","v":21,"e":"ts"},{"n":"terminal-focus-event.ts","v":19,"e":"ts"},{"n":"event.ts","v":11,"e":"ts"}],"v":797,"f":10},{"n":"output.ts","v":797,"e":"ts"},{"n":"log-update.ts","v":773,"e":"ts"},{"n":"styles.ts","v":771,"e":"ts"},{"n":"hooks","c":[{"n":"use-selection.ts","v":104,"e":"ts"},{"n":"use-terminal-viewport.ts","v":96,"e":"ts"},{"n":"use-input.ts","v":92,"e":"ts"},{"n":"use-declared-cursor.ts","v":73,"e":"ts"},{"n":"use-tab-status.ts","v":72,"e":"ts"},{"n":"use-interval.ts","v":67,"e":"ts"},{"n":"use-animation-frame.ts","v":57,"e":"ts"},{"n":"use-search-highlight.ts","v":53,"e":"ts"},{"n":"use-terminal-title.ts","v":31,"e":"ts"},{"n":"use-terminal-focus.ts","v":16,"e":"ts"},{"n":"use-app.ts","v":8,"e":"ts"},{"n":"use-stdin.ts","v":8,"e":"ts"}],"v":677,"f":12},{"n":"layout","c":[{"n":"yoga.ts","v":308,"e":"ts"},{"n":"node.ts","v":152,"e":"ts"},{"n":"geometry.ts","v":97,"e":"ts"},{"n":"engine.ts","v":6,"e":"ts"}],"v":563,"f":4},{"n":"reconciler.ts","v":512,"e":"ts"},{"n":"dom.ts","v":484,"e":"ts"},{"n":"Ansi.tsx","v":292,"e":"tsx"},{"n":"terminal.ts","v":248,"e":"ts"},{"n":"colorize.ts","v":231,"e":"ts"},{"n":"render-border.ts","v":231,"e":"ts"},{"n":"render-to-screen.ts","v":231,"e":"ts"},{"n":"stringWidth.ts","v":222,"e":"ts"},{"n":"terminal-querier.ts","v":212,"e":"ts"},{"n":"root.ts","v":184,"e":"ts"},{"n":"focus.ts","v":181,"e":"ts"},{"n":"renderer.ts","v":178,"e":"ts"},{"n":"bidi.ts","v":139,"e":"ts"},{"n":"hit-test.ts","v":130,"e":"ts"},{"n":"useTerminalNotification.ts","v":126,"e":"ts"},{"n":"frame.ts","v":124,"e":"ts"},{"n":"optimizer.ts","v":93,"e":"ts"},{"n":"searchHighlight.ts","v":93,"e":"ts"},{"n":"squash-text-nodes.ts","v":92,"e":"ts"},{"n":"clearTerminal.ts","v":74,"e":"ts"},{"n":"wrap-text.ts","v":74,"e":"ts"},{"n":"supports-hyperlinks.ts","v":57,"e":"ts"},{"n":"node-cache.ts","v":54,"e":"ts"},{"n":"measure-text.ts","v":47,"e":"ts"},{"n":"terminal-focus-state.ts","v":47,"e":"ts"},{"n":"tabstops.ts","v":46,"e":"ts"},{"n":"termio.ts","v":42,"e":"ts"},{"n":"get-max-width.ts","v":27,"e":"ts"},{"n":"line-width-cache.ts","v":24,"e":"ts"},{"n":"measure-element.ts","v":23,"e":"ts"},{"n":"wrapAnsi.ts","v":20,"e":"ts"},{"n":"widest-line.ts","v":19,"e":"ts"},{"n":"instances.ts","v":10,"e":"ts"},{"n":"warn.ts","v":9,"e":"ts"},{"n":"constants.ts","v":2,"e":"ts"}],"v":19859,"f":96}},{"id":"src/query","dir":"query","kind":"runtime","name":"query support","loc":652,"files":4,"commits":1,"deps":[],"tree":{"n":"src/query","c":[{"n":"stopHooks.ts","v":473,"e":"ts"},{"n":"tokenBudget.ts","v":93,"e":"ts"},{"n":"config.ts","v":46,"e":"ts"},{"n":"deps.ts","v":40,"e":"ts"}],"v":652,"f":4}},{"id":"src/services/api","dir":"api","kind":"model","name":"Claude API clients","loc":10477,"files":20,"commits":1,"deps":[],"tree":{"n":"src/services/api","c":[{"n":"claude.ts","v":3419,"e":"ts"},{"n":"errors.ts","v":1207,"e":"ts"},{"n":"withRetry.ts","v":822,"e":"ts"},{"n":"logging.ts","v":788,"e":"ts"},{"n":"filesApi.ts","v":748,"e":"ts"},{"n":"promptCacheBreakDetection.ts","v":727,"e":"ts"},{"n":"sessionIngress.ts","v":514,"e":"ts"},{"n":"client.ts","v":389,"e":"ts"},{"n":"grove.ts","v":357,"e":"ts"},{"n":"referral.ts","v":281,"e":"ts"},{"n":"errorUtils.ts","v":260,"e":"ts"},{"n":"dumpPrompts.ts","v":226,"e":"ts"},{"n":"metricsOptOut.ts","v":159,"e":"ts"},{"n":"bootstrap.ts","v":141,"e":"ts"},{"n":"overageCreditGrant.ts","v":137,"e":"ts"},{"n":"adminRequests.ts","v":119,"e":"ts"},{"n":"usage.ts","v":63,"e":"ts"},{"n":"firstTokenDate.ts","v":60,"e":"ts"},{"n":"ultrareviewQuota.ts","v":38,"e":"ts"},{"n":"emptyUsage.ts","v":22,"e":"ts"}],"v":10477,"f":20}},{"id":"src/services/tools","dir":"tools","kind":"runtime","name":"tool execution service","loc":3113,"files":4,"commits":1,"deps":["src/hooks","src/utils/permissions","src/utils/sandbox"],"tree":{"n":"src/services/tools","c":[{"n":"toolExecution.ts","v":1745,"e":"ts"},{"n":"toolHooks.ts","v":650,"e":"ts"},{"n":"StreamingToolExecutor.ts","v":530,"e":"ts"},{"n":"toolOrchestration.ts","v":188,"e":"ts"}],"v":3113,"f":4}},{"id":"src/services/compact","dir":"compact","kind":"context","name":"compaction","loc":3960,"files":11,"commits":1,"deps":["src/services/api","src/hooks"],"tree":{"n":"src/services/compact","c":[{"n":"compact.ts","v":1705,"e":"ts"},{"n":"sessionMemoryCompact.ts","v":630,"e":"ts"},{"n":"microCompact.ts","v":530,"e":"ts"},{"n":"prompt.ts","v":374,"e":"ts"},{"n":"autoCompact.ts","v":351,"e":"ts"},{"n":"apiMicrocompact.ts","v":153,"e":"ts"},{"n":"postCompactCleanup.ts","v":77,"e":"ts"},{"n":"grouping.ts","v":63,"e":"ts"},{"n":"timeBasedMCConfig.ts","v":43,"e":"ts"},{"n":"compactWarningState.ts","v":18,"e":"ts"},{"n":"compactWarningHook.ts","v":16,"e":"ts"}],"v":3960,"f":11}},{"id":"src/services/mcp","dir":"mcp","kind":"integration","name":"MCP client","loc":12311,"files":23,"commits":1,"deps":["src/services/tools"],"tree":{"n":"src/services/mcp","c":[{"n":"client.ts","v":3348,"e":"ts"},{"n":"auth.ts","v":2465,"e":"ts"},{"n":"config.ts","v":1578,"e":"ts"},{"n":"useManageMCPConnections.ts","v":1141,"e":"ts"},{"n":"utils.ts","v":575,"e":"ts"},{"n":"xaa.ts","v":511,"e":"ts"},{"n":"xaaIdpLogin.ts","v":487,"e":"ts"},{"n":"channelNotification.ts","v":316,"e":"ts"},{"n":"elicitationHandler.ts","v":313,"e":"ts"},{"n":"types.ts","v":258,"e":"ts"},{"n":"channelPermissions.ts","v":240,"e":"ts"},{"n":"claudeai.ts","v":164,"e":"ts"},{"n":"headersHelper.ts","v":138,"e":"ts"},{"n":"SdkControlTransport.ts","v":136,"e":"ts"},{"n":"vscodeSdkMcp.ts","v":112,"e":"ts"},{"n":"mcpStringUtils.ts","v":106,"e":"ts"},{"n":"oauthPort.ts","v":78,"e":"ts"},{"n":"channelAllowlist.ts","v":76,"e":"ts"},{"n":"MCPConnectionManager.tsx","v":73,"e":"tsx"},{"n":"officialRegistry.ts","v":72,"e":"ts"},{"n":"InProcessTransport.ts","v":63,"e":"ts"},{"n":"envExpansion.ts","v":38,"e":"ts"},{"n":"normalization.ts","v":23,"e":"ts"}],"v":12311,"f":23}},{"id":"src/services/analytics","dir":"analytics","kind":"observability","name":"analytics","loc":4040,"files":9,"commits":1,"deps":[],"tree":{"n":"src/services/analytics","c":[{"n":"growthbook.ts","v":1155,"e":"ts"},{"n":"metadata.ts","v":973,"e":"ts"},{"n":"firstPartyEventLoggingExporter.ts","v":806,"e":"ts"},{"n":"firstPartyEventLogger.ts","v":449,"e":"ts"},{"n":"datadog.ts","v":307,"e":"ts"},{"n":"index.ts","v":173,"e":"ts"},{"n":"sink.ts","v":114,"e":"ts"},{"n":"config.ts","v":38,"e":"ts"},{"n":"sinkKillswitch.ts","v":25,"e":"ts"}],"v":4040,"f":9}},{"id":"src/tools","dir":"tools","kind":"tool","name":"built-in tools and AgentTool","loc":50863,"files":184,"commits":1,"deps":["src/services/tools","src/services/mcp","src/services/api","src/utils/permissions","src/utils/sandbox"],"tree":{"n":"src/tools","c":[{"n":"BashTool","c":[{"n":"bashPermissions.ts","v":2621,"e":"ts"},{"n":"bashSecurity.ts","v":2592,"e":"ts"},{"n":"readOnlyValidation.ts","v":1990,"e":"ts"},{"n":"pathValidation.ts","v":1303,"e":"ts"},{"n":"BashTool.tsx","v":1144,"e":"tsx"},{"n":"sedValidation.ts","v":684,"e":"ts"},{"n":"prompt.ts","v":369,"e":"ts"},{"n":"sedEditParser.ts","v":322,"e":"ts"},{"n":"bashCommandHelpers.ts","v":265,"e":"ts"},{"n":"utils.ts","v":223,"e":"ts"},{"n":"BashToolResultMessage.tsx","v":191,"e":"tsx"},{"n":"UI.tsx","v":185,"e":"tsx"},{"n":"shouldUseSandbox.ts","v":153,"e":"ts"},{"n":"commandSemantics.ts","v":140,"e":"ts"},{"n":"modeValidation.ts","v":115,"e":"ts"},{"n":"destructiveCommandWarning.ts","v":102,"e":"ts"},{"n":"commentLabel.ts","v":13,"e":"ts"},{"n":"toolName.ts","v":2,"e":"ts"}],"v":12414,"f":18},{"n":"PowerShellTool","c":[{"n":"pathValidation.ts","v":2049,"e":"ts"},{"n":"readOnlyValidation.ts","v":1823,"e":"ts"},{"n":"powershellPermissions.ts","v":1648,"e":"ts"},{"n":"powershellSecurity.ts","v":1090,"e":"ts"},{"n":"PowerShellTool.tsx","v":1001,"e":"tsx"},{"n":"modeValidation.ts","v":404,"e":"ts"},{"n":"clmTypes.ts","v":211,"e":"ts"},{"n":"gitSafety.ts","v":176,"e":"ts"},{"n":"prompt.ts","v":145,"e":"ts"},{"n":"commandSemantics.ts","v":142,"e":"ts"},{"n":"UI.tsx","v":131,"e":"tsx"},{"n":"destructiveCommandWarning.ts","v":109,"e":"ts"},{"n":"commonParameters.ts","v":30,"e":"ts"},{"n":"toolName.ts","v":2,"e":"ts"}],"v":8961,"f":14},{"n":"AgentTool","c":[{"n":"AgentTool.tsx","v":1398,"e":"tsx"},{"n":"runAgent.ts","v":973,"e":"ts"},{"n":"UI.tsx","v":872,"e":"tsx"},{"n":"loadAgentsDir.ts","v":755,"e":"ts"},{"n":"built-in","c":[{"n":"claudeCodeGuideAgent.ts","v":205,"e":"ts"},{"n":"verificationAgent.ts","v":152,"e":"ts"},{"n":"statuslineSetup.ts","v":144,"e":"ts"},{"n":"planAgent.ts","v":92,"e":"ts"},{"n":"exploreAgent.ts","v":83,"e":"ts"},{"n":"generalPurposeAgent.ts","v":34,"e":"ts"}],"v":710,"f":6},{"n":"agentToolUtils.ts","v":686,"e":"ts"},{"n":"prompt.ts","v":287,"e":"ts"},{"n":"resumeAgent.ts","v":265,"e":"ts"},{"n":"forkSubagent.ts","v":210,"e":"ts"},{"n":"agentMemorySnapshot.ts","v":197,"e":"ts"},{"n":"agentMemory.ts","v":177,"e":"ts"},{"n":"agentDisplay.ts","v":104,"e":"ts"},{"n":"builtInAgents.ts","v":72,"e":"ts"},{"n":"agentColorManager.ts","v":66,"e":"ts"},{"n":"constants.ts","v":12,"e":"ts"}],"v":6784,"f":20},{"n":"LSPTool","c":[{"n":"LSPTool.ts","v":860,"e":"ts"},{"n":"formatters.ts","v":592,"e":"ts"},{"n":"UI.tsx","v":228,"e":"tsx"},{"n":"schemas.ts","v":215,"e":"ts"},{"n":"symbolContext.ts","v":90,"e":"ts"},{"n":"prompt.ts","v":21,"e":"ts"}],"v":2006,"f":6},{"n":"FileEditTool","c":[{"n":"utils.ts","v":775,"e":"ts"},{"n":"FileEditTool.ts","v":625,"e":"ts"},{"n":"UI.tsx","v":289,"e":"tsx"},{"n":"types.ts","v":85,"e":"ts"},{"n":"prompt.ts","v":28,"e":"ts"},{"n":"constants.ts","v":11,"e":"ts"}],"v":1813,"f":6},{"n":"FileReadTool","c":[{"n":"FileReadTool.ts","v":1183,"e":"ts"},{"n":"UI.tsx","v":185,"e":"tsx"},{"n":"imageProcessor.ts","v":94,"e":"ts"},{"n":"limits.ts","v":92,"e":"ts"},{"n":"prompt.ts","v":49,"e":"ts"}],"v":1603,"f":5},{"n":"SkillTool","c":[{"n":"SkillTool.ts","v":1108,"e":"ts"},{"n":"prompt.ts","v":241,"e":"ts"},{"n":"UI.tsx","v":128,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":1478,"f":4},{"n":"shared","c":[{"n":"spawnMultiAgent.ts","v":1093,"e":"ts"},{"n":"gitOperationTracking.ts","v":277,"e":"ts"}],"v":1370,"f":2},{"n":"WebFetchTool","c":[{"n":"utils.ts","v":530,"e":"ts"},{"n":"WebFetchTool.ts","v":318,"e":"ts"},{"n":"preapproved.ts","v":166,"e":"ts"},{"n":"UI.tsx","v":72,"e":"tsx"},{"n":"prompt.ts","v":46,"e":"ts"}],"v":1132,"f":5},{"n":"MCPTool","c":[{"n":"classifyForCollapse.ts","v":604,"e":"ts"},{"n":"UI.tsx","v":403,"e":"tsx"},{"n":"MCPTool.ts","v":77,"e":"ts"},{"n":"prompt.ts","v":3,"e":"ts"}],"v":1087,"f":4},{"n":"SendMessageTool","c":[{"n":"SendMessageTool.ts","v":917,"e":"ts"},{"n":"prompt.ts","v":49,"e":"ts"},{"n":"UI.tsx","v":31,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":998,"f":4},{"n":"FileWriteTool","c":[{"n":"FileWriteTool.ts","v":434,"e":"ts"},{"n":"UI.tsx","v":405,"e":"tsx"},{"n":"prompt.ts","v":18,"e":"ts"}],"v":857,"f":3},{"n":"ConfigTool","c":[{"n":"ConfigTool.ts","v":467,"e":"ts"},{"n":"supportedSettings.ts","v":211,"e":"ts"},{"n":"prompt.ts","v":93,"e":"ts"},{"n":"UI.tsx","v":38,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":810,"f":5},{"n":"GrepTool","c":[{"n":"GrepTool.ts","v":577,"e":"ts"},{"n":"UI.tsx","v":201,"e":"tsx"},{"n":"prompt.ts","v":18,"e":"ts"}],"v":796,"f":3},{"n":"BriefTool","c":[{"n":"BriefTool.ts","v":204,"e":"ts"},{"n":"upload.ts","v":174,"e":"ts"},{"n":"attachments.ts","v":110,"e":"ts"},{"n":"UI.tsx","v":101,"e":"tsx"},{"n":"prompt.ts","v":22,"e":"ts"}],"v":611,"f":5},{"n":"ExitPlanModeTool","c":[{"n":"ExitPlanModeV2Tool.ts","v":493,"e":"ts"},{"n":"UI.tsx","v":82,"e":"tsx"},{"n":"prompt.ts","v":29,"e":"ts"},{"n":"constants.ts","v":2,"e":"ts"}],"v":606,"f":4},{"n":"ToolSearchTool","c":[{"n":"ToolSearchTool.ts","v":471,"e":"ts"},{"n":"prompt.ts","v":121,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":593,"f":3},{"n":"NotebookEditTool","c":[{"n":"NotebookEditTool.ts","v":490,"e":"ts"},{"n":"UI.tsx","v":93,"e":"tsx"},{"n":"prompt.ts","v":3,"e":"ts"},{"n":"constants.ts","v":2,"e":"ts"}],"v":588,"f":4},{"n":"TaskOutputTool","c":[{"n":"TaskOutputTool.tsx","v":584,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":585,"f":2},{"n":"WebSearchTool","c":[{"n":"WebSearchTool.ts","v":435,"e":"ts"},{"n":"UI.tsx","v":101,"e":"tsx"},{"n":"prompt.ts","v":34,"e":"ts"}],"v":570,"f":3},{"n":"ScheduleCronTool","c":[{"n":"CronCreateTool.ts","v":157,"e":"ts"},{"n":"prompt.ts","v":135,"e":"ts"},{"n":"CronListTool.ts","v":97,"e":"ts"},{"n":"CronDeleteTool.ts","v":95,"e":"ts"},{"n":"UI.tsx","v":60,"e":"tsx"}],"v":544,"f":5},{"n":"TaskUpdateTool","c":[{"n":"TaskUpdateTool.ts","v":406,"e":"ts"},{"n":"prompt.ts","v":77,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":484,"f":3},{"n":"ExitWorktreeTool","c":[{"n":"ExitWorktreeTool.ts","v":329,"e":"ts"},{"n":"prompt.ts","v":32,"e":"ts"},{"n":"UI.tsx","v":25,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":387,"f":4},{"n":"TeamCreateTool","c":[{"n":"TeamCreateTool.ts","v":240,"e":"ts"},{"n":"prompt.ts","v":113,"e":"ts"},{"n":"UI.tsx","v":6,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":360,"f":4},{"n":"EnterPlanModeTool","c":[{"n":"prompt.ts","v":170,"e":"ts"},{"n":"EnterPlanModeTool.ts","v":126,"e":"ts"},{"n":"UI.tsx","v":33,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":330,"f":4},{"n":"AskUserQuestionTool","c":[{"n":"AskUserQuestionTool.tsx","v":266,"e":"tsx"},{"n":"prompt.ts","v":44,"e":"ts"}],"v":310,"f":2},{"n":"TodoWriteTool","c":[{"n":"prompt.ts","v":184,"e":"ts"},{"n":"TodoWriteTool.ts","v":115,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":300,"f":3},{"n":"GlobTool","c":[{"n":"GlobTool.ts","v":198,"e":"ts"},{"n":"UI.tsx","v":63,"e":"tsx"},{"n":"prompt.ts","v":7,"e":"ts"}],"v":268,"f":3},{"n":"McpAuthTool","c":[{"n":"McpAuthTool.ts","v":215,"e":"ts"}],"v":215,"f":1},{"n":"ReadMcpResourceTool","c":[{"n":"ReadMcpResourceTool.ts","v":158,"e":"ts"},{"n":"UI.tsx","v":37,"e":"tsx"},{"n":"prompt.ts","v":16,"e":"ts"}],"v":211,"f":3},{"n":"TaskCreateTool","c":[{"n":"TaskCreateTool.ts","v":138,"e":"ts"},{"n":"prompt.ts","v":56,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":195,"f":3},{"n":"RemoteTriggerTool","c":[{"n":"RemoteTriggerTool.ts","v":161,"e":"ts"},{"n":"UI.tsx","v":17,"e":"tsx"},{"n":"prompt.ts","v":15,"e":"ts"}],"v":193,"f":3},{"n":"TaskStopTool","c":[{"n":"TaskStopTool.ts","v":131,"e":"ts"},{"n":"UI.tsx","v":41,"e":"tsx"},{"n":"prompt.ts","v":8,"e":"ts"}],"v":180,"f":3},{"n":"EnterWorktreeTool","c":[{"n":"EnterWorktreeTool.ts","v":127,"e":"ts"},{"n":"prompt.ts","v":30,"e":"ts"},{"n":"UI.tsx","v":20,"e":"tsx"},{"n":"constants.ts","v":1,"e":"ts"}],"v":178,"f":4},{"n":"TeamDeleteTool","c":[{"n":"TeamDeleteTool.ts","v":139,"e":"ts"},{"n":"UI.tsx","v":20,"e":"tsx"},{"n":"prompt.ts","v":16,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":176,"f":4},{"n":"ListMcpResourcesTool","c":[{"n":"ListMcpResourcesTool.ts","v":123,"e":"ts"},{"n":"UI.tsx","v":29,"e":"tsx"},{"n":"prompt.ts","v":20,"e":"ts"}],"v":172,"f":3},{"n":"TaskListTool","c":[{"n":"TaskListTool.ts","v":116,"e":"ts"},{"n":"prompt.ts","v":49,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":166,"f":3},{"n":"SyntheticOutputTool","c":[{"n":"SyntheticOutputTool.ts","v":163,"e":"ts"}],"v":163,"f":1},{"n":"TaskGetTool","c":[{"n":"TaskGetTool.ts","v":128,"e":"ts"},{"n":"prompt.ts","v":24,"e":"ts"},{"n":"constants.ts","v":1,"e":"ts"}],"v":153,"f":3},{"n":"REPLTool","c":[{"n":"constants.ts","v":46,"e":"ts"},{"n":"primitiveTools.ts","v":39,"e":"ts"}],"v":85,"f":2},{"n":"testing","c":[{"n":"TestingPermissionTool.tsx","v":74,"e":"tsx"}],"v":74,"f":1},{"n":"utils.ts","v":40,"e":"ts"},{"n":"SleepTool","c":[{"n":"prompt.ts","v":17,"e":"ts"}],"v":17,"f":1}],"v":50863,"f":184}},{"id":"src/skills","dir":"skills","kind":"extension","name":"skills","loc":4066,"files":20,"commits":1,"deps":[],"tree":{"n":"src/skills","c":[{"n":"bundled","c":[{"n":"updateConfig.ts","v":475,"e":"ts"},{"n":"scheduleRemoteAgents.ts","v":447,"e":"ts"},{"n":"keybindings.ts","v":339,"e":"ts"},{"n":"loremIpsum.ts","v":282,"e":"ts"},{"n":"skillify.ts","v":197,"e":"ts"},{"n":"claudeApi.ts","v":196,"e":"ts"},{"n":"batch.ts","v":124,"e":"ts"},{"n":"debug.ts","v":103,"e":"ts"},{"n":"loop.ts","v":92,"e":"ts"},{"n":"remember.ts","v":82,"e":"ts"},{"n":"index.ts","v":79,"e":"ts"},{"n":"stuck.ts","v":79,"e":"ts"},{"n":"claudeApiContent.ts","v":75,"e":"ts"},{"n":"simplify.ts","v":69,"e":"ts"},{"n":"claudeInChrome.ts","v":34,"e":"ts"},{"n":"verify.ts","v":30,"e":"ts"},{"n":"verifyContent.ts","v":13,"e":"ts"}],"v":2716,"f":17},{"n":"loadSkillsDir.ts","v":1086,"e":"ts"},{"n":"bundledSkills.ts","v":220,"e":"ts"},{"n":"mcpSkillBuilders.ts","v":44,"e":"ts"}],"v":4066,"f":20}},{"id":"src/plugins","dir":"plugins","kind":"extension","name":"plugin surface","loc":182,"files":2,"commits":1,"deps":[],"tree":{"n":"src/plugins","c":[{"n":"builtinPlugins.ts","v":159,"e":"ts"},{"n":"bundled","c":[{"n":"index.ts","v":23,"e":"ts"}],"v":23,"f":1}],"v":182,"f":2}},{"id":"src/utils/plugins","dir":"plugins","kind":"extension","name":"plugin loader","loc":20522,"files":44,"commits":1,"deps":["src/skills","src/hooks"],"tree":{"n":"src/utils/plugins","c":[{"n":"pluginLoader.ts","v":3302,"e":"ts"},{"n":"marketplaceManager.ts","v":2643,"e":"ts"},{"n":"schemas.ts","v":1681,"e":"ts"},{"n":"installedPluginsManager.ts","v":1268,"e":"ts"},{"n":"mcpbHandler.ts","v":968,"e":"ts"},{"n":"loadPluginCommands.ts","v":946,"e":"ts"},{"n":"validatePlugin.ts","v":903,"e":"ts"},{"n":"mcpPluginIntegration.ts","v":634,"e":"ts"},{"n":"pluginInstallationHelpers.ts","v":595,"e":"ts"},{"n":"marketplaceHelpers.ts","v":592,"e":"ts"},{"n":"officialMarketplaceStartupCheck.ts","v":439,"e":"ts"},{"n":"zipCache.ts","v":406,"e":"ts"},{"n":"pluginOptionsStorage.ts","v":400,"e":"ts"},{"n":"lspPluginIntegration.ts","v":387,"e":"ts"},{"n":"lspRecommendation.ts","v":374,"e":"ts"},{"n":"loadPluginAgents.ts","v":348,"e":"ts"},{"n":"pluginStartupCheck.ts","v":341,"e":"ts"},{"n":"dependencyResolver.ts","v":305,"e":"ts"},{"n":"installCounts.ts","v":292,"e":"ts"},{"n":"loadPluginHooks.ts","v":287,"e":"ts"},{"n":"pluginAutoupdate.ts","v":284,"e":"ts"},{"n":"reconciler.ts","v":265,"e":"ts"},{"n":"officialMarketplaceGcs.ts","v":216,"e":"ts"},{"n":"refresh.ts","v":215,"e":"ts"},{"n":"pluginFlagging.ts","v":208,"e":"ts"},{"n":"cacheUtils.ts","v":196,"e":"ts"},{"n":"loadPluginOutputStyles.ts","v":178,"e":"ts"},{"n":"pluginDirectories.ts","v":178,"e":"ts"},{"n":"headlessPluginInstall.ts","v":174,"e":"ts"},{"n":"hintRecommendation.ts","v":164,"e":"ts"},{"n":"zipCacheAdapters.ts","v":164,"e":"ts"},{"n":"parseMarketplaceInput.ts","v":162,"e":"ts"},{"n":"pluginVersioning.ts","v":157,"e":"ts"},{"n":"fetchTelemetry.ts","v":135,"e":"ts"},{"n":"pluginBlocklist.ts","v":127,"e":"ts"},{"n":"pluginIdentifier.ts","v":123,"e":"ts"},{"n":"orphanedPluginFilter.ts","v":114,"e":"ts"},{"n":"addDirPluginSettings.ts","v":71,"e":"ts"},{"n":"performStartupChecks.tsx","v":70,"e":"tsx"},{"n":"gitAvailability.ts","v":69,"e":"ts"},{"n":"walkPluginMarkdown.ts","v":69,"e":"ts"},{"n":"managedPlugins.ts","v":27,"e":"ts"},{"n":"officialMarketplace.ts","v":25,"e":"ts"},{"n":"pluginPolicy.ts","v":20,"e":"ts"}],"v":20522,"f":44}},{"id":"src/hooks","dir":"hooks","kind":"extension","name":"hooks","loc":19232,"files":104,"commits":1,"deps":[],"tree":{"n":"src/hooks","c":[{"n":"toolPermission","c":[{"n":"handlers","c":[{"n":"interactiveHandler.ts","v":536,"e":"ts"},{"n":"swarmWorkerHandler.ts","v":159,"e":"ts"},{"n":"coordinatorHandler.ts","v":65,"e":"ts"}],"v":760,"f":3},{"n":"PermissionContext.ts","v":388,"e":"ts"},{"n":"permissionLogging.ts","v":238,"e":"ts"}],"v":1386,"f":5},{"n":"useTypeahead.tsx","v":1385,"e":"tsx"},{"n":"notifs","c":[{"n":"useIDEStatusIndicator.tsx","v":186,"e":"tsx"},{"n":"useFastModeNotification.tsx","v":162,"e":"tsx"},{"n":"useLspInitializationNotification.tsx","v":143,"e":"tsx"},{"n":"usePluginInstallationStatus.tsx","v":128,"e":"tsx"},{"n":"useRateLimitWarningNotification.tsx","v":114,"e":"tsx"},{"n":"useMcpConnectivityStatus.tsx","v":88,"e":"tsx"},{"n":"usePluginAutoupdateNotification.tsx","v":83,"e":"tsx"},{"n":"useTeammateShutdownNotification.ts","v":78,"e":"ts"},{"n":"useSettingsErrors.tsx","v":69,"e":"tsx"},{"n":"useCanSwitchToExistingSubscription.tsx","v":60,"e":"tsx"},{"n":"useAutoModeUnavailableNotification.ts","v":56,"e":"ts"},{"n":"useModelMigrationNotifications.tsx","v":52,"e":"tsx"},{"n":"useDeprecationWarningNotification.tsx","v":44,"e":"tsx"},{"n":"useStartupNotification.ts","v":41,"e":"ts"},{"n":"useInstallMessages.tsx","v":26,"e":"tsx"},{"n":"useNpmDeprecationNotification.tsx","v":25,"e":"tsx"}],"v":1355,"f":16},{"n":"useVoice.ts","v":1144,"e":"ts"},{"n":"useInboxPoller.ts","v":969,"e":"ts"},{"n":"fileSuggestions.ts","v":811,"e":"ts"},{"n":"useReplBridge.tsx","v":723,"e":"tsx"},{"n":"useVirtualScroll.ts","v":721,"e":"ts"},{"n":"useVoiceIntegration.tsx","v":677,"e":"tsx"},{"n":"useRemoteSession.ts","v":605,"e":"ts"},{"n":"useTextInput.ts","v":529,"e":"ts"},{"n":"useDiffInIDE.ts","v":379,"e":"ts"},{"n":"useSearchInput.ts","v":364,"e":"ts"},{"n":"useSwarmPermissionPoller.ts","v":330,"e":"ts"},{"n":"useVimInput.ts","v":316,"e":"ts"},{"n":"useManagePlugins.ts","v":304,"e":"ts"},{"n":"useHistorySearch.ts","v":303,"e":"ts"},{"n":"usePasteHandler.ts","v":285,"e":"ts"},{"n":"useCancelRequest.ts","v":276,"e":"ts"},{"n":"useBackgroundTaskNavigation.ts","v":251,"e":"ts"},{"n":"useAssistantHistory.ts","v":250,"e":"ts"},{"n":"useTasksV2.ts","v":250,"e":"ts"},{"n":"useGlobalKeybindings.tsx","v":249,"e":"tsx"},{"n":"useSSHSession.ts","v":241,"e":"ts"},{"n":"useArrowKeyHistory.tsx","v":229,"e":"tsx"},{"n":"useDirectConnect.ts","v":229,"e":"ts"},{"n":"useTaskListWatcher.ts","v":221,"e":"ts"},{"n":"useTurnDiffs.ts","v":213,"e":"ts"},{"n":"useCanUseTool.tsx","v":204,"e":"tsx"},{"n":"unifiedSuggestions.ts","v":202,"e":"ts"},{"n":"useLspPluginRecommendation.tsx","v":194,"e":"tsx"},{"n":"usePromptSuggestion.ts","v":177,"e":"ts"},{"n":"useSessionBackgrounding.ts","v":158,"e":"ts"},{"n":"useIdeSelection.ts","v":150,"e":"ts"},{"n":"useScheduledTasks.ts","v":139,"e":"ts"},{"n":"useIssueFlagBanner.ts","v":133,"e":"ts"},{"n":"useInputBuffer.ts","v":132,"e":"ts"},{"n":"useClaudeCodeHintRecommendation.tsx","v":129,"e":"tsx"},{"n":"useAwaySummary.ts","v":125,"e":"ts"},{"n":"useLogMessages.ts","v":119,"e":"ts"},{"n":"useDiffData.ts","v":110,"e":"ts"},{"n":"useCommandKeybindings.tsx","v":108,"e":"tsx"},{"n":"usePrStatus.ts","v":106,"e":"ts"},{"n":"usePluginRecommendationBase.tsx","v":105,"e":"tsx"},{"n":"useSkillImprovementSurvey.ts","v":105,"e":"ts"},{"n":"useCopyOnSelect.ts","v":98,"e":"ts"},{"n":"useExitOnCtrlCD.ts","v":95,"e":"ts"},{"n":"useTeleportResume.tsx","v":85,"e":"tsx"},{"n":"useApiKeyVerification.ts","v":84,"e":"ts"},{"n":"useSwarmInitialization.ts","v":81,"e":"ts"},{"n":"useClipboardImageHint.ts","v":77,"e":"ts"},{"n":"useIdeAtMentioned.ts","v":76,"e":"ts"},{"n":"usePromptsFromClaudeInChrome.tsx","v":71,"e":"tsx"},{"n":"useIDEIntegration.tsx","v":70,"e":"tsx"},{"n":"useQueueProcessor.ts","v":68,"e":"ts"},{"n":"useNotifyAfterTimeout.ts","v":65,"e":"ts"},{"n":"useTeammateViewAutoExit.ts","v":63,"e":"ts"},{"n":"useDoublePress.ts","v":62,"e":"ts"},{"n":"useSkillsChange.ts","v":62,"e":"ts"},{"n":"renderPlaceholder.ts","v":51,"e":"ts"},{"n":"useChromeExtensionNotification.tsx","v":50,"e":"tsx"},{"n":"useOfficialMarketplaceNotification.tsx","v":48,"e":"tsx"},{"n":"useDeferredHookMessages.ts","v":46,"e":"ts"},{"n":"useMergedTools.ts","v":44,"e":"ts"},{"n":"useIdeLogging.ts","v":41,"e":"ts"},{"n":"useMemoryUsage.ts","v":39,"e":"ts"},{"n":"useElapsedTime.ts","v":37,"e":"ts"},{"n":"useMinDisplayTime.ts","v":35,"e":"ts"},{"n":"useBlink.ts","v":34,"e":"ts"},{"n":"useMainLoopModel.ts","v":34,"e":"ts"},{"n":"useUpdateNotification.ts","v":34,"e":"ts"},{"n":"useIdeConnectionStatus.ts","v":33,"e":"ts"},{"n":"useFileHistorySnapshotInit.ts","v":25,"e":"ts"},{"n":"useSettingsChange.ts","v":25,"e":"ts"},{"n":"useVoiceEnabled.ts","v":25,"e":"ts"},{"n":"useExitOnCtrlCDWithKeybindings.ts","v":24,"e":"ts"},{"n":"useMergedClients.ts","v":23,"e":"ts"},{"n":"useDynamicConfig.ts","v":22,"e":"ts"},{"n":"useMailboxBridge.ts","v":21,"e":"ts"},{"n":"useAfterFirstRender.ts","v":17,"e":"ts"},{"n":"useSettings.ts","v":17,"e":"ts"},{"n":"useCommandQueue.ts","v":15,"e":"ts"},{"n":"useMergedCommands.ts","v":15,"e":"ts"},{"n":"useTerminalSize.ts","v":15,"e":"ts"},{"n":"useTimeout.ts","v":14,"e":"ts"}],"v":19232,"f":104}},{"id":"src/utils/permissions","dir":"permissions","kind":"security","name":"permissions","loc":9409,"files":24,"commits":1,"deps":[],"tree":{"n":"src/utils/permissions","c":[{"n":"filesystem.ts","v":1777,"e":"ts"},{"n":"permissionSetup.ts","v":1532,"e":"ts"},{"n":"yoloClassifier.ts","v":1495,"e":"ts"},{"n":"permissions.ts","v":1486,"e":"ts"},{"n":"pathValidation.ts","v":485,"e":"ts"},{"n":"PermissionUpdate.ts","v":389,"e":"ts"},{"n":"permissionsLoader.ts","v":296,"e":"ts"},{"n":"permissionExplainer.ts","v":250,"e":"ts"},{"n":"shadowedRuleDetection.ts","v":234,"e":"ts"},{"n":"shellRuleMatching.ts","v":228,"e":"ts"},{"n":"permissionRuleParser.ts","v":198,"e":"ts"},{"n":"bypassPermissionsKillswitch.ts","v":155,"e":"ts"},{"n":"PermissionMode.ts","v":141,"e":"ts"},{"n":"PermissionPromptToolResultSchema.ts","v":127,"e":"ts"},{"n":"getNextPermissionMode.ts","v":101,"e":"ts"},{"n":"classifierDecision.ts","v":98,"e":"ts"},{"n":"dangerousPatterns.ts","v":80,"e":"ts"},{"n":"PermissionUpdateSchema.ts","v":78,"e":"ts"},{"n":"bashClassifier.ts","v":61,"e":"ts"},{"n":"denialTracking.ts","v":45,"e":"ts"},{"n":"PermissionRule.ts","v":40,"e":"ts"},{"n":"autoModeState.ts","v":39,"e":"ts"},{"n":"classifierShared.ts","v":39,"e":"ts"},{"n":"PermissionResult.ts","v":35,"e":"ts"}],"v":9409,"f":24}},{"id":"src/utils/sandbox","dir":"sandbox","kind":"security","name":"sandbox adapter","loc":997,"files":2,"commits":1,"deps":["src/utils/permissions"],"tree":{"n":"src/utils/sandbox","c":[{"n":"sandbox-adapter.ts","v":985,"e":"ts"},{"n":"sandbox-ui-utils.ts","v":12,"e":"ts"}],"v":997,"f":2}},{"id":"src/context","dir":"context","kind":"context","name":"context providers","loc":1013,"files":9,"commits":1,"deps":[],"tree":{"n":"src/context","c":[{"n":"notifications.tsx","v":240,"e":"tsx"},{"n":"stats.tsx","v":220,"e":"tsx"},{"n":"overlayContext.tsx","v":151,"e":"tsx"},{"n":"promptOverlayContext.tsx","v":125,"e":"tsx"},{"n":"voice.tsx","v":88,"e":"tsx"},{"n":"QueuedMessageContext.tsx","v":63,"e":"tsx"},{"n":"modalContext.tsx","v":58,"e":"tsx"},{"n":"mailbox.tsx","v":38,"e":"tsx"},{"n":"fpsMetrics.tsx","v":30,"e":"tsx"}],"v":1013,"f":9}},{"id":"src/state","dir":"state","kind":"runtime","name":"application state","loc":1191,"files":6,"commits":1,"deps":[],"tree":{"n":"src/state","c":[{"n":"AppStateStore.ts","v":569,"e":"ts"},{"n":"AppState.tsx","v":200,"e":"tsx"},{"n":"onChangeAppState.ts","v":171,"e":"ts"},{"n":"teammateViewHelpers.ts","v":141,"e":"ts"},{"n":"selectors.ts","v":76,"e":"ts"},{"n":"store.ts","v":34,"e":"ts"}],"v":1191,"f":6}},{"id":"src/tasks","dir":"tasks","kind":"agent","name":"tasks","loc":3290,"files":12,"commits":1,"deps":["src/services/tools"],"tree":{"n":"src/tasks","c":[{"n":"RemoteAgentTask","c":[{"n":"RemoteAgentTask.tsx","v":856,"e":"tsx"}],"v":856,"f":1},{"n":"LocalAgentTask","c":[{"n":"LocalAgentTask.tsx","v":683,"e":"tsx"}],"v":683,"f":1},{"n":"LocalShellTask","c":[{"n":"LocalShellTask.tsx","v":523,"e":"tsx"},{"n":"killShellTasks.ts","v":76,"e":"ts"},{"n":"guards.ts","v":41,"e":"ts"}],"v":640,"f":3},{"n":"LocalMainSessionTask.ts","v":479,"e":"ts"},{"n":"InProcessTeammateTask","c":[{"n":"InProcessTeammateTask.tsx","v":126,"e":"tsx"},{"n":"types.ts","v":121,"e":"ts"}],"v":247,"f":2},{"n":"DreamTask","c":[{"n":"DreamTask.ts","v":157,"e":"ts"}],"v":157,"f":1},{"n":"stopTask.ts","v":100,"e":"ts"},{"n":"pillLabel.ts","v":82,"e":"ts"},{"n":"types.ts","v":46,"e":"ts"}],"v":3290,"f":12}},{"id":"src/coordinator","dir":"coordinator","kind":"agent","name":"coordination","loc":369,"files":1,"commits":1,"deps":["src/tasks"],"tree":{"n":"src/coordinator","c":[{"n":"coordinatorMode.ts","v":369,"e":"ts"}],"v":369,"f":1}},{"id":"src/buddy","dir":"buddy","kind":"agent","name":"buddy agents","loc":1300,"files":6,"commits":1,"deps":[],"tree":{"n":"src/buddy","c":[{"n":"sprites.ts","v":514,"e":"ts"},{"n":"CompanionSprite.tsx","v":371,"e":"tsx"},{"n":"types.ts","v":148,"e":"ts"},{"n":"companion.ts","v":133,"e":"ts"},{"n":"useBuddyNotification.tsx","v":98,"e":"tsx"},{"n":"prompt.ts","v":36,"e":"ts"}],"v":1300,"f":6}},{"id":"src/remote","dir":"remote","kind":"integration","name":"remote execution","loc":1127,"files":4,"commits":1,"deps":[],"tree":{"n":"src/remote","c":[{"n":"SessionsWebSocket.ts","v":404,"e":"ts"},{"n":"RemoteSessionManager.ts","v":343,"e":"ts"},{"n":"sdkMessageAdapter.ts","v":302,"e":"ts"},{"n":"remotePermissionBridge.ts","v":78,"e":"ts"}],"v":1127,"f":4}},{"id":"src/server","dir":"server","kind":"integration","name":"local server","loc":358,"files":3,"commits":1,"deps":[],"tree":{"n":"src/server","c":[{"n":"directConnectManager.ts","v":213,"e":"ts"},{"n":"createDirectConnectSession.ts","v":88,"e":"ts"},{"n":"types.ts","v":57,"e":"ts"}],"v":358,"f":3}},{"id":"src/bridge","dir":"bridge","kind":"integration","name":"IDE/browser bridges","loc":12613,"files":31,"commits":1,"deps":[],"tree":{"n":"src/bridge","c":[{"n":"bridgeMain.ts","v":2999,"e":"ts"},{"n":"replBridge.ts","v":2406,"e":"ts"},{"n":"remoteBridgeCore.ts","v":1008,"e":"ts"},{"n":"initReplBridge.ts","v":569,"e":"ts"},{"n":"sessionRunner.ts","v":550,"e":"ts"},{"n":"bridgeApi.ts","v":539,"e":"ts"},{"n":"bridgeUI.ts","v":530,"e":"ts"},{"n":"bridgeMessaging.ts","v":461,"e":"ts"},{"n":"createSession.ts","v":384,"e":"ts"},{"n":"replBridgeTransport.ts","v":370,"e":"ts"},{"n":"types.ts","v":262,"e":"ts"},{"n":"jwtUtils.ts","v":256,"e":"ts"},{"n":"bridgePointer.ts","v":210,"e":"ts"},{"n":"trustedDevice.ts","v":210,"e":"ts"},{"n":"bridgeEnabled.ts","v":202,"e":"ts"},{"n":"inboundAttachments.ts","v":175,"e":"ts"},{"n":"codeSessionApi.ts","v":168,"e":"ts"},{"n":"envLessBridgeConfig.ts","v":165,"e":"ts"},{"n":"bridgeStatusUtil.ts","v":163,"e":"ts"},{"n":"debugUtils.ts","v":141,"e":"ts"},{"n":"bridgeDebug.ts","v":135,"e":"ts"},{"n":"workSecret.ts","v":127,"e":"ts"},{"n":"pollConfig.ts","v":110,"e":"ts"},{"n":"pollConfigDefaults.ts","v":82,"e":"ts"},{"n":"inboundMessages.ts","v":80,"e":"ts"},{"n":"flushGate.ts","v":71,"e":"ts"},{"n":"sessionIdCompat.ts","v":57,"e":"ts"},{"n":"capacityWake.ts","v":56,"e":"ts"},{"n":"bridgeConfig.ts","v":48,"e":"ts"},{"n":"bridgePermissionCallbacks.ts","v":43,"e":"ts"},{"n":"replBridgeHandle.ts","v":36,"e":"ts"}],"v":12613,"f":31}},{"id":"src/migrations","dir":"migrations","kind":"persistence","name":"settings/session migrations","loc":603,"files":11,"commits":1,"deps":[],"tree":{"n":"src/migrations","c":[{"n":"migrateEnableAllProjectMcpServersToSettings.ts","v":118,"e":"ts"},{"n":"migrateSonnet45ToSonnet46.ts","v":67,"e":"ts"},{"n":"migrateAutoUpdatesToSettings.ts","v":61,"e":"ts"},{"n":"migrateLegacyOpusToCurrent.ts","v":57,"e":"ts"},{"n":"resetAutoModeOptInForDefaultOffer.ts","v":51,"e":"ts"},{"n":"resetProToOpusDefault.ts","v":51,"e":"ts"},{"n":"migrateSonnet1mToSonnet45.ts","v":48,"e":"ts"},{"n":"migrateFennecToOpus.ts","v":45,"e":"ts"},{"n":"migrateOpusToOpus1m.ts","v":43,"e":"ts"},{"n":"migrateBypassPermissionsAcceptedToSettings.ts","v":40,"e":"ts"},{"n":"migrateReplBridgeEnabledToRemoteControlAtStartup.ts","v":22,"e":"ts"}],"v":603,"f":11}},{"id":"src/memdir","dir":"memdir","kind":"persistence","name":"memory directory","loc":1736,"files":8,"commits":1,"deps":[],"tree":{"n":"src/memdir","c":[{"n":"memdir.ts","v":507,"e":"ts"},{"n":"teamMemPaths.ts","v":292,"e":"ts"},{"n":"paths.ts","v":278,"e":"ts"},{"n":"memoryTypes.ts","v":271,"e":"ts"},{"n":"findRelevantMemories.ts","v":141,"e":"ts"},{"n":"teamMemPrompts.ts","v":100,"e":"ts"},{"n":"memoryScan.ts","v":94,"e":"ts"},{"n":"memoryAge.ts","v":53,"e":"ts"}],"v":1736,"f":8}}],"totals":{"loc":287562,"files":1057,"modules":28}},"meta":{"flow":[["Bootstrap","CLI uses fast paths, classifies the product entrypoint, and dynamically loads main."],["Presentation","React/Ink REPL or print/stream-json drives the shared query core."],["Query","The async generator streams a model response and advances one mutable State."],["Tools","Validation, hooks, permissions, optional sandboxing, tool.call, and post hooks run in order."],["Context","Microcompact/collapse/full compact and dynamic prompt sections rebuild model input."],["Agents","AgentTool reuses query with an independent sidechain, tools, MCP, hooks, and cleanup."]],"runtimeStory":"The recovered 2.1.88 release centers on src/query.ts and QueryEngine.ts, which are top-level source files and therefore described in facets rather than represented as directory modules. The graph maps the supporting implementation directories. Latest 2.1.251 uses native binaries and is not the implementation basis for this map.","testSegments":["test","tests","fixtures","__tests__"],"modules":{"src/entrypoints":{"purpose":"Zero-import version fast path and specialized CLI product entrypoints.","runtime":"First JavaScript/TypeScript code executed in the 2.1.88 bundle."},"src/cli":{"purpose":"Headless print, stream-json control protocol, and programmatic CLI presentation.","runtime":"Consumes QueryEngine/query events without the Ink REPL."},"src/screens":{"purpose":"Interactive React/Ink REPL and full application state presentation.","runtime":"Subscribes to permission, MCP, plugin, agent, task, and sandbox state."},"src/services/api":{"purpose":"Anthropic/Bedrock/Vertex/Foundry clients, streaming, retries, fallback, prompt caching, and usage."},"src/services/tools":{"purpose":"Unified tool validation, hooks, permission decision, invocation, output, and telemetry pipeline."},"src/services/compact":{"purpose":"Full compaction, summary, preserved ranges, attachments, file re-read, and compact hooks."},"src/services/mcp":{"purpose":"MCP transports, auth, discovery, commands, tools, skills, and resources."},"src/tools":{"purpose":"Built-in tools and AgentTool/runAgent subagent runtime.","keyAreas":["AgentTool — foreground/background/team/worktree","file and shell tools — coding actions","task/plan/web/skill tools — product capabilities"]},"src/utils/permissions":{"purpose":"Permission modes, rule precedence, setup, transitions, and policy gates."},"src/utils/sandbox":{"purpose":"Adapter over the external sandbox runtime, dynamic settings, and violation state."},"src/skills":{"purpose":"Managed/user/project/add-dir skill discovery and rich frontmatter parsing."},"src/utils/plugins":{"purpose":"Marketplace, cache, session plugin, managed-policy merge, and resource loading."},"src/hooks":{"purpose":"Lifecycle hook definitions and dispatch used by tools, compaction, sessions, and agents."},"src/remote":{"purpose":"Remote execution and task integration paths present in the 2.1.88 artifact."},"src/migrations":{"purpose":"Versioned migration logic for persisted user/session state."}}},"facets":[{"id":"query","nav":"Query loop","title":"Shared async-generator query loop","headline":"REPL · headless · subagents","hero":{"v":"1","l":"shared query core","s":"many product entrypoints"},"sections":[{"kind":"tree","title":"State transition","items":[{"label":"query() / queryLoop()","badge":"async generator","children":[{"label":"microcompact / context collapse / autocompact","badge":"context"},{"label":"stream model response","badge":"model"},{"label":"streaming executor or runTools","badge":"tools"},{"label":"async attachments + MCP refresh","badge":"context"},{"label":"construct next State","badge":"loop"}]}]},{"kind":"groups","groups":[{"title":"Top-level core files","accent":true,"chips":["src/query.ts","src/QueryEngine.ts","src/tools.ts","src/context.ts","src/main.tsx"]},{"title":"Model providers","chips":["Anthropic first-party","AWS Bedrock","Google Vertex","Azure Foundry"]}]}]},{"id":"tooling","nav":"Tools & safety","title":"Tool and security pipeline","headline":"validation → hooks → permission → sandbox","sections":[{"kind":"tree","title":"Tool call lifecycle","items":[{"label":"Zod + custom validation","badge":"validate"},{"label":"PreToolUse hooks","badge":"hook"},{"label":"allow / deny / ask","badge":"permission"},{"label":"optional sandbox","badge":"OS"},{"label":"tool.call","badge":"execute"},{"label":"PostToolUse hooks","badge":"hook"}]},{"kind":"groups","groups":[{"title":"Permission modes","chips":["default","plan","acceptEdits","bypassPermissions","dontAsk","auto (internal/gated)"]},{"title":"Tool families","chips":["Agent","Bash","Read/Edit/Write","Glob/Grep","Plan/Todo","Web","Skill","MCP","worktree"]}]}]},{"id":"extensions","nav":"Extensions","title":"Skills, plugins, MCP, hooks, and control surfaces","headline":"four distinct extension layers","hero":{"v":"4","l":"extension layers","s":"skill · plugin · MCP · hook"},"columns":2,"sections":[{"kind":"groups","groups":[{"title":"Skills","chips":["frontmatter","path activation","fork context","tools/model/effort"]},{"title":"Plugins","chips":["commands","agents","hooks","marketplace","session dirs"]},{"title":"MCP","chips":["stdio","SSE","Streamable HTTP","OAuth","resources"]},{"title":"Hooks","chips":["tool","compact","session","agent cleanup"]}]},{"kind":"tree","title":"Interfaces","items":[{"label":"React/Ink REPL","badge":"interactive"},{"label":"print / stream-json","badge":"headless"},{"label":"QueryEngine","badge":"programmatic"},{"label":"AgentTool","badge":"subagent"}]}]}]};
+
+/* ---------- helpers ---------- */
+const $ = (s, el) => (el || document).querySelector(s);
+const MODS = EMBED.scan.modules;
+const MOD = new Map(MODS.map((m) => [m.id, m]));
+const META_MOD = (EMBED.meta && EMBED.meta.modules) || {};
+const fmtNum = (n) => n.toLocaleString("en-US");
+const fmtLoc = (n) => n >= 10000 ? Math.round(n / 1000) + "k" : n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const SLOTS = ["--slot-1", "--slot-2", "--slot-3", "--slot-4", "--slot-5", "--slot-7", "--slot-8", "--slot-6"];
+
+const tip = $("#tip");
+function showTip(html, ev) { tip.innerHTML = html; tip.style.display = "block"; moveTip(ev); }
+function moveTip(ev) {
+  const pad = 14;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+function tipify(el, html) {
+  el.onmouseenter = (ev) => showTip(html, ev);
+  el.onmousemove = moveTip;
+  el.onmouseleave = hideTip;
+}
+
+/* ---------- theme ---------- */
+const themeBtn = $("#themeBtn");
+const THEMES = ["auto", "light", "dark"];
+let theme = localStorage.getItem("cbmap-theme") || "auto";
+function applyTheme() {
+  if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  themeBtn.textContent = "theme: " + theme;
+  localStorage.setItem("cbmap-theme", theme);
+}
+themeBtn.onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; applyTheme(); };
+applyTheme();
+
+/* ---------- header ---------- */
+document.title = `${EMBED.title} · Codebase Map`;
+$("#kicker").textContent = EMBED.subtitle || "codebase atlas";
+$("#pageTitle").innerHTML = `${esc(EMBED.title)} <span class="dim">/ codebase map</span>`;
+$("#snapshot").textContent = `snapshot ${EMBED.generated}${EMBED.commit ? ` · ${EMBED.branch ? EMBED.branch + " @ " : ""}${EMBED.commit}` : ""}`;
+
+const kindCounts = {};
+for (const m of MODS) kindCounts[m.kind] = (kindCounts[m.kind] || 0) + 1;
+const kindSummary = Object.entries(kindCounts).sort((a, b) => b[1] - a[1]).slice(0, 3)
+  .map(([k, n]) => `${n} ${k}`).join(" · ");
+const tiles = [
+  [fmtLoc(EMBED.scan.totals.loc), "lines of code", "counted source only"],
+  [fmtNum(EMBED.scan.totals.files), "source files", "see footer for scope"],
+  [EMBED.scan.totals.modules, "modules", kindSummary],
+  ...EMBED.facets.filter((f) => f.hero).map((f) => [f.hero.v, f.hero.l, f.hero.s || ""]),
+].slice(0, 6);
+$("#stats").innerHTML = tiles.map(([v, l, s]) =>
+  `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div><div class="s">${esc(s)}</div></div>`).join("");
+$("#footNote").textContent =
+  `Generated ${EMBED.generated} from a static scan${EMBED.commit ? ` @ ${EMBED.commit} (${EMBED.commitDate})` : ""}. ` +
+  `Line counts cover source files only; dependency dirs, build output, and configured generated paths are excluded. ` +
+  `Module descriptions were written from reading each module's entry points at generation time.`;
+
+/* ---------- tabs ---------- */
+const tabDefs = [
+  { id: "arch", label: "Architecture" },
+  { id: "files", label: "File explorer" },
+  ...EMBED.facets.map((f) => ({ id: "facet-" + f.id, label: f.nav || f.title })),
+];
+$("#tabs").innerHTML = tabDefs.map((t, i) =>
+  `<button role="tab" data-view="${t.id}" aria-selected="${i === 0}">${esc(t.label)}</button>`).join("");
+function switchTab(view) {
+  for (const b of $("#tabs").querySelectorAll("button")) b.setAttribute("aria-selected", String(b.dataset.view === view));
+  for (const s of document.querySelectorAll("section.view")) s.classList.toggle("active", s.id === "view-" + view);
+  if (view === "files") renderTreemap();
+  if (view === "arch") renderGraph();
+  if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
+}
+$("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) switchTab(b.dataset.view); });
+
+/* =========================================================
+   ARCHITECTURE GRAPH
+   ========================================================= */
+const stripKinds = new Set(EMBED.stripKinds);
+const gnodes = MODS.filter((m) => !stripKinds.has(m.kind));
+const gids = new Set(gnodes.map((n) => n.id));
+const importsOf = new Map(gnodes.map((n) => [n.id, n.deps.filter((d) => gids.has(d))]));
+const importedBy = new Map(gnodes.map((n) => [n.id, []]));
+for (const [id, deps] of importsOf) for (const d of deps) importedBy.get(d).push(id);
+const isTestOnly = (id) => !!META_MOD[id]?.testOnly;
+
+const topKinds = new Set(EMBED.topKinds);
+const layerMemo = new Map();
+function layerOf(id, seen = new Set()) {
+  if (layerMemo.has(id)) return layerMemo.get(id);
+  if (seen.has(id)) return 0;
+  seen.add(id);
+  const deps = importsOf.get(id).filter((d) => !topKinds.has(MOD.get(d).kind));
+  const l = deps.length ? 1 + Math.max(...deps.map((d) => layerOf(d, seen))) : 0;
+  layerMemo.set(id, l);
+  return l;
+}
+for (const n of gnodes) if (!topKinds.has(n.kind)) layerOf(n.id);
+const maxBase = Math.max(0, ...[...layerMemo.values()]);
+for (const n of gnodes) if (topKinds.has(n.kind)) layerMemo.set(n.id, maxBase + 1);
+
+const rows = [];
+for (const n of gnodes) {
+  const l = layerMemo.get(n.id) ?? 0;
+  (rows[l] = rows[l] || []).push(n);
+}
+for (let i = 0; i < rows.length; i++) if (!rows[i]) rows[i] = [];
+for (const row of rows) row.sort((a, b) => b.loc - a.loc);
+
+// barycenter ordering: nudge each row toward the mean position of its neighbors
+(function orderRows() {
+  const posOf = new Map();
+  const refresh = () => rows.forEach((row) => row.forEach((n, i) => posOf.set(n.id, (i + 0.5) / row.length)));
+  refresh();
+  for (let pass = 0; pass < 4; pass++) {
+    const order = pass % 2 === 0 ? rows : [...rows].reverse();
+    for (const row of order) {
+      row.sort((a, b) => bary(a) - bary(b));
+      refresh();
+    }
+  }
+  function bary(n) {
+    const nb = [...importsOf.get(n.id), ...importedBy.get(n.id)];
+    const ps = nb.map((id) => posOf.get(id)).filter((p) => p !== undefined);
+    return ps.length ? ps.reduce((s, p) => s + p, 0) / ps.length : posOf.get(n.id);
+  }
+})();
+
+// kind colors: top kinds first, then by aggregate loc
+const kindOrder = [...new Set([
+  ...EMBED.topKinds.filter((k) => kindCounts[k]),
+  ...Object.keys(kindCounts).filter((k) => !stripKinds.has(k)).sort((a, b) => {
+    const loc = (k) => MODS.filter((m) => m.kind === k).reduce((s, m) => s + m.loc, 0);
+    return loc(b) - loc(a);
+  }),
+])].filter((k) => !stripKinds.has(k));
+const kindColor = new Map(kindOrder.map((k, i) => [k, `var(${SLOTS[i % SLOTS.length]})`]));
+
+$("#graphLegend").innerHTML =
+  kindOrder.map((k) => `<span class="li"><span class="sw" style="background:${kindColor.get(k)}"></span> ${esc(k)}</span>`).join("") +
+  (gnodes.some((n) => isTestOnly(n.id)) ? `<span class="li"><span class="sw dashed"></span> test-time only</span>` : "") +
+  `<span class="li"><span class="sw line" style="background:var(--slot-1)"></span> imports (what it uses)</span>
+   <span class="li"><span class="sw line" style="background:var(--slot-8)"></span> imported by (who uses it)</span>`;
+
+const graphEl = $("#graph");
+let selectedNode = null;
+const ROW_H = 92, NODE_H = 46, PAD_TOP = 34, PAD_BOT = 26;
+
+function renderGraph() {
+  const W = Math.max(860, graphEl.clientWidth || graphEl.parentElement.clientWidth);
+  const nLayers = rows.length;
+  const H = PAD_TOP + PAD_BOT + (nLayers - 1) * ROW_H + NODE_H;
+  graphEl.style.height = H + "px";
+  graphEl.innerHTML = "";
+
+  const pos = new Map();
+  rows.forEach((row, layer) => {
+    const y = PAD_TOP + (nLayers - 1 - layer) * ROW_H;
+    const widths = row.map((n) => Math.max(100, n.dir.length * 8.4 + 52));
+    const gap = 26;
+    const total = widths.reduce((a, b) => a + b, 0) + gap * (row.length - 1);
+    let x = Math.max(64, (W - total) / 2);
+    row.forEach((n, i) => { pos.set(n.id, { x, y, w: widths[i] }); x += widths[i] + gap; });
+  });
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  const edgeEls = [];
+  for (const [from, deps] of importsOf) {
+    const a = pos.get(from);
+    for (const to of deps) {
+      const b = pos.get(to);
+      if (!a || !b) continue;
+      const x1 = a.x + a.w / 2, y1 = a.y + NODE_H, x2 = b.x + b.w / 2, y2 = b.y;
+      const dy = Math.max(34, (y2 - y1) * 0.45);
+      const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      p.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`);
+      p.dataset.from = from; p.dataset.to = to;
+      svg.appendChild(p);
+      edgeEls.push(p);
+    }
+  }
+  graphEl.appendChild(svg);
+
+  rows.forEach((row, layer) => {
+    if (!row.length) return;
+    const y = PAD_TOP + (nLayers - 1 - layer) * ROW_H;
+    const lab = document.createElement("div");
+    lab.className = "row-label";
+    lab.style.top = (y + NODE_H / 2 - 6) + "px";
+    const kinds = [...new Set(row.map((n) => n.kind))];
+    lab.textContent = layer === nLayers - 1 && EMBED.topKinds.length && kinds.every((k) => topKinds.has(k))
+      ? kinds.join("·") : "L" + layer;
+    graphEl.appendChild(lab);
+  });
+
+  const nodeEls = new Map();
+  for (const n of gnodes) {
+    const p = pos.get(n.id);
+    if (!p) continue;
+    const el = document.createElement("div");
+    el.className = "gnode" + (isTestOnly(n.id) ? " testpkg" : "");
+    el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;--kc:${kindColor.get(n.kind) || "var(--c-other)"}`;
+    el.innerHTML = `<span class="gname">${esc(n.dir)}</span><span class="gmeta">${fmtLoc(n.loc)} loc</span>`;
+    el.onmouseenter = (ev) => { focusNode(n.id); showTip(nodeTip(n), ev); };
+    el.onmousemove = moveTip;
+    el.onmouseleave = () => { hideTip(); focusNode(selectedNode); };
+    el.onclick = (ev) => { ev.stopPropagation(); selectNode(n.id); };
+    graphEl.appendChild(el);
+    nodeEls.set(n.id, el);
+  }
+  graphEl._edgeEls = edgeEls;
+  graphEl._nodeEls = nodeEls;
+  focusNode(selectedNode);
+}
+
+function nodeTip(n) {
+  return `<b>${esc(n.name)}</b><br>` +
+    `<span class="t2">${fmtNum(n.loc)} loc · ${fmtNum(n.files)} files · ${fmtNum(n.commits)} commits (${esc(EMBED.scan.since)})</span><br>` +
+    `<span class="t2">imports ${importsOf.get(n.id).length} · imported by ${importedBy.get(n.id).length} — click for details</span>`;
+}
+
+function focusNode(id) {
+  const edgeEls = graphEl._edgeEls || [], nodeEls = graphEl._nodeEls || new Map();
+  graphEl.classList.toggle("focused", !!id);
+  if (!id) {
+    for (const p of edgeEls) p.classList.remove("is-imports", "is-imported");
+    for (const el of nodeEls.values()) el.classList.remove("dimmed");
+    for (const [nid, el] of nodeEls) el.classList.toggle("selected", nid === selectedNode);
+    return;
+  }
+  const related = new Set([id, ...importsOf.get(id), ...importedBy.get(id)]);
+  for (const p of edgeEls) {
+    p.classList.toggle("is-imports", p.dataset.from === id);
+    p.classList.toggle("is-imported", p.dataset.to === id);
+  }
+  for (const [nid, el] of nodeEls) {
+    el.classList.toggle("dimmed", !related.has(nid));
+    el.classList.toggle("selected", nid === selectedNode);
+  }
+}
+
+function selectNode(id) { selectedNode = id; focusNode(id); renderArchPanel(id); }
+graphEl.addEventListener("click", () => { selectedNode = null; focusNode(null); renderArchPanel(null); });
+addEventListener("keydown", (e) => { if (e.key === "Escape") { selectedNode = null; focusNode(null); renderArchPanel(null); } });
+
+function renderArchPanel(id) {
+  const panel = $("#archPanel");
+  if (!id) {
+    const flow = EMBED.meta.flow || [];
+    panel.innerHTML =
+      (flow.length ? `<div class="kicker">how it runs</div>
+        <h3 style="font-size:14px">Request → response → background</h3>
+        <ol class="flow-steps">${flow.map(([b, t]) => `<li><b>${esc(b)}</b><br>${esc(t)}</li>`).join("")}</ol>` : "") +
+      (EMBED.meta.runtimeStory ? `<details class="story"><summary>full runtime story</summary><p>${esc(EMBED.meta.runtimeStory)}</p></details>` : "") +
+      `<h4>reading the graph</h4>
+       <p style="font-size:12px;color:var(--ink-2)">Every module sits one layer above the deepest thing it imports, so height = dependency depth.
+       Hover any node: <span style="color:var(--slot-1)">blue edges</span> point at what it imports,
+       <span style="color:var(--slot-8)">orange edges</span> come from who imports it. Click to pin details here.</p>`;
+    return;
+  }
+  const n = MOD.get(id);
+  const m = META_MOD[id] || {};
+  const chips = (ids, rev) =>
+    `<div class="dep-chips${rev ? " rev" : ""}">${ids.map((d) =>
+      `<button data-id="${d}">${esc(MOD.get(d).dir)}</button>`).join("") || `<span style="font-size:11px;color:var(--ink-3)">none</span>`}</div>`;
+  panel.innerHTML =
+    `<div class="kicker">${esc(id)}</div>
+     <h3>${esc(n.name)}</h3>
+     <div class="badges">
+       <span class="badge kind" style="--kc:${kindColor.get(n.kind) || "var(--c-other)"}">${esc(n.kind)}</span>
+       ${isTestOnly(id) ? `<span class="badge">test-time</span>` : ""}
+     </div>
+     <p class="purpose">${esc(m.purpose || "")}</p>
+     ${m.runtime ? `<div class="runtime"><b>Runs:</b> ${esc(m.runtime)}</div>` : ""}
+     <div class="pstats">
+       <div><div class="v">${fmtLoc(n.loc)}</div><div class="l">loc</div></div>
+       <div><div class="v">${fmtNum(n.files)}</div><div class="l">files</div></div>
+       <div><div class="v">${fmtNum(n.commits)}</div><div class="l">commits</div></div>
+     </div>
+     ${m.keyAreas ? `<h4>key areas</h4><ul class="areas">${m.keyAreas.map((a) => {
+       const i = a.indexOf(" — ");
+       return `<li>${i > 0 ? `<b>${esc(a.slice(0, i))}</b> — ${esc(a.slice(i + 3))}` : esc(a)}</li>`;
+     }).join("")}</ul>` : ""}
+     <h4>imports (${importsOf.get(id).length})</h4>${chips(importsOf.get(id), false)}
+     <h4>imported by (${importedBy.get(id).length})</h4>${chips(importedBy.get(id), true)}
+     <button class="explore-btn">Explore files →</button>`;
+  panel.querySelectorAll(".dep-chips button").forEach((b) => (b.onclick = () => selectNode(b.dataset.id)));
+  panel.querySelector(".explore-btn").onclick = () => { setTreemapPkg(id); switchTab("files"); };
+}
+
+/* stripped-kind chip row */
+const stripped = MODS.filter((m) => stripKinds.has(m.kind));
+if (stripped.length) {
+  const row = $("#stripRow");
+  row.style.display = "";
+  row.innerHTML = `<span class="kicker" style="margin-right:2px">${esc([...stripKinds].join("/"))}</span>` +
+    stripped.map((m) => `<span class="chip" data-id="${m.id}">${esc(m.dir)}</span>`).join("");
+  row.querySelectorAll(".chip").forEach((c) => {
+    const m = META_MOD[c.dataset.id];
+    tipify(c, esc(m?.purpose || MOD.get(c.dataset.id).name));
+  });
+}
+
+/* =========================================================
+   FILE TREEMAP
+   ========================================================= */
+const TYPE_DEFS = [
+  ["code", "Code", "--slot-1", ["ts", "js", "mjs", "cjs", "py", "go", "rs", "java", "rb", "php", "c", "cc", "cpp", "h", "hpp", "cs", "swift", "kt", "scala", "ex", "exs", "sh", "proto", "graphql", "tf"]],
+  ["ui", "UI / markup", "--slot-2", ["tsx", "jsx", "vue", "svelte", "html", "heex", "eex", "erb"]],
+  ["data", "Data / config", "--slot-3", ["json", "yaml", "yml", "toml"]],
+  ["docs", "Docs", "--slot-4", ["md", "mdx", "rst"]],
+  ["sql", "SQL", "--slot-5", ["sql"]],
+  ["styles", "Styles", "--slot-7", ["css", "scss", "sass", "less"]],
+  ["other", "Other", "--c-other", []],
+];
+const EXT2TYPE = new Map();
+for (const [k, , , exts] of TYPE_DEFS) for (const e of exts) EXT2TYPE.set(e, k);
+const TYPE_VAR = Object.fromEntries(TYPE_DEFS.map(([k, , v]) => [k, v]));
+const typeOf = (ext) => EXT2TYPE.get(ext) || "other";
+const TESTY_SEG = new Set(["__tests__", "test", "tests", "testing", "spec", "specs", "fixtures", "__fixtures__", "__mocks__", "mocks", ...(EMBED.meta.testSegments || [])]);
+const isTestFile = (name, segs) => segs.slice(0, -1).some((s) => TESTY_SEG.has(s)) || /\.(test|spec|stories)\.|_test\.|Test\.(java|kt)$|test_.*\.py$/.test(name);
+
+const tmState = { pkg: MODS.slice().sort((a, b) => b.loc - a.loc)[0].id, path: [] };
+const tmEl = $("#treemap");
+
+const pkgSelect = $("#pkgSelect");
+{
+  const kinds = [...new Set(MODS.map((m) => m.kind))];
+  pkgSelect.innerHTML = kinds.map((kind) =>
+    `<optgroup label="${esc(kind)}">` +
+    MODS.filter((m) => m.kind === kind).sort((a, b) => b.loc - a.loc)
+      .map((m) => `<option value="${m.id}">${esc(m.dir)} — ${fmtLoc(m.loc)} loc</option>`).join("") +
+    `</optgroup>`).join("");
+  pkgSelect.value = tmState.pkg;
+  pkgSelect.onchange = () => setTreemapPkg(pkgSelect.value);
+}
+function setTreemapPkg(id) {
+  tmState.pkg = id;
+  tmState.path = [];
+  pkgSelect.value = id;
+  if ($("#view-files").classList.contains("active")) renderTreemap();
+}
+
+$("#typeLegend").innerHTML = TYPE_DEFS.map(([k, label, v]) =>
+  `<span class="li" data-type="${k}"><span class="sw" style="background:var(${v})"></span>${label}</span>`).join("") +
+  `<span class="li"><span class="sw" style="background:var(--surface-2);background-image:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 7px)"></span>tests / fixtures</span>`;
+$("#typeLegend").querySelectorAll(".li[data-type]").forEach((li) => {
+  li.onmouseenter = () => { tmEl.classList.add("type-focus"); tmEl.querySelectorAll(`.tm-file[data-type="${li.dataset.type}"]`).forEach((c) => c.classList.add("type-hit")); };
+  li.onmouseleave = () => { tmEl.classList.remove("type-focus"); tmEl.querySelectorAll(".type-hit").forEach((c) => c.classList.remove("type-hit")); };
+});
+
+function squarify(children, x, y, w, h, out) {
+  const items = children.filter((c) => c.v > 0);
+  const total = items.reduce((s, c) => s + c.v, 0);
+  if (!total || w <= 2 || h <= 2) return out;
+  const scale = (w * h) / total;
+  const areas = items.map((c) => ({ node: c, area: c.v * scale }));
+  let cx = x, cy = y, cw = w, ch = h, row = [];
+  const worst = (r, side) => {
+    const s = r.reduce((a, b) => a + b.area, 0);
+    let mx = 0, mn = Infinity;
+    for (const it of r) { if (it.area > mx) mx = it.area; if (it.area < mn) mn = it.area; }
+    return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn));
+  };
+  const layoutRow = (r) => {
+    const s = r.reduce((a, b) => a + b.area, 0);
+    if (cw >= ch) {
+      const rw = s / ch; let yy = cy;
+      for (const it of r) { const hh = it.area / rw; out.push({ node: it.node, x: cx, y: yy, w: rw, h: hh }); yy += hh; }
+      cx += rw; cw -= rw;
+    } else {
+      const rh = s / cw; let xx = cx;
+      for (const it of r) { const ww = it.area / rh; out.push({ node: it.node, x: xx, y: cy, w: ww, h: rh }); xx += ww; }
+      cy += rh; ch -= rh;
+    }
+  };
+  let i = 0;
+  while (i < areas.length) {
+    const side = Math.min(cw, ch);
+    if (row.length === 0 || worst([...row, areas[i]], side) <= worst(row, side)) { row.push(areas[i]); i++; }
+    else { layoutRow(row); row = []; }
+  }
+  if (row.length) layoutRow(row);
+  return out;
+}
+
+function currentRoot() {
+  let node = MOD.get(tmState.pkg).tree;
+  for (const name of tmState.path) {
+    const next = (node.c || []).find((c) => c.n === name && c.c);
+    if (!next) break;
+    node = next;
+  }
+  return node;
+}
+
+function cellTip(node, segs, pctBase) {
+  const pct = pctBase ? ` · ${((node.v / pctBase) * 100).toFixed(1)}% of view` : "";
+  if (node.c) return `<b>${esc(segs.join("/"))}/</b><br><span class="t2">${fmtNum(node.v)} loc · ${fmtNum(node.f)} files${pct} — click to zoom</span>`;
+  return `<b>${esc(segs.join("/"))}</b><br><span class="t2">${fmtNum(node.v)} loc${pct}</span>`;
+}
+
+function renderTreemap() {
+  if (!tmEl.clientWidth) return;
+  const root = currentRoot();
+  const W = tmEl.clientWidth, H = tmEl.clientHeight;
+  tmEl.innerHTML = "";
+  const viewTotal = root.v;
+
+  const mkFileCell = (r, node, segs, parent) => {
+    const el = document.createElement("div");
+    const t = typeOf(node.e);
+    el.className = "tm-cell tm-file" + (isTestFile(node.n, segs) ? " hatched" : "");
+    el.dataset.type = t;
+    el.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${Math.max(1, r.w - 2)}px;height:${Math.max(1, r.h - 2)}px;background-color:var(${TYPE_VAR[t]})`;
+    if (r.w > 56 && r.h > 17) el.innerHTML = `<span class="lbl">${esc(node.n)}</span>`;
+    tipify(el, cellTip(node, segs, viewTotal));
+    parent.appendChild(el);
+  };
+  const mkDirCell = (r, node, segs, pathNames, parent) => {
+    const el = document.createElement("div");
+    el.className = "tm-cell tm-dircell";
+    el.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${Math.max(1, r.w - 2)}px;height:${Math.max(1, r.h - 2)}px`;
+    if (r.w > 56 && r.h > 17) el.innerHTML = `<span class="lbl">${esc(node.n)}/</span>`;
+    tipify(el, cellTip(node, segs, viewTotal));
+    el.onclick = (ev) => { ev.stopPropagation(); tmState.path = pathNames; renderTreemap(); };
+    parent.appendChild(el);
+  };
+
+  function renderChildren(node, parent, w, h, segs, pathNames, depth) {
+    const inset = depth === 0 ? 4 : 1;
+    const rects = squarify(node.c || [], inset, inset, w - inset * 2, h - inset * 2, []);
+    for (const r of rects) {
+      const ch = r.node;
+      const chSegs = [...segs, ch.n];
+      if (!ch.c) { mkFileCell(r, ch, chSegs, parent); continue; }
+      const chPath = [...pathNames, ch.n];
+      if (r.w < 90 || r.h < 64) { mkDirCell(r, ch, chSegs, chPath, parent); continue; }
+      const g = document.createElement("div");
+      g.className = "tm-group";
+      g.style.cssText = `left:${r.x + 1}px;top:${r.y + 1}px;width:${r.w - 2}px;height:${r.h - 2}px`;
+      g.innerHTML = `<div class="hd">${esc(ch.n)}/ <span style="opacity:.55;font-weight:400">${fmtLoc(ch.v)}</span></div><div class="body"></div>`;
+      const hd = g.querySelector(".hd");
+      hd.onclick = (ev) => { ev.stopPropagation(); tmState.path = chPath; renderTreemap(); };
+      tipify(hd, cellTip(ch, chSegs, viewTotal));
+      parent.appendChild(g);
+      renderChildren(ch, g.querySelector(".body"), r.w - 2, r.h - 2 - 17, chSegs, chPath, depth + 1);
+    }
+  }
+  renderChildren(root, tmEl, W, H, [], tmState.path, 0);
+
+  const hint = document.createElement("div");
+  hint.className = "tm-hint";
+  hint.textContent = "area = lines of code";
+  tmEl.appendChild(hint);
+
+  renderCrumbs();
+  renderTmSidebar(root);
+}
+
+function renderCrumbs() {
+  const c = $("#crumbs");
+  const parts = [MOD.get(tmState.pkg).dir, ...tmState.path];
+  c.innerHTML = parts.map((p, i) =>
+    i === parts.length - 1
+      ? `<span class="here">${esc(p)}</span>`
+      : `<button data-i="${i}">${esc(p)}</button><span class="sep">/</span>`).join("");
+  c.querySelectorAll("button").forEach((b) => (b.onclick = () => { tmState.path = tmState.path.slice(0, +b.dataset.i); renderTreemap(); }));
+}
+
+function collectFiles(node, prefix, out) {
+  for (const ch of node.c || []) {
+    if (ch.c) collectFiles(ch, prefix ? prefix + "/" + ch.n : ch.n, out);
+    else out.push({ path: prefix ? prefix + "/" + ch.n : ch.n, v: ch.v, e: ch.e });
+  }
+  return out;
+}
+
+function renderTmSidebar(root) {
+  const pkg = MOD.get(tmState.pkg);
+  const files = collectFiles(root, "", []);
+  const byType = {};
+  for (const f of files) byType[typeOf(f.e)] = (byType[typeOf(f.e)] || 0) + f.v;
+  const total = root.v || 1;
+  const m = META_MOD[tmState.pkg];
+  $("#tmInfo").innerHTML =
+    `<h4>current view</h4>
+     <div class="bigpath">${esc([pkg.dir, ...tmState.path].join("/"))}/</div>
+     ${tmState.path.length === 0 && m?.purpose ? `<p style="font-size:12px;color:var(--ink-2);margin-bottom:8px">${esc(m.purpose)}</p>` : ""}
+     <div class="kv"><span>lines of code</span><b>${fmtNum(root.v)}</b></div>
+     <div class="kv"><span>files</span><b>${fmtNum(root.f)}</b></div>
+     <div class="kv"><span>share of ${esc(pkg.dir)}</span><b>${((root.v / pkg.loc) * 100).toFixed(1)}%</b></div>
+     <div class="typebar">${TYPE_DEFS.filter(([k]) => byType[k]).map(([k, , v]) =>
+       `<div style="width:${((byType[k] / total) * 100).toFixed(2)}%;background:var(${v})"></div>`).join("")}</div>
+     ${TYPE_DEFS.filter(([k]) => byType[k]).map(([k, label, v]) =>
+       `<div class="typerow"><span class="sw" style="background:var(${v})"></span>${label}<b>${Math.round((byType[k] / total) * 100)}% · ${fmtLoc(byType[k])}</b></div>`).join("")}`;
+
+  files.sort((a, b) => b.v - a.v);
+  $("#topFiles").innerHTML = files.slice(0, 12).map((f) =>
+    `<li data-p="${esc(f.path)}"><span class="fp">${esc(f.path)}</span><span class="fl">${fmtLoc(f.v)}</span></li>`).join("");
+  $("#topFiles").querySelectorAll("li").forEach((li) => (li.onclick = () => {
+    const segs = li.dataset.p.split("/");
+    segs.pop();
+    tmState.path = [...tmState.path, ...segs];
+    renderTreemap();
+  }));
+}
+
+/* =========================================================
+   FACETS — data-driven extra tabs
+   ========================================================= */
+const BADGE_SLOTS = ["--slot-1", "--slot-8", "--slot-2", "--slot-5", "--slot-3"];
+
+function renderSection(sec, host) {
+  const card = document.createElement("div");
+  const bare = sec.kind === "tiles";
+  card.className = bare ? "" : "facet-card";
+  if (!bare && sec.title) card.innerHTML = `<h3>${esc(sec.title)}</h3>${sec.sub ? `<div class="sub">${escBadges(sec.sub, sec)}</div>` : ""}`;
+  host.appendChild(card);
+  const body = document.createElement("div");
+  card.appendChild(body);
+
+  if (sec.kind === "tiles") {
+    body.className = "tiles-row";
+    body.innerHTML = (sec.tiles || []).map((t) =>
+      `<div class="tile"><div class="v">${esc(t.v)}</div><div class="l">${esc(t.l)}</div><div class="s">${esc(t.s || "")}</div></div>`).join("");
+  } else if (sec.kind === "barlist") {
+    renderBarlist(sec, body);
+  } else if (sec.kind === "groups") {
+    body.className = "group-cols";
+    body.innerHTML = (sec.groups || []).map((g) =>
+      `<div class="db-group${g.accent ? " accent" : ""}"><h4>${esc(g.title)} <span class="cnt">${(g.chips || []).length}</span></h4>
+       <div class="tchips">${(g.chips || []).map((c) => `<span>${esc(c)}</span>`).join("")}</div></div>`).join("");
+  } else if (sec.kind === "tree") {
+    body.className = "rt-tree";
+    const badgeColor = badgeColors(sec);
+    const renderNode = (item, depth) => {
+      const badge = item.badge ? `<span class="rt-badge" style="--bc:var(${badgeColor(item.badge)})">${esc(item.badge)}</span>` : "";
+      if (!item.children?.length) return `<div class="rt-leaf"><span class="p">${esc(item.label)}</span>${badge}</div>`;
+      return `<details${depth < 1 ? " open" : ""}><summary>${esc(item.label)}${badge ? " " + badge : ""}</summary>` +
+        item.children.map((c) => renderNode(c, depth + 1)).join("") + `</details>`;
+    };
+    body.innerHTML = (sec.items || []).map((i) => renderNode(i, 0)).join("");
+  } else if (sec.kind === "loclist") {
+    body.innerHTML = "";
+    const ul = document.createElement("ul");
+    ul.className = "job-list";
+    const max = Math.max(1, ...(sec.rows || []).map((r) => r.bar ?? 0));
+    let html = "";
+    for (const r of sec.rows || []) {
+      if (r.section) { html += `</ul><h5 class="subhead">${esc(r.section)}</h5><ul class="job-list">`; continue; }
+      html += `<li${r.muted ? ` class="muted"` : ""}>
+        <span class="jn">${esc(r.label)}</span>
+        <span class="jm">${esc(r.meta || "")}</span>
+        ${r.bar != null ? `<span class="jbar"><div style="width:${((r.bar / max) * 100).toFixed(1)}%"></div></span>` : ""}
+      </li>`;
+    }
+    body.innerHTML = `<ul class="job-list">${html}</ul>`;
+  }
+}
+
+function badgeColors(sec) {
+  const seen = new Map();
+  (function scan(items) {
+    for (const i of items || []) {
+      if (i.badge && !seen.has(i.badge)) seen.set(i.badge, BADGE_SLOTS[seen.size % BADGE_SLOTS.length]);
+      scan(i.children);
+    }
+  })(sec.items);
+  return (b) => seen.get(b) || "--c-other";
+}
+function escBadges(s) { return esc(s); }
+
+function renderBarlist(sec, body) {
+  const series = sec.series || [];
+  body.innerHTML =
+    `<div class="chart-legend">${series.map((s, i) =>
+      `<span class="li"><span class="sw" style="background:var(${SLOTS[i % SLOTS.length]})"></span>${esc(s.label)}</span>`).join("")}
+      ${sec.note ? `<span class="li" style="color:var(--ink-3)">${esc(sec.note)}</span>` : ""}</div>
+     <div class="sortbar"><button data-k="value" class="on">by value</button><button data-k="name">a–z</button></div>
+     <div class="rbar-list"></div>`;
+  const list = body.querySelector(".rbar-list");
+  const total = (r) => series.reduce((s, sr) => s + (r.values[sr.k] || 0), 0);
+  let sortKey = "value";
+  const draw = () => {
+    const rows = [...(sec.rows || [])];
+    if (sortKey === "value") rows.sort((a, b) => total(b) - total(a));
+    else rows.sort((a, b) => a.label.localeCompare(b.label));
+    const max = Math.max(1, ...rows.map(total));
+    list.innerHTML = rows.map((r) => {
+      const segs = series.map((sr, i) => {
+        const v = r.values[sr.k] || 0;
+        return v ? `<div style="width:${((v / max) * 100).toFixed(2)}%;background:var(${SLOTS[i % SLOTS.length]})"></div>` : "";
+      }).join("");
+      return `<div class="rbar" data-label="${esc(r.label)}">
+        <div class="rn">${esc(r.label)}</div>
+        <div class="track">${segs}</div>
+        <div class="vals"><b>${total(r)}</b>${r.meta ? ` · ${esc(r.meta)}` : ""}</div>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".rbar").forEach((el) => {
+      const r = (sec.rows || []).find((x) => x.label === el.dataset.label);
+      if (r?.tip) tipify(el, esc(r.tip));
+    });
+  };
+  body.querySelector(".sortbar").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    sortKey = b.dataset.k;
+    body.querySelectorAll(".sortbar button").forEach((x) => x.classList.toggle("on", x === b));
+    draw();
+  });
+  draw();
+}
+
+const facetHost = $("#facetViews");
+for (const f of EMBED.facets) {
+  const sec = document.createElement("section");
+  sec.className = "view";
+  sec.id = "view-facet-" + f.id;
+  sec.innerHTML = `<div class="view-head"><h2>${esc(f.title)}${f.headline ? ` — <span style="font-weight:400">${esc(f.headline)}</span>` : ""}</h2>
+    ${f.sub ? `<div class="sub">${esc(f.sub)}</div>` : ""}</div>`;
+  const grid = document.createElement("div");
+  grid.className = "facet-grid" + (f.columns === 2 ? " cols-2" : "");
+  sec.appendChild(grid);
+  for (const s of f.sections || []) renderSection(s, grid);
+  facetHost.appendChild(sec);
+}
+
+/* ---------- boot ---------- */
+let resizeT;
+addEventListener("resize", () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    if ($("#view-arch").classList.contains("active")) renderGraph();
+    if ($("#view-files").classList.contains("active")) renderTreemap();
+  }, 150);
+});
+renderArchPanel(null);
+const initial = location.hash.replace("#", "");
+switchTab(tabDefs.some((t) => t.id === initial) ? initial : "arch");
+</script>
+</body>
+</html>
