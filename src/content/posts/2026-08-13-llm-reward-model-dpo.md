@@ -2,7 +2,7 @@
 title: "Reward Model、DPO 与偏好学习"
 description: "从 Bradley–Terry 到 DPO 推导，解释 beta、reference、长度偏置与训练退化，附拒绝采样与 IPO/KTO/ORPO/SimPO 家族取舍。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm

@@ -2,7 +2,7 @@
 title: "Agentic RL 与多轮工具调用"
 description: "从多轮 MDP、轨迹 schema、loss mask、六种信用分配（含 GiGPO 锚点状态分组）到异步 rollout、环境设计和安全。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm

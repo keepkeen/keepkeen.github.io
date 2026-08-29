@@ -2,7 +2,7 @@
 title: "大模型 RL 训练系统、指标与排障"
 description: "梳理 rollout 与 trainer 数据流、并行和显存、TRL/verl/slime/OpenRLHF/AReaL/ROLL 选型，以及八类高频故障诊断。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm

@@ -1,8 +1,8 @@
 ---
 title: "2025—2026 国内大模型算法岗招聘、面经与笔试汇总"
-description: "更新至 2026-08-23：招聘批次、候选人面经、正式批笔试、AI Coding 和后训练/Agent RL 前沿增量。"
+description: "更新至 2026-08-29：招聘批次、候选人面经、美团 AI Coding、Context/Harness 与 Agentic RL 增量。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - ai
   - llm
@@ -14,9 +14,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 15
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-23。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
-> 检索截止：2026-08-23（§13 为 8.14–8.23 增量；§12 为 8.13 快照；正文其余部分口径仍为 2026-07-30）
+> 检索截止：2026-08-29（§14 为 8.24–8.29 增量；§13 为 8.14–8.23 增量；正文较早章节按各自标注日期使用）
 >
 > 范围：国内头部互联网/科技公司、代表性大模型公司、研究机构、车企与中型公司；覆盖公开可检索的实习、春招、秋招/提前批、补录、面经和笔试。
 >
@@ -24,7 +24,7 @@ seriesOrder: 15
 
 ## 0. 先看结论
 
-1. **必须分开“届别”和“自然年”**：2026 届的暑期实习、提前批和秋招主周期主要发生在 2025 年；2026 年 7 月的校招主力已经是 2027 届，2026 届多为春招、补录、海外项目或残留页面。
+1. **必须分开“届别”和“自然年”**：2026 届的暑期实习、提前批和秋招主周期主要发生在 2025 年；截至 2026-08-29，校招主力是 2027 届正式批，2026 届多为补录、海外项目或残留页面。
 2. **岗位已经分成四条主链**：基础模型/预训练、后训练与 RL、Agent/RAG/搜索应用、AI Infra/模型优化；另有多模态、评测安全和具身智能横向贯穿。筛 JD 时要先判断交付物，而不是只看“大模型”三个字。
 3. **项目深挖是最稳定的考查项**：数据、baseline、训练资源、指标、bad case、上线成本、失败实验和个人贡献，比通用八股更能区分候选人。
 4. **2025—2026 的技术增量**集中在 GRPO/DAPO/GSPO、异步 rollout、Agentic RL、RAG 责任归因、LLM-as-a-Judge、多模态对齐、KV Cache/显存和数据工程；但传统 ML、SQL、算法手撕仍然没有退出。
@@ -93,7 +93,7 @@ seriesOrder: 15
 
 ### 3.1 当前主力已经转为 2027 届
 
-截至 2026-07-30，能从官方页直接确认的典型状态如下：
+下表是 2026-07-30 建立的官方入口基线；8 月启动与当前状态以 §12–§14 和[窗口日志](/blog/recruit-window-refresh-log/)为准，不能拿本表旧状态覆盖新快照。
 
 | 公司/项目 | 当前页能确认什么 | 状态判断 | 官方入口 |
 |---|---|---|---|
@@ -273,7 +273,7 @@ seriesOrder: 15
 - [纯力扣算法路线](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/README.md)
 - [模型手写核心实现](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/llm_interview_coding.py)
 - [传统 ML、搜广推与 SQL 专项](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E7%9F%A5%E8%AF%86/%E4%BC%A0%E7%BB%9FML_%E6%90%9C%E5%B9%BF%E6%8E%A8_SQL%E4%B8%93%E9%A1%B9.md)
-- [LLM 题库与证据](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E9%A2%98%E5%BA%93/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E9%A2%98%E5%BA%93%E4%B8%8E%E8%AF%81%E6%8D%AE.md)
+- [LLM 题库与证据](/blog/llm-algo-interview-evidence/)
 
 ---
 
@@ -460,6 +460,70 @@ GitHub 面试仓库（wdndev/llm_interview_note、laoshan-song/Awesome-LLM-Inter
 | [R2-OPD](https://arxiv.org/abs/2608.19408)（8.19） | 教师相似度不等于推理进展，OPD 可能惩罚有效但不同于教师的思路 | 比较教师奖励与进展奖励的 span 排序，冲突时屏蔽蒸馏奖励 | P1：OPD/蒸馏追问 |
 
 详细讲解、统一坐标系和第 71–75 题已写入[强化学习前沿专题](/blog/llm-rl-frontier-topics/)与[答案卡](/blog/llm-rl-interview-cards/)。
+
+---
+
+## 14. 2026-08-29 增量刷新
+
+### 14.1 检索口径与结论
+
+- 精确增量窗口：**2026-08-24 00:00 至 2026-08-29**；对 8.21–8.23 已发生但上一轮尚未公开/漏检的面经与论文做回补。
+- 招聘结论：没有出现另一轮“所有大厂同时启动”，而是正式批继续放出**细分岗位**。最值得立即行动的是拼多多正式批、腾讯 Code/Agent/Harness、多模态后训练，以及天猫技术 Agent 算法岗。
+- 面试结论：Agent 岗已从“会不会 LangChain/RAG”推进到 **Context/Harness、权限安全、长程停止、轨迹验证、评测闭环**；RL 岗则继续追问 reward granularity、user simulator、OPD 和多轮 credit。
+- 论文结论：本轮只补三个有明确失败机制的案例，不按发布日期堆算法名。每个案例都写“故障 → 机制解释 → 已有原理 → 可证伪预测”。
+
+### 14.2 招聘与 JD 增量
+
+| 项目 | 新变化 | 对备考的直接含义 | 证据边界 |
+|---|---|---|---|
+| 拼多多 2027 正式批 | 8.24 公开招聘帖出现，官方职位入口仍是校园招聘页 | 旧提前批结束；重新核验正式批岗位 ID，算法/大模型方向直接补投 | [官方入口](https://careers.pddglobalhr.com/campus/grad) + [8.24 招聘帖](https://leetcode.cn/discuss/post/4016884/nei-tui-gun-pin-duo-duo-27jie-xiao-yuan-agyw7/)，记 `A-Official + A-Relay` |
+| 腾讯 2027 新岗位 | 8.27 可见混元 Code & Agent、Harness/自进化，以及多模态生成后训练等细分岗位 | Agent 简历不只写调用 API：补状态管理、工具契约、权限/沙箱、终止、评测和失败恢复 | 官方动态链接可打开但正文由 JS 渲染；岗位字段由官方 URL 与公开聚合页交叉核验，记 `A-Official-Link / Field-Relay`：[Code & Agent](https://join.qq.com/post_detail.html?postId=1289994478656307200)、[Harness/自进化](https://join.qq.com/post_detail.html?postId=1289994478656307201) |
+| 天猫技术 Agent 算法 | 8.26 企业职位页把 Prompt/RAG/Agent 选型、Memory/MCP/Skills、SFT/DPO/GRPO、Agentic RL、trajectory、autorater、A/B、安全与成本放进同一 JD | 面试回答按“任务定义 → 数据/轨迹 → 训练 → 离线/线上评测 → 权限安全 → 成本”闭环组织 | [企业职位页](https://www.nowcoder.com/jobs/detail/463570)，不是阿里官方静态校园页，记 `A-JD / Employer-listed` |
+| 百度 AIDU | 官方大模型 J99938 与 Agent J99969 可直接读取 | 大模型岗补 SFT/RLHF、MoE/Latent Attention、投机推理；Agent 岗补规划/工具/反思、RAG 与成功率/延迟/成本 | [大模型 JD](https://talent.baidu.com/jobs/detail/GRADUATE/ab5ec82f-a8be-4b4a-8e6f-5debc34ea804)、[Agent JD](https://talent.baidu.com/jobs/detail/GRADUATE/4f1cbc80-8332-4a92-b8fa-c0132b17d47e)，`A-Official` |
+
+### 14.3 8.25 美团笔试：AI Coding 已占半卷
+
+[候选人亲历帖](https://www.nowcoder.com/feed/main/detail/7c1898281d6942dc8688a24b59c54a8b)给出的版式是：10 道选择题 30 分、1 道算法题 20 分、类 Kaggle 的 ML AI Coding 50 分。算法版本 A 是“单点修改数组，维护任意两数差绝对值总和”，可用坐标压缩 + Fenwick 维护数量/和值做到 (O(\log n)) 更新；同日另一公开回忆的算法版本是前缀 MEX/构造判定，并提到约 90 分钟 AI Coding。
+
+使用纪律：把它们记为**同场多卷的两个版本**，不能拼接成所谓“完整统一原卷”。训练上新增三条：前 15 分钟跑通合法 baseline；每次只做可验证的小改动；模型分数不涨时先查数据切分、目标泄漏、输出契约和指标，而不是盲目换大模型。
+
+### 14.4 新面经：Context/Harness 与多轮 RL 成为实问题
+
+| 样本 | 可核验题目 | 证据与边界 |
+|---|---|---|
+| [百度大模型研发 Agent 方向一面](https://www.nowcoder.com/discuss/921590204903723008)（面试 8.18，发帖 8.25） | Prompt → Context → Harness 的区别；上下文将溢出时如何压缩；团队 RAG；Coding Agent 学习体系；数据库索引；手撕二叉树前序+层序；后续继续问 Tool Calling/C 端 Agent 架构 | `B-First`。帖子里的“Claude Code 三层压缩”是该场问法，不当作厂商官方固定术语 |
+| [阿里云 Agent 算法一面](https://www.nowcoder.com/feed/main/detail/3a61d09fc2fb436f9bd5c1ed99b43330)（8.27） | 核心产出如何验证、回看如何改；Agent Loop；Harness 权限/安全；长程任务何时早停 | `B-First`。候选人明确没做大规模 RL，因此本场没有硬追 RL；这本身说明项目真实性优先于背算法名 |
+| [淘天 Agent 算法一面](https://www.nowcoder.com/discuss/922503904502259712)（8.27） | pretrain/post-train 数据诊断；任务构造；统一 pipeline 与用户反馈；trajectory 如何验证；mid-train vs post-train；业务算法什么时候值得自己训练模型 | `B-First / Page-partial`。页面静态抓取不稳定，只保留已公开题纲，不扩写答案 |
+| [阿里云 AI Infra / Agentic RL 一面](https://www.nowcoder.com/discuss/921086976030150656)（面试 8.23） | OPD 动机与过滤；为何不用学生错误轨迹；process/outcome reward；过程奖励偏差；多轮双层 reward；user simulator 过拟合；转真人/A-B 评测；冷启动与业务约束；verl AgentLoop | `B-First`，岗位相邻于 AI Infra，作为高价值 RL 信号收录，不外推成所有 Agent 算法岗必考 |
+
+从这些样本抽出的新回答顺序是：先说系统状态和成功标准，再说 Harness 如何限制动作、保存/压缩上下文、处理权限与重放，之后才决定是否需要 SFT/RL。**没有长程决策、可重复环境和可信反馈时，不要为使用 RL 而使用 RL。**
+
+### 14.5 三个 RL 机制案例
+
+#### A. 先问“策略有没有支持”，再问用 PPO 还是 GRPO
+
+- **观察到的失败**：相同 RLVR 配方在不同 base model/prompt 分布上成败不一，甚至“伪奖励”有时有效、有时有害。
+- **机制解释**：如果 base policy 对目标行为的概率质量接近零，on-policy rollout 几乎采不到正例，优化器没有可学习信号；prompt 分布还会改变奖励与行为的相关结构。
+- **已有原理**：经典 RL 的 exploration/support。RL 不是从零创造任意行为，而是放大、重排策略已有的可达行为。
+- **可证伪预测**：训练前的 pass@k/support 指标应能预测可训练性；在 support 很低时，先做数据/SFT/curriculum 应优于直接增加 GRPO steps。见 [Demystifying Reinforcement Learning Post-Training of Language Models](https://arxiv.org/abs/2608.24949)（8.24）。
+
+#### B. Credit 不只是一条 reward，要区分 evidence、transport、update geometry
+
+- **观察到的失败**：GAE 用固定时间核，GRPO 把序列结果广播给所有 token；二者都不感知该条 Transformer 轨迹实际如何计算。
+- **机制解释**：哪些 token 影响后续推理随轨迹变化，固定位置衰减或全序列同权可能把信用传错位置。
+- **已有原理**：credit assignment 与 GAE 的 bias–variance 权衡；新工作把“成功证据、信用传输、参数更新几何”拆成三件事。
+- **可证伪预测**：如果内部计算统计确实携带信用信息，trajectory-specific gate 应胜过常数、位置或打乱对照。CompPO 报告 Qwen3-4B 上 61.4% 对 tuned GRPO 53.8%，且包含 constant/shuffle/position controls；但它仍是新预印本，attention concentration 只是候选代理，不是已建立的因果真值。见 [CompPO/CCT](https://arxiv.org/abs/2608.21501)（8.21）。
+
+#### C. Judge reward 也会被 hack：pairwise + 无异常负例校准
+
+- **观察到的失败**：Agent/审计器用单点评分训练时可能通过夸大、编造可疑行为拿高分，产生高 false positive。
+- **机制解释**：judge 的代理目标没有充分约束“没有问题时应保持沉默”，策略就会利用表面线索；这与业务 Agent 的 autorater/reward hacking 同构。
+- **已有原理**：偏好比较通常比绝对标尺稳定；校准集必须包含“无目标行为”的负例。
+- **可证伪预测**：reference-based pairwise reward 加入无隐藏行为目标后，应在保持发现能力的同时降低 false positive。论文的最佳配置报告 false-positive rate 低于 1%，但结论来自单一审计应用与 LLM judge，迁移到业务 Agent 仍需独立验证。见 [Training Alignment Auditors via Reinforcement Learning](https://arxiv.org/abs/2608.25460)（8.26）。
+
+补充阅读：[Unsupervised Post-Training Survey](https://arxiv.org/abs/2608.24982)整理了 80 种严格 UPT 方法，并提醒同源内部信号可能递归放大错误；它适合作为选型索引，不新增一张要背的方法卡。
+
+这些内容已同步进[强化学习前沿专题](/blog/llm-rl-frontier-topics/)和第 77–79 张[答案卡](/blog/llm-rl-interview-cards/)。
 ---
 
 原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E6%8B%9B%E8%81%98%E6%83%85%E6%8A%A5/2025-2026%E5%9B%BD%E5%86%85%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%AE%97%E6%B3%95%E5%B2%97%E6%8B%9B%E8%81%98%E9%9D%A2%E7%BB%8F%E7%AC%94%E8%AF%95%E6%B1%87%E6%80%BB.md)。

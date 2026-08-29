@@ -2,7 +2,7 @@
 title: "大模型强化学习资料与面经来源索引"
 description: "汇总经典论文、2025—2026 新方法、官方框架、岗位页面和候选人面经，并说明证据等级与使用边界。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm
@@ -12,11 +12,11 @@ draft: false
 series: llm-reinforcement-learning-interview
 seriesOrder: 14
 ---
-> 检索截止：2026-08-23。技术结论优先使用论文、官方博客和官方文档；面经只用于判断“考什么”，不作为算法事实的唯一依据。
+> 检索截止：2026-08-29。技术结论优先使用论文、官方博客和官方文档；面经只用于判断“考什么”，不作为算法事实的唯一依据。
 
 ## 1. 检索方法
 
-本专题按九条工作流检索：经典 RL、RLHF/PPO、偏好学习/DPO、GRPO/RLVR、新方法、Agentic RL、训练框架、官方岗位、候选人面经。8.13 首轮返回约 **427 条候选结果**；8.14–8.23 增量按八条招聘/面经/笔试/技术工作流再返回 **423 条候选结果**。两轮结果大量重合，“约 850”只是检索返回量而非唯一来源数；正文必须去重后再按以下规则筛选：
+本专题按九条工作流检索：经典 RL、RLHF/PPO、偏好学习/DPO、GRPO/RLVR、新方法、Agentic RL、训练框架、官方岗位、候选人面经。8.13 首轮与 8.14–8.23 第二轮共返回约 **850 条候选结果**；8.24–8.29 第三轮只做增量检索与原始页面复核，不再用返回量制造“覆盖率”。不同轮次大量重合，正文必须去重后再按以下规则筛选：
 
 1. 同一论文优先论文主页/官方仓库；
 2. 技术实现优先框架官方文档；
@@ -81,6 +81,10 @@ seriesOrder: 14
 | [SA-MRPO](https://arxiv.org/abs/2608.16072)（2026-08-17） | 原始论文 | 多奖励独立标准化、按目标饱和度重分配优化预算 |
 | [GUPO](https://arxiv.org/abs/2608.17411)（2026-08-18） | 原始论文 | prompt group gradient 冲突与不确定性加权聚合 |
 | [R2-OPD](https://arxiv.org/abs/2608.19408)（2026-08-19） | 原始论文 | 教师蒸馏奖励与 reasoning progress 冲突时的 span 级过滤 |
+| [CompPO/CCT](https://arxiv.org/abs/2608.21501)（2026-08-21） | 原始论文/新预印本 | evidence、credit transport、update geometry 三分法；architecture-aware transport 与 constant/shuffle/position controls |
+| [Demystifying RL Post-Training](https://arxiv.org/abs/2608.24949)（2026-08-24） | 原始论文/代码入口 | base-policy support、prompt distribution、reward granularity 与 spurious reward 的交互 |
+| [Training Alignment Auditors via RL](https://arxiv.org/abs/2608.25460)（2026-08-26） | 原始论文/新预印本 | pairwise judge reward、无隐藏行为负例、false-positive 校准 |
+| [Unsupervised Post-Training Survey](https://arxiv.org/abs/2608.24982)（EMNLP 2026 Findings） | 综述 | 80 类严格 UPT 方法；内部信号来源与递归放大错误风险 |
 
 阅读新方法时不背“方法动物园”，统一比较：baseline/advantage、importance ratio 粒度、KL、reduction、采样分布、解决的失败模式和新增代价。
 
@@ -128,6 +132,9 @@ seriesOrder: 14
 | [小红书校园招聘职位](https://job.xiaohongshu.com/campus/position/20888) | 大模型算法相关官方职位样本 |
 | [滴滴社会招聘职位](https://talent.didiglobal.com/social/p/60879) | 大模型/Agent 相关职位样本 |
 | [快手 2027 秋招](https://zhaopin.kuaishou.cn/) | 大模型/音视频/推荐等岗位；部分技术岗明确增加 AI Coding |
+| [天猫技术 Agent 算法工程师](https://www.nowcoder.com/jobs/detail/463570) | 企业职位页；RAG/Memory/MCP/Skills、SFT/DPO/GRPO、Agentic RL、trajectory、autorater、A/B、安全与成本闭环 |
+| [百度 AIDU 大模型算法 J99938](https://talent.baidu.com/jobs/detail/GRADUATE/ab5ec82f-a8be-4b4a-8e6f-5debc34ea804) | 官方 JD；SFT/RLHF、MoE/Latent Attention、投机推理与训练—推理协同 |
+| [百度 AIDU Agent 算法 J99969](https://talent.baidu.com/jobs/detail/GRADUATE/4f1cbc80-8332-4a92-b8fa-c0132b17d47e) | 官方 JD；规划/工具/反思、RAG、Agent 评测与 PPO/DPO 加分项 |
 
 岗位页面可能下线或调整，因此专题正文只提炼能力维度，不硬编码长期有效的 HC、薪资或截止日期。
 
@@ -150,6 +157,10 @@ seriesOrder: 14
 | [腾讯 WXG 大模型暑期](https://www.nowcoder.com/discuss/891322059656052736) | 2026 | B（转载于汇总帖） | 手撕 PPO/AdamW、MDP 折扣阈值、SFT 参数量与显卡利用率、Q-learning vs DQN |
 | [阿里大模型一面 GRPO 深挖](https://yunpan.plus/t/23865-1-1) | 2026 | B- | GRPO loss 逐项、clip ε、reward hacking 应对、信用分配 |
 | [腾讯 27 秋招大模型算法一面](https://www.nowcoder.com/feed/main/detail/8bbd2725dda44957a3ba9e301b5a9533) | 2026-08（页面相对日期） | B-/日期弱 | Agent vs Pipeline、PPO/DPO/GRPO/DAPO、DPO/GRPO 公式、感知规划执行反思、LIS |
+| [百度 Agent 方向大模型研发一面](https://www.nowcoder.com/discuss/921590204903723008) | 面试 2026-08-18，发帖 08-25 | B | Prompt→Context→Harness、上下文压缩、团队 RAG、Coding Agent、树遍历 |
+| [阿里云 Agent 算法一面](https://www.nowcoder.com/feed/main/detail/3a61d09fc2fb436f9bd5c1ed99b43330) | 2026-08-27 | B | 项目验证、Agent Loop、Harness 权限/安全、长程早停；无大规模 RL 经历则未硬问 |
+| [淘天 Agent 算法一面](https://www.nowcoder.com/discuss/922503904502259712) | 2026-08-27 | B-/页面不稳定 | 数据诊断、任务构造、trajectory 验证、mid-train vs post-train、何时值得训练模型 |
+| [阿里云 AI Infra / Agentic RL 一面](https://www.nowcoder.com/discuss/921086976030150656) | 面试 2026-08-23 | B | OPD 过滤、process/outcome reward、多轮双层 reward、user simulator、转真人/A-B、verl AgentLoop |
 | [AgentGuide 公司案例集](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md) | 持续更新 | 线索（汇编） | RM vs critic、k1/k2/k3、GRPO×MoE、SFT vs RL、rollout 与卡数、FC 过程奖励 |
 | [美团 GRPO 面经解析（面试大师）](https://mianshidashi.cn/interview-questions/meituan/algorithm-engineer/meituan-algorithm-grpo-loss-data-organization) | 2026 | 线索（站方撰写答案） | GRPO loss 计算、训练数据组织字段、禁止跨 prompt 归一化 |
 | [MoonOut RL 八股问答（3）](https://www.cnblogs.com/moonout/p/19749191) | 2026 | 线索（个人整理） | PPO/DPO/GRPO 三方对比、在线 vs 离线 RL 归属 |

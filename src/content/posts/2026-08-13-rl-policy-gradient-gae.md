@@ -2,7 +2,7 @@
 title: "策略梯度、Actor-Critic 与 GAE"
 description: "从 REINFORCE 推导到 baseline、Actor-Critic、GAE 和 importance sampling，为 PPO 打牢公式与数值直觉。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm

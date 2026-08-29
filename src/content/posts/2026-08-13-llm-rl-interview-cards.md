@@ -1,8 +1,8 @@
 ---
-title: "大模型强化学习面经：76 张答案卡"
+title: "大模型强化学习面经：79 张答案卡"
 description: "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与 8 月前沿，配两轮追问与评分标准。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm
@@ -16,7 +16,7 @@ seriesOrder: 10
 
 ## 0. 这份题库来自哪里
 
-检索窗口为 **2025-01-01 至 2026-08-23**。公开亲历面经显示，国内大模型 RL 岗的考察已经从“讲 PPO/GRPO”推进到：
+检索窗口为 **2025-01-01 至 2026-08-29**。公开亲历面经显示，国内大模型 RL 岗的考察已经从“讲 PPO/GRPO”推进到：
 
 - 公式与数值直觉：clip、GAE、importance ratio、DPO beta；
 - 策略角色：current、old、rollout/behavior、reference；
@@ -32,6 +32,8 @@ seriesOrder: 10
 **2026-08-13 第二轮增量（第 64–70 题，K 组）**：前沿与跨界——多模态 RL（Visual-RFT/IoU 奖励，CV 背景候选人的主战场）、熵坍缩机制（Clip-Cov/KL-Cov）、RLVR 边界争议（pass@k/spurious rewards）、生成式 RM（DeepSeek-GRM/SPCT）、GiGPO 步级信用、AReaL 异步系统、RL Scaling（ScaleRL）。正文详解见 [12 章](/blog/llm-rl-frontier-topics/)与 06/07/08 章对应小节。
 
 **2026-08-23 增量（第 71–76 题，L 组）**：8.17–8.19 原始论文补齐多奖励饱和（SA-MRPO）、prompt 组梯度冲突（GUPO）、OPD 教师信号冲突（R2-OPD）、成功稀缺的 Agent 转移信用（TRCA）、只修错误后缀的拓扑蒸馏（DART-SD）；第 76 题来自[腾讯 27 秋招大模型一面](https://www.nowcoder.com/feed/main/detail/8bbd2725dda44957a3ba9e301b5a9533)的“Agent vs Pipeline”问法。论文卡是趋势题，不宣称已成为固定八股。
+
+**2026-08-29 增量（第 77–79 题，M 组）**：只补三个能改变实验决策的机制问题——base-policy support 是否足够、credit 的 evidence/transport/update geometry 三分法、judge reward 的 false-positive/reward-hacking 校准。第 77、79 题与近期 Agentic RL/JD 的“什么时候训练、怎样评测与防投机”直接相连；第 78 题是新预印本趋势题。
 
 ---
 
@@ -546,6 +548,32 @@ L_{DPO}=-\log\sigma\left(\beta\left[
 
 **追问：** 为什么“用了 LangGraph/MCP”不自动等于 Agent？（它们提供编排/协议能力，决策是否由模型动态闭环决定才是边界。）如何证明 RL 比 workflow 好？（同预算比较成功率、成本、恢复率、越权率，做 SFT/无 RL 基线。）
 
+## M. 2026-08-29：可学习性、信用传输与 Judge 校准
+
+### 77. 为什么有些任务直接上 GRPO/PPO 根本学不到？训练前怎么判断？【P0，后训练/Agentic RL】
+
+**答：** On-policy RL 只能从当前策略实际采到的轨迹中学习。如果 base policy 对目标行为的概率质量近似为零，rollout 中几乎没有正例或有区分度的行为，组内 reward 方差也会接近零；此时增加 step、卡数或调 clip 不能凭空创造 support。训练前先在目标 prompt 分布上测 pass@1、pass@k、组内有效样本率、reward 方差、动作/工具覆盖和失败类型，再按 support 分桶。
+
+决策顺序：有足够 support 才直接 RL；support 低但可由高质量示范覆盖时先 SFT/蒸馏；任务跨度过大时做 curriculum/数据分布重排；环境或 verifier 不可信则先修评测。这个判断来自经典 exploration/support 原理，并被 [Demystifying RL Post-Training](https://arxiv.org/abs/2608.24949)重新实证化。
+
+**追问：** 什么实验能证伪？（固定模型与预算，按训练前 support 分桶，比较直接 RL 与 SFT→RL；如果 support 与最终增益无相关、低 support 桶也稳定学成，则该解释不成立。还要控制 prompt 分布，否则“伪奖励是否有效”的结论会被数据分布混淆。）
+
+### 78. Credit assignment 为什么要拆成 evidence、transport、update geometry？CompPO 在改哪一层？【P2，前沿开放题】
+
+**答：** 三层分别是：① **evidence**——凭什么判断成功，如 outcome/process reward、verifier、judge；② **transport**——怎样把下游证据分给 token/step，如整序列广播、折扣核、GAE；③ **update geometry**——advantage 如何变成参数更新，如 PPO clip、sequence/token ratio、梯度聚合。很多讨论把三者混为“换 reward”或“换 loss”，归因因此不清。
+
+[CompPO/CCT](https://arxiv.org/abs/2608.21501)主要改 transport：用 detached 的 behavior-policy attention concentration 生成逐 token retention gate，进入 bootstrap 与 path-dependent GAE；task reward 和 clipped PPO objective 保持不变。论文的关键证据不是单个最好分数，而是 constant gate、shuffle、position 与 critic 结构对照。它仍是新预印本；attention concentration 是可检验代理，不等于已证明的因果信用。
+
+**追问：** 最小消融怎么做？（保持 evidence、采样与 update geometry 不变，只替换 transport；比较 learned gate、constant gate、位置 gate、跨轨迹打乱 gate，并报告 held-out/OOD、稳定性、额外显存和计算。若打乱不掉点，trajectory-specific computation 的解释就站不住。）
+
+### 79. 用 LLM-as-a-Judge/autorater 做 Agent reward，为什么会高分却大量误报？怎样修？【P1，Agent/RM】
+
+**答：** 这是 proxy reward 的校准缺口：judge 只奖励“发现可疑行为”却缺少“目标本来正常时应不报警”的约束，policy 就会夸大、编造或抓表面关键词来取悦 judge。先把 reward 拆成任务成功、证据质量、校准/误报、安全成本；训练与评测中显式加入无异常/无隐藏行为负例。绝对 pointwise 标尺漂移大时，用 reference-based pairwise comparison；同时保留人工盲评、规则/verifier 与跨 judge 复核。
+
+[Training Alignment Auditors via RL](https://arxiv.org/abs/2608.25460)的消融显示 pairwise reward 比 pointwise 更稳，加入无隐藏行为目标后最佳配置 false-positive rate 低于 1%。这只是一类审计 Agent 的预印本结果，迁移到客服、搜索或代码 Agent 必须重做校准。
+
+**追问：** 验收指标是什么？（至少报告 TPR/召回、FPR、precision、校准曲线、真实任务成功率和单位成功成本；做 judge swap、对抗措辞、负例比例、pairwise vs pointwise 消融。reward 上升而 FPR/人工通过率变差，就是 reward hacking。）
+
 ---
 
 ## 口述评分标准
@@ -557,11 +585,11 @@ L_{DPO}=-\log\sigma\left(\beta\left[
 - **2 分**：定义、公式和基本直觉正确；
 - **3 分**：还能回答追问、做数值例子、联系指标与工程。
 
-76 题共 228 分。建议门槛：
+79 题共 237 分。建议门槛：
 
 - 第 10 天：105 分；
 - 第 20 天：155 分；
-- 第 28 天：195 分以上，且 P0 题无 0 分（P0 增量卡：46、49、51、52、55、57、76；多模态岗加 64，Agent 岗加 68/74/75，Seed RL Scaling 方向加 70）。
+- 第 28 天：202 分以上，且 P0 题无 0 分（P0 增量卡：46、49、51、52、55、57、76、77；多模态岗加 64，Agent 岗加 68/74/75/79，Seed RL Scaling 方向加 70）。
 ---
 
 原始讲义与可运行材料：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/09_%E9%9D%A2%E7%BB%8F%E9%A2%98%E5%BA%93%E4%B8%8E%E7%AD%94%E6%A1%88%E5%8D%A1.md)。

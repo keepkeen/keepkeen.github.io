@@ -1,8 +1,8 @@
 ---
 title: "大模型算法岗 30 天冲刺计划"
-description: "把力扣、模型手写、面经知识和投递压进 30 天；含 2026-08-23 重排规则、逐日表和最终验收线。"
+description: "把力扣、模型手写、面经知识和投递压进 30 天；含 2026-08-29 三分支校准、维持循环和最终验收线。"
 date: 2026-07-26
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - ai
   - interview
@@ -14,7 +14,7 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 4
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-23。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
 > 目标：一个月内把力扣/笔试算法、模型手写、面经知识三条线全部过完一轮并达到可投递线，赶上 2027 届秋招提前批与 8 月正式批笔试高峰。
 >
@@ -22,7 +22,15 @@ seriesOrder: 4
 >
 > 原则：**先投再学**（指南 10.1）。边复习边面试，面试本身就是最好的复习。
 
-> **2026-08-23 重排说明**：按原日历今天是 D25。如果 D1–D24 已完成 ≥80%，直接执行 D25–D30，并在 8.29 起进入维持模式；如果此前没有实际执行或完成率不足 80%，不要把未做项目勾掉——从今天把 D1 重新编号为新 D1，整体平移到 2026-09-21。无论走哪条线，今天的拼多多/阿里星截止和已收到的笔试面试通知优先于训练表。
+> **2026-08-29 校准**：原日历已经到期，但计划不按日期自动完成。先用下面三分支选一条；已收到的笔试/面试永远优先，未完成项不得补勾。
+
+| 你的真实状态 | 今天做什么 | 新终点 |
+|---|---|---|
+| 原 D1–D30 验收项完成 ≥80%，且 §5 至少 5/7 通过 | 进入下方“维持模式”，只修弱项和做公司定向 | 不设假终点；持续到 offer |
+| 8.23 已按上一版重启 | 今天是**新 D7**：执行原 D7 内容，同时补 8.25 美团 AI Coding 增量 | 2026-09-21 为新 D30 |
+| 此前未系统执行，或拿不出做题/测试/复盘记录 | 今天是**新 D1**，严格从第一天开始，不跳到 W4 | 2026-09-27 为新 D30 |
+
+无论选哪条，今天先处理拼多多正式批、腾讯/天猫新增 Agent 岗和所有待办测评；旧的拼多多提前批/阿里星截止已过，不再占训练清单。
 
 ## 0. 立刻要做的事（Day 0，2026-07-30）
 
@@ -36,8 +44,8 @@ seriesOrder: 4
 | 线 | 用什么资料 | 怎么用 |
 |---|---|---|
 | A 力扣与笔试算法 | [作战手册](/blog/algo-written-exam-playbook/)（P0/P1 清单 + 2026 年 4–7 月增量节）、[Hot100 模板](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%9F%BA%E7%A1%80/Hot100%E7%AE%97%E6%B3%95%E6%A8%A1%E6%9D%BF%E4%B8%8E%E5%86%B3%E7%AD%96%E6%9C%AF.md)、[组合题决策树](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/%E5%A4%A7%E5%8E%82%E7%AC%94%E8%AF%95%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E4%B8%8E%E7%BB%84%E5%90%88%E9%A2%98%E5%86%B3%E7%AD%96%E6%A0%91.md)、[ACM 速查](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/ACM%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E9%80%9F%E6%9F%A5.md)、[进阶模板](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E8%BF%9B%E9%98%B6%E5%AE%9E%E7%8E%B0/templates/algorithm_exam_advanced.py) | 做题 + 24h/7d 盲写复写；不通读，按周主题查 |
-| B 模型/ML 手写 | [模型手写验收矩阵](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99%E8%83%BD%E5%8A%9B%E9%AA%8C%E6%94%B6%E7%9F%A9%E9%98%B5.md)、[LLM 核心实现](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/llm_interview_coding.py)、[题库与证据 §3.2](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E9%A2%98%E5%BA%93/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E9%A2%98%E5%BA%93%E4%B8%8E%E8%AF%81%E6%8D%AE.md)、[ML-AI-Coding 补丁](/blog/ml-ai-coding-patch/) | 每天从空文件写 1 个模块，跑通边界测试；参考实现通过不代替盲写 |
-| C 面经知识 | [求职指南 §9.6](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E7%9F%A5%E8%AF%86/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E6%B1%82%E8%81%8C%E6%8C%87%E5%8D%97.md)（51 张答案卡 T/R/A/P）+ [题库与证据 §4](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E9%A2%98%E5%BA%93/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E9%A2%98%E5%BA%93%E4%B8%8E%E8%AF%81%E6%8D%AE.md)（N1–N22）+ 指南 §3.6–3.8（趋势） | 每天 3–4 张卡：先自答再对卡，用"合格答案模板"六步口述 |
+| B 模型/ML 手写 | [模型手写验收矩阵](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99%E8%83%BD%E5%8A%9B%E9%AA%8C%E6%94%B6%E7%9F%A9%E9%98%B5.md)、[LLM 核心实现](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/llm_interview_coding.py)、[题库与证据 §3.2](/blog/llm-algo-interview-evidence/)、[ML-AI-Coding 补丁](/blog/ml-ai-coding-patch/) | 每天从空文件写 1 个模块，跑通边界测试；参考实现通过不代替盲写 |
+| C 面经知识 | [求职指南 §9.6](/blog/llm-algo-interview-guide/)（51 张答案卡 T/R/A/P）+ [题库与证据 §4](/blog/llm-algo-interview-evidence/)（N1–N23）+ 指南 §3.6–3.8（趋势） | 每天 3–4 张卡：先自答再对卡，用"合格答案模板"六步口述 |
 | D 投递与模拟 | [招聘窗口日志](/blog/recruit-window-refresh-log/)、[综合模拟卷](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E6%A8%A1%E6%8B%9F%E8%80%83%E8%AF%95/README.md)、[模拟与弱项记录](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E8%AE%A1%E5%88%92%E4%B8%8E%E5%A4%8D%E7%9B%98/%E6%A8%A1%E6%8B%9F%E4%B8%8E%E5%BC%B1%E9%A1%B9%E8%AE%B0%E5%BD%95.md)、指南 §10–11 | Day 1 起投递；W2 起每周 mock；每场必须留成绩和复写 |
 
 **读的顺序上只需要通读三处**：指南 §3.8（2026 七个信号，10 分钟）、题库 §6（两周优先级）、作战手册"2026 年 4–7 月增量"节。其余全部按下表当天用到才翻。
@@ -104,10 +112,24 @@ seriesOrder: 4
 | D24 8.22 | P0 盲写大抽查：随机 20 道 Medium | 手写件抽 6 个盲写 | N15 Search-R1、N16 Visual-RFT、N10 MTP、N11 Muon（30 分钟过完，只记边界） |
 | D25 8.23 | 120min 套卷③（拼多多 8.16 骨架：栈模拟+带权区间调度+Fenwick 最长路） | 错题修复；手算 NDCG@10 | P1–P4 项目卡：转型叙事/贡献/消融/最大失败——对着自己简历逐条写答案 |
 | D26 8.24 | 弱项回炉；MITM 按选择个数分桶 + Apriori 剪枝各做一题 | ACM I/O 终检；搜索排序 baseline 走通 query 切分→特征→NDCG→提交 | P5–P7：上线/预算减半/防作弊；准备 3 个"项目数字"随口可报 |
-| D27 8.25 | 120min 套卷④（美团/蚂蚁算法专场：算法+ML 混合） | 全部手写件最后一轮盲写 | **完整 mock ①（75min，按指南 §11 评分表自评或找人）** |
+| D27 8.25 | 120min 套卷④（美团公开版式：选择 30 + 算法 20 + AI Coding 50；算法练单点修改下两两绝对差和） | 走通类 Kaggle ML CLI：读数据→划分→baseline→指标→提交；另练前缀 MEX 公开变体 | **完整 mock ①（75min，按指南 §11 评分表自评或找人）** |
 | D28 8.26 | 公司定向复盘：按已约面试的公司读题库对应章节（每家 30min） | 该公司风格手撕预演 | 指南 §3.3 逐公司提示 + §3.8 七信号重读 |
 | D29 8.27 | 错题清零日：所有 7 天内错题重写 | 盲写清单终检（Fenwick/DSU/二分答案/二维前缀/背包） | **完整 mock ②**；复盘表归档 |
 | D30 8.28 | 休整 + 面试前 48h 清单（指南 §10.7）：官网 JD、目标团队最新模型版本、自己项目数字 | — | 总验收（见 §5） |
+
+### 原计划通过后的维持模式（8.29 起，7 天循环）
+
+| 日 | 算法/笔试 | 模型手写 | 面试口述 |
+|---|---|---|---|
+| 1 | 美团 8.25：单点更新 + 两两绝对差和 | ML CLI baseline + 指标与提交 | Prompt → Context → Harness；上下文压缩 |
+| 2 | 二叉树前序、层序各盲写一次 | MHA/GQA | Agent Loop、权限、安全、长程早停 |
+| 3 | 前缀 MEX/构造 + 一道 Fenwick | GRPO/DPO loss | trajectory 校验、process/outcome reward |
+| 4 | 一场 90–120min 目标公司套卷 | response-only SFT + mask | RL 能否学到：先测 base-policy support |
+| 5 | 两道 24h/7d 错题复写 | top-k sampling/MoE 二选一 | reward hacking、pairwise judge 与负例校准 |
+| 6 | 一道图/DP 中等题 | Agent tool wrapper | 项目深挖：验证、失败、成本、改进 |
+| 7 | 20 道 P0 随机抽 5 道计时 | 弱项件盲写 | 45min 公司定向 mock + 周复盘 |
+
+循环时只替换“目标公司套卷”和弱项，不再开新专题。当天有真实笔面，就用真实复盘替代第 4/7 日模拟。
 
 ## 4. 手撕高频清单（按 2025–2026 实录频率排序，必须全会）
 
@@ -134,7 +156,7 @@ MHA/GQA（字节两轮手写、米哈游、滴滴）> response-only SFT loss > G
 - [ ] 4 场 120min 套卷至少 3 场拿下前两题 + 第三题有效分
 - [ ] Fenwick、DSU、二分答案、二维前缀和、0/1 背包空文件盲写
 - [ ] 手写件 17 项全部盲写过边界测试（重点 5 件能 15 分钟内写完）
-- [ ] 51 张答案卡 + N1–N22：随机抽 10 张，能按六步模板（定义→公式/数据流→量级→失败模式→最小实验→落到项目）口述 8 张
+- [ ] 51 张答案卡 + N1–N23：随机抽 10 张，能按六步模板（定义→公式/数据流→量级→失败模式→最小实验→落到项目）口述 8 张
 - [ ] 两场完整 mock 按 §11 量表 ≥70 分
 - [ ] 投递 ≥30 家；动态日志中的 P0/P1 均有最后核验日、岗位 ID 和状态
 

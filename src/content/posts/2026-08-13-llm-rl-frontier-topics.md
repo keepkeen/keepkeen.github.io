@@ -2,7 +2,7 @@
 title: "多模态 RL、奖励模型前沿与 RL Scaling"
 description: "Visual-RFT、DeepSeek-GRM、RLVR 边界与 ScaleRL，并系统讲解多奖励饱和、组梯度冲突、OPD 过滤和 Agent 信用分配。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm
@@ -12,7 +12,7 @@ draft: false
 series: llm-reinforcement-learning-interview
 seriesOrder: 13
 ---
-> 建立日期：2026-08-13；最后增量：2026-08-23。本章收录已经进入面试或直接解释当前训练故障、但尚未沉淀成“标准八股”的前沿方向。对 CV/检测背景的候选人，§1 是把原领域经验翻译成 RL 叙事的桥梁，优先级等同 P0；§5 为 8.17–8.19 原始论文增量，先学统一问题坐标系，不背缩写。
+> 建立日期：2026-08-13；最后增量：2026-08-29。本章收录已经进入面试或直接解释当前训练故障、但尚未沉淀成“标准八股”的前沿方向。对 CV/检测背景的候选人，§1 是把原领域经验翻译成 RL 叙事的桥梁，优先级等同 P0；§5 为信用粒度增量，§6 回到更基础的三个问题：策略是否可学、信用怎样传、judge 怎样校准。先学机制和可证伪实验，不背缩写。
 
 ## 1. 多模态 RL：把可验证奖励搬到视觉任务
 
@@ -189,7 +189,91 @@ On-policy distillation 用学生自己采样的轨迹作为状态，再让教师
 
 答开放题时先定位粒度，再讲信号、估计偏差、额外成本和最小消融。这样比连续背五个缩写更像做过系统设计。
 
-## 6. 本章验收
+## 6. 2026-08-29 增量：先判断可学习性，再设计 credit 与 reward
+
+### 6.1 Base-policy support：RL 不能从零采到不存在的行为
+
+#### 观察到的失败
+
+同一套 RLVR/GRPO 配方换一个 base model、prompt 分布或任务难度就可能从稳定提升变成全错组、零梯度或 reward 原地波动；“spurious reward”也不是永远有害或永远有效。
+
+#### 机制解释
+
+On-policy 更新依赖当前策略采到的轨迹。设目标行为集合为 \(\mathcal B\)，如果
+
+\[
+P_{\tau\sim\pi_0}(\tau\in\mathcal B) \approx 0,
+\]
+
+那么有限 rollout 预算里几乎看不到正例。二元 verifier 下，组内全错又让相对 advantage 退化；调 clip、学习率或训练步数不能创造没有被访问的状态—动作支持。prompt 分布还会改变行为和代理奖励的相关性，所以“某 reward 是否有效”必须连同训练分布讨论。
+
+#### 已有原理
+
+这是经典 RL 的 exploration 与 support 问题，不是 LLM 特有新名词。[Demystifying Reinforcement Learning Post-Training of Language Models](https://arxiv.org/abs/2608.24949)（2026-08-24）把 base model、prompt distribution、reward granularity 与 spurious reward 放在统一实验里，核心结论是：目标行为先要在 base policy 下拥有足够概率质量。
+
+#### 可证伪预测与最小实验
+
+1. 训练前按 pass@k、组内非零方差率、工具动作覆盖把 prompt 分桶；support 高的桶应更容易被直接 RL 提升。
+2. support 极低时，SFT/蒸馏→RL 或 curriculum 应优于同预算直接 RL；如果低 support 桶仍稳定学成，这个机制解释就被削弱。
+3. 固定模型和 reward，只换 prompt distribution；若 spurious reward 的效果随分布改变，则不能把结果归因成 reward 本身的普遍性质。
+
+落到工程决策：**先测会不会，再决定怎么强化**。若目标行为近乎不可达，先补数据/示范/任务分解；若 verifier 错，先修环境；只有存在可探索信号时才比较 PPO/GRPO 细节。
+
+### 6.2 CompPO/CCT：把 credit 拆成 evidence、transport、update geometry
+
+#### 观察到的失败
+
+GAE 用固定 \(\gamma\lambda\) 几何核沿 token 时间传信用；group-relative 方法常把一个 outcome statistic 广播给整段回答。两者都不直接表示该条 Transformer 轨迹内部哪些 token 对后续计算更重要。
+
+#### 机制解释与既有原理
+
+[CompPO/CCT](https://arxiv.org/abs/2608.21501)把 credit assignment 拆成三个对象：
+
+1. **evidence**：成功证据是什么——outcome/process reward、verifier、judge；
+2. **transport operator**：证据怎样成为逐 token advantage——广播、固定折扣核或轨迹相关核；
+3. **update geometry**：advantage 怎样改变策略——PPO clip、ratio 粒度、梯度聚合。
+
+CompPO 只重点改变第二层：从 detached behavior-policy 的 attention concentration 得到有界逐 token retention gate，在一步 bootstrap 和 path-dependent Comp-GAE 中共同使用；task reward 与 clipped PPO objective 不变，常数 gate 可退化回普通固定系数 GAE。这个拆法继承了经典 credit assignment 和 GAE bias–variance 观点，但“attention concentration 能否代理因果信用”仍是待检验假设。
+
+#### 可证伪预测与论文证据
+
+若轨迹内部计算真的提供 transport 信息，learned trajectory-specific gate 应同时胜过 constant、position-only 和跨轨迹 shuffle 控制。论文报告 Qwen3-4B 五个 seed 的 held-out accuracy 为 61.4%，tuned GRPO 为 53.8%；constant/shuffle/position 与 critic 对照均低于完整方法，PPO 网格稳定性为 10/12 对 3/12。这里最重要的是**对照结构**，不是把 61.4 当通用收益。
+
+面试时要主动给限制：新预印本、任务与模型范围有限、读取内部统计增加耦合和成本；若 shuffle 控制不掉点、或收益只来自新 critic 容量，就不能声称“credit follows computation”。
+
+### 6.3 Judge reward：pairwise 比较与无异常负例防止误报
+
+#### 观察到的失败
+
+Agent 用 LLM-as-a-Judge/autorater 做 reward 时，reward 可以持续上升，但策略开始夸大问题、编造证据或抓表面关键词；审计/安全任务中表现为 false positive，业务 Agent 中表现为“看起来完成了”但人工验收失败。
+
+#### 机制解释与既有原理
+
+如果 pointwise judge 只奖励“发现异常”，训练分布又几乎全是有异常样本，代理目标没有约束“没有问题时保持沉默”。策略就会 reward hack。偏好学习的既有经验表明，相对比较常比绝对打分更稳；统计校准则要求正负基率与无事件负例都进入训练/评测。
+
+[Training Alignment Auditors via Reinforcement Learning](https://arxiv.org/abs/2608.25460)（2026-08-26）让知道隐藏行为标签的 judge 把策略调查与 reference investigation 做整体 pairwise 比较。消融显示 pairwise reward 比 pointwise 更稳，加入没有植入隐藏行为的目标后，最佳配置保持低于 1% 的 false-positive rate。
+
+#### 可证伪预测与迁移边界
+
+1. 相同数据和预算下，pairwise 应比 pointwise 在 judge swap、措辞扰动和人工盲评上更稳；否则“比较更鲁棒”的解释不成立。
+2. 增加无异常负例应降低 FPR，同时不能让 TPR/真实成功率塌掉；只降误报但完全不发现问题也不算成功。
+3. 至少报告 TPR/recall、FPR、precision、校准曲线、人工通过率和单位成功成本，不能只报训练 reward。
+
+这是单一 alignment-auditing 应用的预印本，不等于所有业务 Agent 都能复制其数字。迁移到搜索、客服、代码 Agent 时要重新构造业务负例、reference 和人工验收集。
+
+### 6.4 一张决策表
+
+| 顺序 | 先问什么 | 失败时先修什么 | 不要先做什么 |
+|---:|---|---|---|
+| 1 | Base policy 能否采到目标行为？ | 数据、SFT/蒸馏、curriculum、任务拆分 | 盲加 GRPO steps/rollouts |
+| 2 | Reward/evidence 是否对应真实目标？ | verifier、rubric、负例、人工抽检 | 只看 reward 均值 |
+| 3 | Credit transport 是否把证据分对位置？ | step/span/token 归因与控制实验 | 同时改 reward 和 loss 后宣称归因 |
+| 4 | Update geometry 是否稳定？ | clip/KL/ratio/reduction/组梯度 | 用优化器补救错误目标 |
+| 5 | OOD/真人/线上是否成立？ | 冻结评测、judge swap、A/B 与成本 | 把训练 judge 分数当上线成功 |
+
+[Unsupervised Post-Training Survey](https://arxiv.org/abs/2608.24982)（EMNLP 2026 Findings）整理了 80 种严格 UPT 方法，并以内部信号来源组织它们；其重要提醒是同源自生成信号可能递归放大错误。把它作为选型索引，而不是第 80 个要背的方法名。
+
+## 7. 本章验收
 
 1. 能为一个视觉任务（检测/分割/异常检测）设计可验证奖励，主动说出两种被钻空子的方式和制衡项；
 2. 能讲清 SPCT 两阶段与 GRM 的推理时投票机制，并回答"为什么在线打分常仍用 scalar RM"；
@@ -198,8 +282,11 @@ On-policy distillation 用学生自己采样的轨迹作为状态，再让教师
 5. 给定“正确性+格式+长度”三奖励，能指出固定加权的两个失败并设计逐目标监控；
 6. 能区分 prompt 组梯度冲突、span 级教师冲突、transition credit 和拓扑断点四个粒度；
 7. 能用 90 秒比较 TRCA 与 DART-SD：前者不依赖成功锚点做转移 rubric，后者利用成功支持只蒸馏错误后缀。
+8. 给定一个新 RL 任务，能先用 pass@k/support、reward 方差和动作覆盖判断是否值得直接 RL；support 低时给出 SFT/curriculum 对照。
+9. 能把 credit 拆成 evidence/transport/update geometry，并设计 constant、position、shuffle 三个 transport 控制。
+10. 能为 LLM judge 设计 pairwise 与无异常负例消融，同时报告 TPR/FPR/precision，而不是只报 reward。
 
-主要来源：[Visual-RFT](https://arxiv.org/abs/2503.01785)、[DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495)、[RLVR 边界研究](https://arxiv.org/abs/2504.13837)、[Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230)、[ScaleRL](https://arxiv.org/abs/2510.13786)、[熵机制](https://arxiv.org/abs/2505.22617)、[SA-MRPO](https://arxiv.org/abs/2608.16072)、[TRCA](https://arxiv.org/abs/2608.16156)、[GUPO](https://arxiv.org/abs/2608.17411)、[DART-SD](https://arxiv.org/abs/2608.18524)、[R2-OPD](https://arxiv.org/abs/2608.19408)。
+主要来源：[Visual-RFT](https://arxiv.org/abs/2503.01785)、[DeepSeek-GRM/SPCT](https://arxiv.org/abs/2504.02495)、[RLVR 边界研究](https://arxiv.org/abs/2504.13837)、[Reasoning Boundary Paradox](https://arxiv.org/pdf/2510.02230)、[ScaleRL](https://arxiv.org/abs/2510.13786)、[熵机制](https://arxiv.org/abs/2505.22617)、[SA-MRPO](https://arxiv.org/abs/2608.16072)、[TRCA](https://arxiv.org/abs/2608.16156)、[GUPO](https://arxiv.org/abs/2608.17411)、[DART-SD](https://arxiv.org/abs/2608.18524)、[R2-OPD](https://arxiv.org/abs/2608.19408)、[CompPO/CCT](https://arxiv.org/abs/2608.21501)、[Demystifying RL Post-Training](https://arxiv.org/abs/2608.24949)、[Alignment Auditors via RL](https://arxiv.org/abs/2608.25460)、[UPT Survey](https://arxiv.org/abs/2608.24982)。
 ---
 
 原始讲义与可运行材料：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/12_%E5%89%8D%E6%B2%BF%E4%B8%93%E9%A2%98_%E5%A4%9A%E6%A8%A1%E6%80%81RL_RM%E5%89%8D%E6%B2%BF%E4%B8%8EScaling.md)。

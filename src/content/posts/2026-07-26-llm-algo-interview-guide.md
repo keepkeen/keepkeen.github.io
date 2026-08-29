@@ -1,7 +1,8 @@
 ---
-title: "大模型算法岗面试与备战指南（2026 修订）"
-description: "从 Transformer、后训练 RL 到 Agent/RAG 的系统备战正文：133 道高频题、51 张答案卡，以及覆盖 2026 年面试趋势的三轮增量观察。"
+title: "大模型算法岗面试与备战指南"
+description: "更新至 2026-08-29：从训练、后训练和 Agent 到手写、项目深挖与正式批新考点的系统指南。"
 date: 2026-07-26
+updatedDate: 2026-08-29
 tags:
   - ai
   - llm
@@ -13,14 +14,15 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 1
 ---
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
-
-> 面向暑期实习与秋招；资料检索日期：2026-07-24
+> 面向暑期实习与秋招；系统检索日期：2026-08-29
 >
 > 适合画像：已经完成 Stanford CS336 或同等课程，做过模型训练，研究背景偏异常检测，希望转向大模型训练、后训练/强化学习或 Agent。
 
 > 2025—2027 年份化题库与证据账本见 [《LLM 算法岗题库与证据》](/blog/llm-algo-interview-evidence/)。其中 2027 自然年内容全部是趋势预测；2027 届已发生流程会单独标注。
+>
+> 招聘批次、当前官方入口、2025/2026 公司覆盖和社交平台补查见 [《招聘、面经与笔试汇总》](/blog/llm-recruit-interview-roundup/)及[《招聘窗口与刷新日志》](/blog/recruit-window-refresh-log/)。动态 deadline 不再维护在本指南正文。
 
 ## 先读结论
 
@@ -354,6 +356,18 @@ MiniMax、智谱、DeepSeek、月之暗面不是传统“互联网大厂”，�
 **技术版图同步更新**（详见账本 N17—N22 与第五节预测）：DSA 稀疏注意力已进 DeepSeek V3.2/V4 与 GLM-5，"压缩+稀疏"两级注意力与 Qwen3.5 的线性注意力混合架构取代 NSA/MoBA 成为最新架构考点；On-Policy Distillation 进入多家旗舰训练管线，奖励密度谱系（GRPO→PRM→OPD）是新的比较框架；ERNIE 5.0 原生全模态与音视频联合生成是多模态岗新概念题。传统 RAG pipeline 八股有"被 Agentic Search 吸收"的说法但证据级低，建议降权不放弃。
 
 **流程信号**：2027 届提前批已于 2026 年 6—7 月启动（拼多多含笔试、百度已恢复场次、米哈游免笔试直面、华为机考滚动、美团 8 月正式批），LLM 算法岗面经在提前批窗口还很少，8—9 月将是新样本高峰，届时应再刷新一轮。信息源风险同步上升：跨公司模板化"攒人品"账号与 2025 帖拆分重发已被识别（见账本 TX-26-02 备注），新帖一律先查账号发帖史再定级。
+
+### 3.9 第六轮增量（2026-08-29）：正式批开始考 Harness 与“何时不该上 RL”
+
+8.24–8.29 的变化不是又一轮名词更新，而是考查边界进一步落到系统与实验决策：
+
+1. **Context/Harness 已从生态词变成系统设计题**。百度 Agent 方向追问 Prompt→Context→Harness、上下文压缩、团队 RAG 与 Coding Agent 学习体系；阿里云追问 Agent Loop、权限、安全和长程早停。回答时按“模型输入与决策 → 上下文选择/压缩 → 外围执行与权限 → 观察/重放/停止 → 评测”分层，不能只列工具名。
+2. **业务闭环先于训练算法**。淘天问 trajectory 怎样验证、统一 pipeline 怎样接用户反馈、mid-train/post-train 怎样分、业务什么时候值得自己训练模型；阿里云候选人没做大规模 RL，面试官就没有硬追。真实数据、验证和改进证据比假装做过大规模训练更重要。
+3. **Agentic RL 追问已经进入环境偏差**。阿里云相邻岗问 process/outcome reward、双层多轮 reward、user simulator 过拟合、转真人和 A/B。合格答案必须讨论 simulator-to-human gap、judge 偏差、离线/在线指标和单位成功成本。
+4. **先判断 base-policy support，再选 PPO/GRPO**。若目标行为在当前策略下几乎采不到，直接增加 rollout 和训练步数不会创造信号；先测 pass@k、有效轨迹率、reward 方差和动作覆盖，低 support 时先 SFT/蒸馏、curriculum 或任务拆分。详见账本 N23 与[强化学习专题](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/README.md)。
+5. **AI Coding 已进入半卷权重**。美团 8.25 公开样本是选择 30 + 算法 20 + 类 Kaggle ML 50；训练目标应从“会调用模型”改为 15 分钟内跑通合法 baseline、识别泄漏、实现本地指标并小步迭代。详见 [ML / AI Coding 补丁](/blog/ml-ai-coding-patch/)。
+
+本轮逐题证据在[题库账本](/blog/llm-algo-interview-evidence/)的 BD-26-03、ALI-26-05～07；招聘状态和当前岗位仍以[窗口日志](/blog/recruit-window-refresh-log/)为准。
 
 ---
 
@@ -3558,6 +3572,8 @@ P95 突升按时间尺度处理。十分钟内：冻结发布、查看分段 lat
 
 ## 10. 八周冲刺计划与投递策略
 
+> 本章完整保留八周与 14 天两种参考方案，便于未来按剩余时间切换。当前活动日历统一以[30 天冲刺计划](/blog/llm-30day-sprint-plan/)为准。
+
 ### 10.1 先投再学
 
 当前检索日期是 2026-07-21。若你是 2027 届：
@@ -4007,3 +4023,6 @@ Agent：
 6. 把异常检测优势变成独特而可信的研究问题。
 
 投递从今天开始，项目和知识补齐与面试并行。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E7%9F%A5%E8%AF%86/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E6%B1%82%E8%81%8C%E6%8C%87%E5%8D%97.md)。

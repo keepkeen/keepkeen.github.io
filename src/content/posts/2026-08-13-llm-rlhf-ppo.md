@@ -2,7 +2,7 @@
 title: "RLHF 与 PPO：从四模型数据流到训练指标"
 description: "拆解 actor、critic、reference 与 reward model，分优势正负解释 PPO clip，覆盖 KL 的 k1/k2/k3 估计器、“KL 能否换交叉熵”与训练排障。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm

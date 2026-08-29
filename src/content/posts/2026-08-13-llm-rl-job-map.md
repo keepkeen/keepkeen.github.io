@@ -2,7 +2,7 @@
 title: "大模型强化学习岗位地图与学习入口"
 description: "从 2025—2026 公开岗位和面经出发，区分后训练、Reasoning RL、Agentic RL 与 RL 系统岗位，并给出零基础优先级。"
 date: 2026-08-13
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - reinforcement-learning
   - llm
@@ -48,6 +48,8 @@ seriesOrder: 1
 | [滴滴算法实习，页面 2026-06-21](https://www.nowcoder.com/feed/main/detail/3fd2957eb8274e0cb4afcac39ed182d3) | 全对全错 group、课程学习、reward/KL/clip fraction、trajectory-token gap、业务 reward | 06、07、08 |
 | [腾讯 WXG 大模型（单轮 2.5h）](https://www.nowcoder.com/discuss/891322059656052736) | 手撕 PPO 与 AdamW、MDP 折扣阈值计算、SFT 参数量与显卡利用率口算、Q-learning vs DQN、bf16/fp16/fp32 | 01、02、04、09、10 |
 | [阿里大模型一面 GRPO 深挖](https://yunpan.plus/t/23865-1-1) | GRPO loss 逐项解释、clip ε 取值来历、Reward Hacking 应对、组内信用分配 | 06、09 |
+| [阿里云 AI Infra / Agentic RL 一面，2026-08-23](https://www.nowcoder.com/discuss/921086976030150656) | OPD 过滤、process/outcome reward、双层多轮 reward、user simulator 过拟合、转真人/A-B 评测、verl AgentLoop | 06、07、08、09、12 |
+| [阿里云 Agent 算法一面，2026-08-27](https://www.nowcoder.com/feed/main/detail/3a61d09fc2fb436f9bd5c1ed99b43330) | 项目验证、Agent Loop、Harness 权限/安全、长程早停；候选人没做大规模 RL 就没有硬追 | 07、09；证明真实项目边界优先于背术语 |
 | [AgentGuide 公司案例集（汇编级）](https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md) | RM vs critic、KL 的 k1/k2/k3、交叉熵 vs KL、GRPO×MoE、SFT vs RL 选型、rollout 与卡数、拒绝采样、FC 过程奖励 | 04、05、06、08、09 |
 
 这批样本给出五个稳定的准备结论：
@@ -58,8 +60,9 @@ seriesOrder: 1
 4. **Agent RL 是真正的序列决策**：状态转移、环境反馈和 credit assignment 不能用单轮偏好学习敷衍。
 5. **代码仍然存在**：除了 LeetCode，还可能手写 KL、DPO/GRPO 数据流、SFT mask 或训练循环。
 6. **追问已进深水区（2026-08 增量确认）**：KL 的 k1/k2/k3 估计器、DeepSeek R1 四阶段管线、MoE 训推不一致、现场算折扣阈值/参数量这类"计算层"问题开始成批出现，只背名词接不住第二轮追问。对应详解见 04/06 章增量小节与题库 46–70。
-7. **8.23 新信号是“信用粒度继续变细”**：新论文分别处理多 reward 饱和、prompt 组梯度冲突、推理 span 的教师冲突、Agent transition 与路径拓扑；腾讯 27 秋招一面已直接问 Agent 与固定 Pipeline 的边界。对应 12 章 §5 与题库 71–76，优先学统一坐标，不背方法名。
-7. **前沿方向已入题（第二轮扩检确认）**：多模态可验证奖励（Visual-RFT 类）、熵坍缩机制、"RLVR 是否扩展能力"开放题、异步 RL 系统与 RL Scaling 在头部团队面试中出现。CV/检测背景候选人重点读 [12 章](/blog/llm-rl-frontier-topics/) §1——它是把你原领域指标（IoU/PRO/AUROC）直接变成 RL 奖励叙事的桥。
+7. **8.23 信号是“信用粒度继续变细”**：新论文分别处理多 reward 饱和、prompt 组梯度冲突、推理 span 的教师冲突、Agent transition 与路径拓扑；腾讯 27 秋招一面已直接问 Agent 与固定 Pipeline 的边界。对应 12 章 §5 与题库 71–76，优先学统一坐标，不背方法名。
+8. **8.29 信号是先判断“RL 有没有可学信号”**：base policy 对目标行为没有 support 时，直接加 GRPO steps 很可能无效；有信号后再区分 reward evidence、credit transport 和 update geometry；judge reward 还要用负例校准防止 false positive。对应 12 章 §6 与题库 77–79。
+9. **前沿方向已入题（扩大检索确认）**：多模态可验证奖励（Visual-RFT 类）、熵坍缩机制、"RLVR 是否扩展能力"开放题、异步 RL 系统与 RL Scaling 在头部团队面试中出现。CV/检测背景候选人重点读 [12 章](/blog/llm-rl-frontier-topics/) §1——它是把你原领域指标（IoU/PRO/AUROC）直接变成 RL 奖励叙事的桥。
 
 ## 3. 从经典 RL 到 LLM RL 的映射
 

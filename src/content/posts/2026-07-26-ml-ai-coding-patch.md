@@ -2,7 +2,7 @@
 title: "ML / AI Coding 算法岗笔试补丁"
 description: "JSON 契约、数值稳定、Viterbi、Attention、IRLS、搜索排序/NDCG、Apriori 与 MITM 的限时实现要点。"
 date: 2026-07-26
-updatedDate: 2026-08-23
+updatedDate: 2026-08-29
 tags:
   - ai
   - algorithms
@@ -13,9 +13,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 11
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-23。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
-> 更新至 2026-08-23。对应 27 届实习/秋招公开题型：阿里 AI Coding、美团 One-Class SVM/IRLS 与搜索排序、蚂蚁 Viterbi、携程门控 Top-k Attention、京东 JSON 集合/折半枚举。它们多数没有精确 LeetCode 映射，考的是接口、矩阵/概率状态、数据切分、数值稳定和隐藏测试。
+> 更新至 2026-08-29。对应 27 届实习/秋招公开题型：阿里 AI Coding、美团 One-Class SVM/IRLS、搜索排序与 8.25 类 Kaggle ML 半卷、蚂蚁 Viterbi、携程门控 Top-k Attention、京东 JSON 集合/折半枚举。它们多数没有精确 LeetCode 映射，考的是接口、矩阵/概率状态、数据切分、数值稳定、指标和隐藏测试。
 
 可执行零依赖实现：[ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/ml_ai_coding_exam.py)；自动测试：[test_ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/tests/test_ml_ai_coding_exam.py)。
 
@@ -170,15 +170,36 @@ $$
 
 验收用小规模暴力对拍：Apriori 枚举所有 item 子集；MITM 枚举所有固定大小组合。JSON 中 tuple/list、整数顺序和重复事务的处理必须确定。
 
-## 10. AI Coding 的 60–90 分钟节奏
+## 10. 类 Kaggle ML 半卷：先交付，再提分
 
-1. 0–10 分钟：把自然语言规则改写成 schema、纯函数签名和 3 个例子。
-2. 10–20 分钟：只完成 parse/validate/serialize，确认 stdin/stdout 契约。
-3. 20–55 分钟：先写正确的直接实现，再优化热点。
-4. 55–70 分钟：补空集合、重复、Unicode、边界值、并列和非法输入。
-5. 70–90 分钟：检查 stdout 无日志、结果确定、复杂度满足上限。
+2026-08-25 美团大模型算法公开样本中，选择 30 分、算法 20 分、AI Coding 50 分；关联题面是给训练/测试表、目标字段与命令行契约的类 Kaggle ML 任务。这意味着训练时不能只会某个固定模型，要会在陌生 schema 下快速建立**可运行、可评分、无泄漏**的闭环。
 
-## 11. 验收线
+收到目录后按这个顺序：
+
+```text
+README / SCHEMA / 样例提交
+→ 确认目标、可用字段、产生时点和禁用泄漏字段
+→ 读 train/test 的列、dtype、缺失、主键与时间范围
+→ 合法切分（时间/用户/query/group 优先，不能默认随机行切）
+→ dummy/线性/树 baseline
+→ 本地指标与提交格式双校验
+→ 每轮只改一类特征或一个模型，记录 score 与耗时
+```
+
+15 分钟硬门槛：命令 `python main.py --input ... --output ...` 能跑通；输出行数、主键、列名、dtype、NaN/Inf 都合法；本地有一个可复现 baseline 分数。达不到这条线时先修契约，不调参。
+
+常见失败：随机切分泄漏未来/同用户信息；把测试期才产生的行为字段当特征；离线指标与平台指标实现不一致；AI 一次性重构后无法定位退化；只看 public score 不保留本地验证。每次让 AI 修改前先写预期，修改后看 diff、跑最小样例和验证集；分数不涨先排查数据与指标，不立即换“更强模型”。
+
+## 11. AI Coding 的 60–90 分钟节奏
+
+1. 0–10 分钟：读任务契约、schema、指标和样例；列出三种最可能的泄漏。
+2. 10–20 分钟：完成 parse/validate/serialize 或数据读取/合法提交，跑通最小 baseline。
+3. 20–55 分钟：先写正确直接实现；建模题只做一轮可解释特征和一个稳健模型。
+4. 55–70 分钟：补空集合、重复、Unicode、边界值、缺失、并列、非法输入与切分检查。
+5. 70–85 分钟：只做有依据的一到两次单变量迭代，每次保存本地分数与 diff。
+6. 85–90 分钟：回滚不稳定改动；检查 stdout/文件格式、行数、NaN/Inf、随机种子和最终运行命令。
+
+## 12. 验收线
 
 - `stable_sigmoid(±1000)` 不溢出，softmax 行和约为 1。
 - Viterbi 能与小状态暴力枚举对拍。
@@ -188,6 +209,7 @@ $$
 - One-Class 流水线能解释每一步数据来自哪里，不发生训练/验证泄漏。
 - 能手算一个 query 的 NDCG@3，并处理 `IDCG=0`；训练/验证按 query 隔离。
 - Apriori 和固定选 k 个的 MITM 能与小规模暴力枚举对拍，输出顺序稳定。
+- 给一份陌生表格 schema，15 分钟内跑通合法 baseline；能解释切分单位、三种泄漏风险、本地指标与提交契约。
 
 运行：
 

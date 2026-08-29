@@ -1,7 +1,8 @@
 ---
 title: "2025—2027 大模型算法岗题库与证据账本"
-description: "按证据分级整理的大厂大模型算法岗公开面经账本：约 75 组样本、22 张知识缺口答案卡，明确区分公开事实与预测。"
+description: "更新至 2026-08-29：89 组公开面经样本、23 张知识缺口卡，新增 Context/Harness、Agentic RL 与 base-policy support。"
 date: 2026-07-26
+updatedDate: 2026-08-29
 tags:
   - ai
   - llm
@@ -13,14 +14,13 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 2
 ---
+> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
 
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
-
-> 最后核验：2026-07-26（第四轮检索：新增 2026 年 27 届暑期实习与 2027 届提前批样本、13 家新公司章节、N17—N22 答案卡）
+> 最后核验：2026-08-29（第六轮增量：补 8.18–8.27 百度/阿里云/淘天 Agent 面经、美团 8.25 笔试，以及 RL 可学习性与 Judge 校准）
 >
 > 用途：配合[《LLM 算法岗求职指南》](/blog/llm-algo-interview-guide/)使用。本文件记录“公开材料里出现了什么题”和新增知识缺口；主指南负责系统讲解。
 >
-> 重要边界：2027 年秋招尚未发生。本文件所有 2027 内容都是基于 2025—2026 公开样本和官方岗位/技术方向的预测，不是真实面经。
+> 重要边界：2027 届秋招已经进入正式批；“2027 届已发生面经”与“2027 自然年预测”必须分开。正文标有公司、页面/面试时间和证据等级的 2026 年样本是公开复盘；第 5 节未来题型仍只是预测。
 >
 > 岗位边界：只收基座/预训练、后训练/RL、Agent/RAG、多模态及与模型效果直接相关的数据/评测问题；纯推理引擎、CUDA/kernel、通信库、编译器、Serving 调度和硬件适配岗位不在目标范围。算法岗仍需掌握显存、KV Cache 和训推一致性的最低边界，因为这些会直接影响训练与 RL 实验是否成立。
 
@@ -43,6 +43,8 @@ seriesOrder: 2
 - 同一帖子的一组问题算一个公开样本，不按题数制造“高频”。
 - 公司、团队、岗位方向和候选人项目对题目的影响通常大于公司名。
 - 牛客内容无法独立证明作者确实参加过面试，因此这里使用“帖子自述/公开复盘”的谨慎表述。
+- 知乎机构号、培训号、CSDN/博客园汇编和搜索摘要默认只计 `B-` 候选线索；必须追到可识别的原帖才能升级。
+- 小红书内容平台和微信公众号的公开 Web 索引不完整。无法打开正文、确认作者和日期时不从图片或摘要抄题。
 
 ## 2. 公开复盘题目（主窗口 2025—2026；2.20 为窗口外画像样本）
 
@@ -239,6 +241,32 @@ seriesOrder: 2
 
 > 帖内自造术语不作为行业事实引用；只进入候选题池。
 
+#### ALI-26-05｜淘天 Agent 算法一面｜面试 2026-08-27｜`B-`
+
+来源：[公开复盘](https://www.nowcoder.com/discuss/922503904502259712)（页面静态抓取不稳定，只保留已公开题纲）
+
+- pretrain/post-train 数据问题怎样诊断；任务怎样构造；
+- 统一 pipeline 与真实用户反馈怎样闭环；trajectory 怎样验证；
+- mid-train 与 post-train 的边界；业务算法什么时候值得自己训练模型。
+
+#### ALI-26-06｜阿里云 Agent 算法一面｜页面 2026-08-27｜`B`
+
+来源：[候选人公开复盘](https://www.nowcoder.com/feed/main/detail/3a61d09fc2fb436f9bd5c1ed99b43330)
+
+- 核心工作产出、验证方法、回头看怎样改；
+- Agent Loop；Harness 的安全、权限与长程早停；
+- 候选人没做过大规模 RL，面试官没有继续硬问——真实项目边界优先于背术语。
+
+#### ALI-26-07｜阿里云 AI Infra / Agentic RL 一面｜面试 2026-08-23｜`B`
+
+来源：[候选人公开复盘](https://www.nowcoder.com/discuss/921086976030150656)
+
+- OPD 的动机、过滤与“为什么不用学生错误轨迹”；process vs outcome reward；过程奖励偏差；
+- 多轮双层 reward；user simulator 设计与过拟合；转真人、A/B 与业务评测；
+- 冷启动和业务约束；verl AgentLoop。
+
+> 岗位带 AI Infra 相邻属性，只作为高价值 Agentic RL 信号，不外推成所有 Agent 算法岗固定题库。
+
 ### 2.3 腾讯
 
 #### TX-25-01｜混元大模型｜2025｜`B`
@@ -318,6 +346,17 @@ seriesOrder: 2
 
 > 2026 上半年信息量最大的百度样本，接近一份 LLM 应用算法全链路考纲。
 
+#### BD-26-03｜大模型研发 Agent 方向一面｜面试 2026-08-18，发帖 08-25｜`B`
+
+来源：[候选人公开复盘](https://www.nowcoder.com/discuss/921590204903723008)
+
+- Prompt Engineering → Context Engineering → Harness Engineering 的区别；
+- 上下文接近窗口上限时怎样压缩；团队内部 RAG 怎样从零设计；
+- Coding Agent 的学习体系与重点；数据库索引/K 线表；
+- 手撕二叉树前序遍历与层序遍历；二面继续问 Tool Calling 与 C 端 Agent 架构。
+
+> “Claude Code 三层压缩”只记录为该场面试官用语，不提升为官方固定术语。
+
 ### 2.5 美团
 
 #### MT-25-01｜大模型算法两轮｜2025/2026 页面｜`B-`
@@ -359,6 +398,16 @@ seriesOrder: 2
 - RAG 错答如何区分检索责任与生成责任，设计最小归因实验；
 - 通用指令、垂类问答和 CoT 数据如何配比与做消融；
 - 编辑距离。
+
+#### KS-25-03｜26 届校招大模型应用算法两轮｜2025｜`B`
+
+来源：[公开复盘，页面 2025-09-27，标题明确为 26 届校招](https://www.nowcoder.com/feed/main/detail/bc89e6d705794c81838dd48c4a46acd9)
+
+- 一面约 50 分钟：项目与论文、MHA、RMSNorm 与 LayerNorm、KV Cache、推理加速、微调过拟合；
+- 手撕字符串全排列、二叉树序列化与反序列化；
+- 二面约 40 分钟：项目深挖、生成内容去重、超大词表 Softmax 加速、中文 Instruction Tuning 数据、LoRA 与 Prompt Tuning。
+
+> 作者结尾带项目辅导推广，仍保留为单个候选人自述，不能据此写“快手固定两轮/固定题单”。
 
 #### KS-26-01｜NLP 算法实习｜2026｜`B-`
 
@@ -890,7 +939,7 @@ seriesOrder: 2
 
 面壁智能仅有一条[届别不明、导流明显的三轮题单](https://blog.csdn.net/qq_36816848/article/details/138006691)（Adam 自适应学习率、LN 与 BN、分布式训练、最小缺失正整数），计 `B-` 候选池。
 
-### 2.21 华为、DeepSeek、月之暗面证据现状（2026-07-26 更新）
+### 2.21 华为、DeepSeek、月之暗面证据现状（2026-07-30 更新）
 
 **华为**：2025—2026 窗口内仍无同时满足"盘古/大模型算法岗 + 日期/届别 + 候选人逐题复盘"的强样本，不伪造公司题库。新增两条旁证：
 
@@ -899,7 +948,7 @@ seriesOrder: 2
 
 原有两条相邻岗位线索保留：[AI 工程师实习，页面 2025-06-28](https://www.nowcoder.com/feed/main/detail/3bd15a280c334ccfa51c2d181c4b587c)（`B-`）；[线下面试算法岗，页面 2025](https://www.nowcoder.com/discuss/812359680532951040)（机试、最长和为目标值的连续子数组、模型不达预期定位，`B-`）。
 
-**DeepSeek**：仍无候选人帖子形式的完整题目级面经。三条新增线索：
+**DeepSeek**：仍无同时满足“明确大模型算法岗、候选人亲历、面试时间和逐题正文”的 2025/2026 强样本。[官方当前招聘页](https://talent.deepseek.com/)可以确认岗位覆盖预训练、后训练、多模态、预训练数据、AI 搜索、Agent Infra、训练/推理框架和系统方向；这只属于 `A-JD`，不能写成 2026 届统一校招或真实面题。三条弱线索：
 
 - [算法岗笔试考点帖，页面 2025-03-23，非亲历](https://www.nowcoder.com/feed/main/detail/2ac60ffa044d4d7f835ef0770b767149)：手写完整 MHA、DPO 全流程推导、MoE 通信开销与负载不均分析（另有推理引擎内容超出边界），`B-`；
 - [2026-06 社招 AI 工程师流程的媒体报道](https://www.163.com/dy/article/L1CUEGJ40530KP1K.html)（候选人对媒体一手自述）：笔试为编程题加单选多选；两轮远程 coding，面试官当场逐行审代码、远程监考严格，`B-`；
@@ -972,7 +1021,7 @@ seriesOrder: 2
 
 ## 4. 新增知识缺口：答案卡
 
-这些答案卡补主指南目前相对薄弱的主题。N1—N9 主要由公开面试复盘触发；N10—N16 是 2025—2026 论文/官方技术报告驱动的前沿候选题，不视为已在某家公司真实问过。N17—N22 于 2026-07-26 新增：N19—N21 由 2026 年公开复盘直接触发，N17、N18、N22 由 2025 末—2026 年技术报告驱动。
+这些答案卡补主指南目前相对薄弱的主题。N1—N9 主要由公开面试复盘触发；N10—N16 是 2025—2026 论文/官方技术报告驱动的前沿候选题，不视为已在某家公司真实问过。N17—N22 于 2026-07-26 新增；N23 于 2026-08-29 新增，用经典 exploration/support 解释“什么时候不该直接上 RL”。
 
 ### N1｜MoE 负载均衡与 expert collapse
 
@@ -1159,7 +1208,7 @@ seriesOrder: 2
 
 **90 秒主回答**：2026 年面试已直接问工具生态名词，但考察点是背后的工程原理。skill 是把程序性知识（怎么做某类任务的说明与脚本）打包成按需加载的单元，好处是不常驻上下文、可版本化、可复用；harness 指模型外围的执行框架能力（工具调度、权限、重试、状态管理、环境隔离），同一个模型换 harness 表现可以差很多。上下文工程的核心矛盾是：工具定义、历史消息、检索结果都在抢有限上下文预算——对策包括按需加载（skill/渐进式披露）、压缩与摘要（保留任务状态而非原文）、用代码执行间接调用大量工具而不是把所有工具 schema 塞进上下文。回答时把名词映射回：上下文预算、状态管理、失败恢复、可评测性四个坐标。
 
-**已验证的真实考题**：蚂蚁问"harness 能力体现在哪、不同 Coding Agent 创建 skill 的差异、Coding Agent 响应为何随会话变长而变慢"（ANT-26-01）；百度问"Skill 的定义"（BD-26-01）；智谱手撕"流式输出 + MCP 调用输出规范"（ZP-26-01）；拼多多问"上下文压缩为何选 70% 而非砍早期对话"（PDD-26-02）。
+**已验证的真实考题**：蚂蚁问"harness 能力体现在哪、不同 Coding Agent 创建 skill 的差异、Coding Agent 响应为何随会话变长而变慢"（ANT-26-01）；百度问 Prompt→Context→Harness、上下文压缩与 Coding Agent 学习体系（BD-26-03），更早还问过 Skill 定义（BD-26-01）；阿里云问 Harness 权限/安全与长程早停（ALI-26-06）；智谱手撕"流式输出 + MCP 调用输出规范"（ZP-26-01）；拼多多问"上下文压缩为何选 70% 而非砍早期对话"（PDD-26-02）。
 
 **追问**：会话变长变慢怎么解释？上下文线性增长使 prefill 成本与 KV 显存上升、缓存命中率下降，且长上下文中模型对中段信息利用变差；对策是压缩、检查点化状态、把长历史外置到文件/记忆再按需取回。
 
@@ -1173,9 +1222,9 @@ seriesOrder: 2
 
 **已验证的真实考题**：百度问 rubric 硬门槛与加分项划分、swap consistency 防什么、消融怎样归因（BD-26-02）；OPPO 问 LLM-as-a-Judge 之外的评测方法、专家打分方差大怎么办（OPPO-26-01）；快手评测岗问视频生成评测维度与 benchmark 选择（KS-26-04）；此前网易有道已问过交换答案顺序与多轮评估（WY-25-02）。
 
-**常见错误**：只报 judge 分数不报与人工的一致率；用同一个模型既生成又评审不做去偏；rubric 一把抓导致高分答案仍含硬伤。
+**常见错误**：只报 judge 分数不报与人工的一致率；用同一个模型既生成又评审不做去偏；训练集只有“有问题”案例，没有无异常负例，导致模型靠夸大/编造拿高分；rubric 一把抓导致高分答案仍含硬伤。
 
-**权威核验**：与 N14（Generative RM）互补——N14 讲 reward 侧，本卡讲评测协议侧；[RAGAS](https://aclanthology.org/2024.eacl-demo.16/) 等评测框架可作工程参照。
+**权威核验**：与 N14（Generative RM）互补——N14 讲 reward 侧，本卡讲评测协议侧；[Training Alignment Auditors via RL](https://arxiv.org/abs/2608.25460)的消融显示 pairwise reward 比 pointwise 更稳，加入无隐藏行为负例可维持低误报，但这仍是单一审计场景的预印本；[RAGAS](https://aclanthology.org/2024.eacl-demo.16/) 等评测框架可作工程参照。
 
 ### N21｜预训练/SFT 数据工程专场
 
@@ -1196,6 +1245,16 @@ seriesOrder: 2
 **常见错误**：把 OPD 说成"就是蒸馏"；认为 process reward 总优于 outcome reward；引用"效率提升数倍"却不声明任务与教师规模。
 
 **权威核验**：[Thinking Machines：On-Policy Distillation](https://thinkingmachines.ai/blog/on-policy-distillation/)；[稀疏与稠密奖励阶段切换的实证](https://arxiv.org/abs/2605.12483)；[SFT/RL/OPD 的状态分布统一视角](https://arxiv.org/abs/2605.22731)。
+
+### N23｜RL 是否有可学习信号：先量 base-policy support
+
+**90 秒主回答**：On-policy PPO/GRPO 只能从当前策略采到的轨迹学习。若 base policy 对目标行为的概率质量接近零，有限 rollout 中几乎全错，组内 reward 方差也接近零；增加卡数、step 或调 clip 不能凭空创造 support。训练前在目标 prompt 分布上测 pass@1/pass@k、组内非零方差率、动作/工具覆盖、有效轨迹率与失败类型；有 support 才直接 RL，support 低时先 SFT/蒸馏、curriculum 或任务分解，verifier 不可信时先修环境。
+
+**可证伪实验**：固定模型与预算，按训练前 support 分桶，比较直接 RL 与 SFT→RL；若低 support 桶也能同样稳定学成、support 与最终增益无关，这个机制解释就不成立。还必须控制 prompt distribution，因为同一 spurious reward 在不同分布上的作用可能相反。
+
+**常见错误**：把全错组归因成学习率；只报平均 pass@1 不看 pass@k/support；在目标行为不可达时无限增加 rollout；用一个 prompt 分布的结论外推所有数据。
+
+**权威核验**：[Demystifying Reinforcement Learning Post-Training of Language Models](https://arxiv.org/abs/2608.24949)；经典 exploration/support 见 Sutton & Barto。
 
 ## 5. 2027 高概率题型（全部为预测 `P`）
 
@@ -1225,6 +1284,8 @@ seriesOrder: 2
 
 ## 6. 两周执行优先级
 
+> 本节是题库驱动的两周应急方案，正文继续保留。当前活动日历统一以[30 天冲刺计划](/blog/llm-30day-sprint-plan/)为准。
+
 ### P0：必须能写、能算、能排障
 
 - response-only SFT、MHA/GQA、DPO/GRPO loss、temperature/top-p；
@@ -1236,7 +1297,7 @@ seriesOrder: 2
 
 ### P1：按岗位方向选择
 
-- 后训练：reward、hacking、entropy、stale rollout、credit assignment；OPD 与奖励密度谱系（N22）；
+- 后训练：reward、hacking、entropy、stale rollout、credit assignment；OPD 与奖励密度谱系（N22）；训练前的 base-policy support（N23）；
 - Agent：trajectory 数据、memory、权限、安全、回放与评测；工具生态差异与上下文预算（skill/harness，N19）；
 - 评测：LLM-as-a-Judge rubric、swap consistency、消融归因（N20）；
 - 数据：合成、清洗、去重与多样性、配比消融（N21）；
@@ -1258,3 +1319,8 @@ seriesOrder: 2
 - 2026-07-23：建立年份化题库；纳入 2025—2026 的模型算法公开复盘，单列华为证据缺口；新增 MoE、推理时计算、VLM、Agentic RL、GRPO normalization、训练/RL 显存、RAG 归因和 ML/数学答案卡；将 2027 明确标成预测；按个人方向删除纯推理 Infra、kernel/C++ 底层和硬件适配岗位样本。
 - 2026-07-24：第三轮检索新增京东、滴滴、网易/有道、OPPO 共 9 组 `B` 记录及智谱 1 组 `B-` 候选；华为盘古、DeepSeek、Kimi、MiniMax、小米仍维持“强证据不足”。新增 MTP、Muon、长周期数据过滤、RLVR 因果对照、Generative RM、Search-R1、Visual-RFT 七张前沿答案卡；这些论文驱动题全部与历史面经分开标注。
 - 2026-07-26：第四轮五路并行检索。(1) 主窗口新增 2026 年 `B`/`B-` 样本约 30 组，覆盖 27 届暑期实习与 2027 届提前批（BY-26-02～05、ALI-26-01～04、ANT-26-01～03、TX-26-01/02、BD-26-01/02、MT-26-01、KS-26-02～04、XHS-26-01、PDD-26-02/03、JD-26-01/02、DD-26-01、WY-26-01/02、OPPO-26-01、ZP-26-01）。(2) 新增 B站、荣耀、vivo、车企（理想/蔚来/小鹏）、米哈游、携程、Shopee 七个公司章节，及独角兽/其他 AI 公司的 2024—2025 画像样本（小米、MiniMax、商汤、讯飞、昆仑万维、百川、面壁）。(3) 智谱升级为强样本公司（ZP-26-01 Agent 工程化手撕、ZP-24-01 全流程）。(4) 华为/DeepSeek/月之暗面证据现状更新：华为 AI 岗机考两次改版、DeepSeek 社招流程一手叙述与 Agent 岗机考、Kimi 仍无强样本。(5) 新增 N17—N22 答案卡（DSA/两级注意力、线性混合架构、Agent 工程化生态、LLM-as-a-Judge、数据工程专场、奖励密度谱系）。(6) 已识别整理号风险：跨公司模板化账号与 2025 帖拆分重发（TX-26-02），相关样本均已降级或标注。
+- 2026-07-30：第五轮定向补查知乎、小红书内容平台、牛客、CSDN、博客园和公众号公开索引。新增 KS-25-03 快手 26 届两轮亲历；明确小红书内容平台/公众号无法稳定核验时不抄摘要；DeepSeek 只新增官方岗位 `A-JD`，仍不虚构算法面经；招聘批次与动态状态移到 `求职/` 独立维护。
+- 2026-08-29：第六轮增量补入 BD-26-03、ALI-26-05～07，覆盖 Prompt→Context→Harness、上下文压缩、权限安全、长程早停、trajectory 校验、OPD、多轮 reward 与 user simulator；N19/N20 更新真实考题和 Judge 负例校准，新增 N23 base-policy support。美团 8.25 笔试版式同步到公司笔试手册与 AI Coding 补丁，不在面经账本伪造“统一原卷”。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E9%A2%98%E5%BA%93/LLM%E7%AE%97%E6%B3%95%E5%B2%97%E9%A2%98%E5%BA%93%E4%B8%8E%E8%AF%81%E6%8D%AE.md)。
