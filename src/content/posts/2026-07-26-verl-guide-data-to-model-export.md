@@ -2,7 +2,7 @@
 title: "verl 实战：从训练数据到 Hugging Face 模型导出"
 description: "串联数据准备、dry-run、smoke test、正式训练、checkpoint、合并与离线验证。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - model-export
@@ -15,7 +15,7 @@ series: verl-interview-guide
 seriesOrder: 14
 ---
 
-这一篇不承诺一条命令适配所有硬件，而是给出不会迷路的操作顺序。具体 CUDA/NPU、PyTorch、vLLM/SGLang 版本组合应按 [`docs/start/install.rst`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/start/install.rst)、对应容器和当前 example 核查；仓库 quickstart 也明确推荐优先使用项目提供的 Docker 环境。
+这一章不承诺一条命令适配所有硬件，而是给出不会迷路的操作顺序。具体 CUDA/NPU、PyTorch、vLLM/SGLang 版本组合应按 [`docs/start/install.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/start/install.rst)、对应容器和当前 example 核查；仓库 quickstart 也明确推荐优先使用项目提供的 Docker 环境。main 新增的 uv lock 路径只覆盖 Linux x86_64/Python 3.12/CUDA 13.0 组合，不能外推到 NPU/ROCm/aarch64/TRT-LLM。
 
 ## 全流程
 
@@ -25,7 +25,9 @@ seriesOrder: 14
 
 ## 1. 先固定版本和硬件事实
 
-记录：verl commit/tag、recipe commit、容器 tag、GPU/NPU 型号与数量、driver、PyTorch、训练后端、rollout 后端和基础模型 revision。只写"使用最新版"无法复现，且推理后端支持矩阵可能比 Trainer API 更快变化。
+记录：verl commit/tag、recipe commit、容器 tag、GPU/NPU 型号与数量、driver、PyTorch、训练后端、rollout 后端和基础模型 revision。只写“使用最新版”无法复现，且推理后端支持矩阵可能比 Trainer API 更快变化。
+
+若使用 uv，额外记录 [`uv.lock`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/uv.lock) hash、选择的 extras 和 [`manage_envs.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/manage_envs.py) 命令，并确认 Ray `runtime_env.py_executable` 与 driver 指向同一环境。一个常见错误是 driver 在 `.venv`、远程 Ray worker 却从系统 Python 启动。
 
 启动前做最小检查：
 
@@ -62,7 +64,7 @@ extra_info: {split: "train", index: ..., answer: ..., question: ...}
 3. **reward**：用正确、错误、格式异常、超长和恶意答案测试 component 与失败类型。
 4. **分组**：GRPO/RLOO 检查同一 `uid` 的 `n` 条回答确实成组，组内 reward 能产生差异。
 
-不要用"训练 loss 能算出来"代替这四项。reward 或 mask 错误常不会报异常，却会稳定优化错误目标。
+不要用“训练 loss 能算出来”代替这四项。reward 或 mask 错误常不会报异常，却会稳定优化错误目标。
 
 ## 4. 从现成脚本开始
 
@@ -85,7 +87,9 @@ bash examples/grpo_trainer/run_qwen3_8b_fsdp.sh \
   'trainer.logger=["console"]'
 ```
 
-这些数值只是脚本形态示例，不是硬件建议。第一次应按模型/显存显著缩短 response、batch、epoch 和保存间隔；同时保证 group size、mini-batch 整除和模型并行约束。若只有 24GB 单卡，仓库 `docs/start/quickstart.rst` 的 0.5B PPO 示例比 8B GRPO 更适合作为安装验证。
+这些数值只是脚本形态示例，不是硬件建议。第一次应按模型/显存显著缩短 response、batch、epoch 和保存间隔；同时保证 group size、mini-batch 整除和模型并行约束。若只有 24GB 单卡，仓库 [`docs/start/quickstart.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/start/quickstart.rst) 的 0.5B PPO 示例比 8B GRPO 更适合作为安装验证。
+
+更新后的许多 example 会优先通过 uv extras 启动，并把对应 `uv run --frozen ...` 传给 Ray；需要沿用已有系统环境时显式设置 `VERL_USE_UV=0`，而不是同时混用两套解释器。
 
 ## 5. 会解释脚本中的六组参数
 
@@ -135,6 +139,8 @@ checkpoints/<project>/<experiment>/global_step_<N>/actor/
 
 里面可能是 FSDP/Megatron 分片和 optimizer/extra 状态。它用于恢复训练，不一定能直接由 Transformers/vLLM 加载。恢复演练应在正式长跑前完成：保存一个短 checkpoint、重启、核对 global step、数据位置、权重版本和首个 validation。
 
+如果需要上传对象存储、注册模型版本或触发评测，可实现 `CheckpointCallback` 并配置 `trainer.checkpoint_callback_class`。它在 driver 端保存 RPC 后执行，异常默认终止训练。尤其要检查 `async_save`：Megatron 异步保存时 callback 到达并不代表 shard 已全部写完或 latest marker 已提交，外部流程必须等待真正的 durable 条件。
+
 ## 9. 导出 Hugging Face 模型
 
 FSDP 示例：
@@ -146,7 +152,7 @@ python -m verl.model_merger merge \
   --target_dir /path/to/exported_hf_model
 ```
 
-Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已经产出可直接加载的 `model/huggingface/`，无需 merger。只有纯 Megatron distributed checkpoint 的 `model/dist_ckpt/` 才使用 `--backend megatron`，必要时加 `--tie-word-embedding`；超大模型可按 `docs/advance/checkpoint.rst` 使用多节点 `torchrun` 分布式 merge。实际以 manifest、`save_contents` 和 `use_mbridge` 为准。
+Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已经产出可直接加载的 `model/huggingface/`，无需 merger。只有纯 Megatron distributed checkpoint 的 `model/dist_ckpt/` 才使用 `--backend megatron`，必要时加 `--tie-word-embedding`；超大模型可按 [`docs/advance/checkpoint.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/checkpoint.rst) 使用多节点 `torchrun` 分布式 merge。实际以 manifest、`save_contents` 和 `use_mbridge` 为准。
 
 不要在未经确认时使用 `--hf_upload_path`：它会写远端 Hugging Face 仓库，属于单独的发布动作。
 
@@ -160,8 +166,10 @@ Megatron 必须先看 checkpoint layout：当前默认/推荐 mbridge 通常已�
 4. 跑独立 validation/benchmark，而不是只看训练 reward。
 5. 若使用 LoRA，确认导出的是 adapter、merged model，还是 base + adapter 组合。
 
-`verl.model_merger` 支持 FSDP/Megatron merge，并提供 test/验证相关入口；2026-08 起还内置了输出校验（#7193，`verl/model_merger/output_validation.py`），merge 后会核对导出产物。实现位于 `verl/model_merger/`，完整参数见 `docs/advance/checkpoint.rst`。
+`verl.model_merger` 支持 FSDP/Megatron merge，并提供 test/验证相关入口；2026-08 起还内置了输出校验（#7193，[`verl/model_merger/output_validation.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/model_merger/output_validation.py)），merge 后会核对导出产物。实现位于 [`verl/model_merger/`](https://github.com/verl-project/verl/tree/ea53291385ce764019a2b40733605f21d8317583/verl/model_merger)，完整参数见 [`docs/advance/checkpoint.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/checkpoint.rst)。
 
 ## 面试中的项目叙述模板
 
 > 我先固定模型、verl/recipe 和训练/推理后端版本，把数据转为带 `data_source`、prompt、嵌套 ground truth 的 Parquet。训练前分别验证模板、reward、mask 和 GRPO 分组。先用 V1 sync 做 2～5 step smoke test，确认 rollout→reward→advantage→actor update→weight sync 全链正确，再依据 stage timing 扩 batch、多机或异步。正式训练同时看学习、数据质量、性能和模型版本指标。checkpoint 先做恢复演练，结束后用 model merger 把 FSDP/Megatron 分片导出为 HF 模型，并用固定生成和独立评测验证，而不是直接把训练 reward 当作交付结果。
+
+若面试官继续追问环境与运维，可补一句：我会把容器/driver/[`uv.lock`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/uv.lock)/extras/Ray worker interpreter 一起固定；checkpoint callback 只负责外部动作，异步保存仍要独立确认持久化完成。

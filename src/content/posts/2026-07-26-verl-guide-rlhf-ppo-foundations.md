@@ -2,7 +2,7 @@
 title: "verl 必备背景：RLHF、PPO 与推理训练协同"
 description: "从策略、奖励和优势函数出发，解释 PPO、GAE、GRPO、KL、训推不一致与生成训练协同。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - llm-rl
@@ -17,7 +17,7 @@ seriesOrder: 2
 
 ## 从预训练到 RL 后训练
 
-预训练学习"下一个 token 的统计规律"；SFT 用高质量示范让模型学会按指令回答；RL 阶段让模型针对不能直接写成监督标签的目标优化，例如答案正确性、偏好、安全、工具使用成功率。实际项目常是：预训练模型 → SFT/指令模型 → 奖励设计 → RL → 评测与回归。
+预训练学习“下一个 token 的统计规律”；SFT 用高质量示范让模型学会按指令回答；RL 阶段让模型针对不能直接写成监督标签的目标优化，例如答案正确性、偏好、安全、工具使用成功率。实际项目常是：预训练模型 → SFT/指令模型 → 奖励设计 → RL → 评测与回归。
 
 SFT 与 RL 都计算生成 token 的 log-prob，但梯度信号不同：
 
@@ -59,7 +59,7 @@ $$
 
 同步且每 step 更新权重时，rollout 与 old 可能很接近但不完全相等（训推引擎数值差异仍在）；异步时可能同时存在 rollout policy、训练前固定的 old anchor、mini-batch 更新中的 current actor 三个版本。这个差异是 rollout correction 和 staleness 控制的起点。
 
-代码入口：[`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/core_algos.py) 中的 policy loss registry 和 vanilla PPO loss；[`verl/workers/utils/losses.py`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/workers/utils/losses.py) 中的聚合与基础 loss。
+代码入口：[`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/core_algos.py) 中的 policy loss registry 和 vanilla PPO loss；[`verl/workers/utils/losses.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/workers/utils/losses.py) 中的聚合与基础 loss。
 
 ## GAE：PPO 常见的 advantage
 
@@ -75,7 +75,7 @@ $$
 A_t=\delta_t+\gamma\lambda A_{t+1}
 $$
 
-`lambda` 在偏差与方差之间折中。因为需要 $V$，GAE 通常启用 critic。verl 先用未白化的 GAE 得到 `returns = raw_advantages + values`，再只对白化后的 advantage 供 actor 使用；critic target 不使用白化 advantage。多轮中只在有效 action token 更新 TD/λ 状态，内部 observation/tool token 会跳过 TD 更新但保留跨越该位置的递推状态，mask 为 0 的位置不进入 whitening 或 loss。实现见 [`verl/trainer/ppo/core_algos.py:215-263`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/core_algos.py#L215-L263)。
+`lambda` 在偏差与方差之间折中。因为需要 $V$，GAE 通常启用 critic。verl 先用未白化的 GAE 得到 `returns = raw_advantages + values`，再只对白化后的 advantage 供 actor 使用；critic target 不使用白化 advantage。多轮中只在有效 action token 更新 TD/λ 状态，内部 observation/tool token 会跳过 TD 更新但保留跨越该位置的递推状态，mask 为 0 的位置不进入 whitening 或 loss。实现见 [`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/core_algos.py) 的 `compute_gae_advantage_return`。
 
 ## GRPO：用同题多答案代替 value baseline
 
@@ -85,7 +85,7 @@ $$
 A_i=\frac{R_i-\mu_g}{\sigma_g+\epsilon}
 $$
 
-然后把每条回答的标量 advantage 广播到它的有效 response token。关闭标准差归一后只做中心化，接近 Dr.GRPO 的做法。组依据 `uid`，不是仅靠 batch 中相邻位置猜测。实现见 [`verl/trainer/ppo/core_algos.py:267-331`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/core_algos.py#L267-L331)。
+然后把每条回答的标量 advantage 广播到它的有效 response token。关闭标准差归一后只做中心化，接近 Dr.GRPO 的做法。组依据 `uid`，不是仅靠 batch 中相邻位置猜测。实现见 [`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/core_algos.py) 的 `compute_grpo_outcome_advantage`。
 
 GRPO 省掉 critic，但并非免费：同 prompt 多采样会增加 rollout 成本，而且组内奖励没有差异时梯度接近零，这也是 DAPO 动态过滤全对/全错组的动机之一。
 
@@ -96,7 +96,7 @@ verl 支持两条不同路径：
 1. reward-side：`token_reward = token_score - beta * k(old_log_prob, ref_log_prob)`，再计算 advantage；`k` 是配置选择的逐 token KL 估计量，并非默认显式计算完整词表 KL。
 2. loss-side：actor loss 对 current log-prob 与 ref log-prob 的估计 KL 加权。
 
-它们作用位置和梯度路径不同。任一开启通常都需要 reference policy；若无意识地同时开，可能重复约束。`kl/k1`、`abs`、`mse/k2`、`low_var_kl/k3` 是不同估计形式，当前 `full` 分支尚未实现。启用条件见 [`verl/trainer/ppo/utils.py:75-79`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/utils.py#L75-L79)，KL 实现见 [`verl/trainer/ppo/core_algos.py:2187-2250`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/core_algos.py#L2187-L2250)。
+它们作用位置和梯度路径不同。任一开启通常都需要 reference policy；若无意识地同时开，可能重复约束。`kl/k1`、`abs`、`mse/k2`、`low_var_kl/k3` 是不同估计形式，当前 `full` 分支尚未实现。启用条件见 [`verl/trainer/ppo/utils.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/utils.py) 的 `need_reference_policy`，KL 实现见 [`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/core_algos.py) 的 `kl_penalty`。
 
 ## 为什么生成与训练难以协同
 
@@ -108,10 +108,10 @@ verl 支持两条不同路径：
 - 异步时样本陈旧度和 on-policy 假设；
 - 变长序列造成的负载不均衡。
 
-这正是 verl 相比"写一个 PPO loss"更重要的工程部分。
+这正是 verl 相比“写一个 PPO loss”更重要的工程部分。
 
 ## 训推不一致：即使权重相同，分布也不同
 
 还有一个更隐蔽的问题：**即使权重逐字节相同**，vLLM/SGLang 与 FSDP/Megatron 因为算子实现、kernel 融合、并行切分和浮点累加顺序不同，对同一 token 算出的 log-prob 也会有微小差异。监督学习里这种误差无关紧要，但 RL 依赖概率比 $\pi_{train}/\pi_{rollout}$ 估计梯度，微小差异会被指数放大——本质上把 on-policy 问题悄悄变成了 off-policy 问题，严重时导致训练崩溃（2025 年字节/社区多篇分析的主题）。
 
-应对分两条路线：**算法修正**（把 rollout log-prob 当行为策略，做截断/掩码重要性采样，即 verl 的 rollout correction）和**工程对齐**（对齐两侧算子实现 bit-exact 一致，代价是吞吐）。MiniMax 的著名案例：MoE 模型 RL 不涨分，最终定位是 lm_head 精度问题，将该层固定为 FP32 后训推一致性显著改善。这是当前面试的高频考点，详见本系列[真题热点篇](/blog/verl-guide-real-interview-questions/)。
+应对分两条路线：**算法修正**（把 rollout log-prob 当行为策略，做截断/掩码重要性采样，即 verl 的 rollout correction，详见第 5/12/14 章）和**工程对齐**（对齐两侧算子实现 bit-exact 一致，代价是吞吐）。MiniMax 的著名案例：MoE 模型 RL 不涨分，最终定位是 lm_head 精度问题，将该层固定为 FP32 后训推一致性显著改善。这是当前面试的高频考点。

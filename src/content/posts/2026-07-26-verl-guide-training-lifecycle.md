@@ -2,7 +2,7 @@
 title: "一次 verl 训练如何跑起来"
 description: "沿 prompt、rollout、reward、advantage、参数更新和权重同步追踪端到端训练链路。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - llm-rl
@@ -19,12 +19,14 @@ seriesOrder: 4
 1. `python -m verl.trainer.main_ppo ...` 启动 Hydra。
 2. Hydra 将根 YAML、组件 YAML 和命令行 override 合成一个配置树。
 3. `validate_config` 检查 batch、并行度、critic/ref 是否需要等约束。
-4. `ray.init` 将环境变量（含 determinism、TransferQueue 开关）、依赖和 profiling 设置传播到 actors（[`main_ppo.py:34-94`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/main_ppo.py#L34-L94)）。
+4. `ray.init` 将环境变量（含 determinism、TransferQueue、RL-Insight）、依赖、可选 `runtime_env.py_executable` 和 profiling 设置传播到 actors。
 5. 远程 `TaskRunnerV1.run` 强制开启并初始化 TransferQueue，按 `trainer.v1.trainer_mode` 选择 Trainer。
-6. Trainer `init()` 依次初始化：tokenizer → dataloader → dump executor → ResourcePool → actor/rollout（及可选 critic）WorkerGroup → critic/actor/ref engine → RewardLoopManager → 可选 teacher manager → `LLMServerManager`（hybrid replicas）→ `CheckpointEngineManager` → 休眠 replicas → 加载 checkpoint（[`trainer_base.py:217-369`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/v1/trainer_base.py#L217-L369)）。
+6. Trainer `init()` 依次初始化：tokenizer → dataloader → dump executor → ResourcePool → actor/rollout（及可选 critic）WorkerGroup → critic/actor/ref engine → RewardLoopManager → 可选 teacher manager → `LLMServerManager`（hybrid replicas）→ `CheckpointEngineManager` → 休眠 replicas → 加载 checkpoint。driver 还会按 `trainer.checkpoint_callback_class` 构造 checkpoint callback。
 7. `AgentLoopManagerTQ.create` 接入 rollout client、teacher client 和 reward handles，然后进入 `fit`。
 
 当前默认同步链更精确地说是：初始化 TQ → `PPOTrainerSync.init` 创建 WorkerGroup、LLM server、RewardLoop 与 CheckpointEngine → `AgentLoopManagerTQ.create` → `fit` → 注册并异步提交 prompt → `ReplayBuffer.sample` 等待足够终态 groups 并返回轻量 `KVBatchMeta` → Trainer 按 partition/key 驱动 old/ref/value/advantage/critic/actor → step 结束同步新权重。Trainer 的核心控制对象不是一份始终常驻 driver 的完整训练 batch。
+
+三种 mode 共用的 V1 step 骨架是 `on_step_begin → prepare_step → N × _step_once → on_step_end`。sync/colocate 通常一次采满逻辑 train batch；`separate_async` 以 PPO mini-batch 粒度流过 controller。启用 `hybrid_rollout.enable_switch` 后，step 间会先让 hybrid replicas 帮 standalone rollout 生成，达到 sampleable threshold 再执行 remove/abort/sleep 收回训练；step 末若预计借卡收益大于切换成本，再同步权重并把 replicas 加回 load balancer。
 
 ## 初始化顺序为什么重要
 
@@ -38,15 +40,15 @@ actor、critic 等训练 worker 先占据资源并建立进程组；rollout serv
   <img class="wide-media-image" src="/images/verl-interview-guide/training-sequence.svg" alt="verl 同步训练 step 时序" loading="lazy" />
 </div>
 
-V1 的具体实现是 `fit`（[`trainer_base.py:387-507`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/v1/trainer_base.py#L387-L507)）里每步调用 `step()`；`step` 按 `parameter_sync_step` 做多次 `_step_once`（509-534）；`_step_once`（536-586）的顺序是：`sample` →（可选 colocated reward）→ `_balance_batch` → `_compute_old_log_prob` → ref log-prob → values → `_compute_advantage` → update critic → update actor。V0 的线性参考实现位于 `verl/trainer/ppo/ray_trainer.py`（deprecated）。
+V1 的具体实现在 [`verl/trainer/ppo/v1/trainer_base.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/v1/trainer_base.py)：`fit` 里每步调用 `step()`；`step` 按 `parameter_sync_step` 做多次 `_step_once`；`_step_once` 的顺序是：`sample` →（可选 colocated reward）→ `_balance_batch` → `_compute_old_log_prob` → ref log-prob → values → `_compute_advantage` → update critic → update actor。行号会随 hook 与 metrics 增删漂移，应按符号定位。V0 的线性参考实现位于 [`verl/trainer/ppo/ray_trainer.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/ray_trainer.py)（deprecated）。
 
 ## 1. prompt 与 uid
 
-`RLHFDataset` 从 Parquet 或 Hugging Face Dataset 读取数据，并用与 rollout 对齐的模板/tokenizer 做长度检查；实际取样主要返回 raw messages 与 reward/tool metadata，最终 chat template 与 token 构造在 AgentLoop 侧完成。Trainer 给每个原始 prompt 一个 `uid`。
+`RLHFDataset` 从 Parquet 或 Hugging Face Dataset 读取数据，并用与 rollout 对齐的模板/tokenizer 做长度检查；实际取样主要返回 raw messages 与 reward/tool metadata，最终 chat template 与 token 构造在 AgentLoop 侧完成。Trainer 给每个原始 prompt 一个 `uid`。当前 AgentLoop 只走 Continuous Token：文本/VL builder 按 tokenizer、processor 和模型族自动选择；未知 `model_type` 会告警并选通用 text/VL builder，只有已识别族与 processor 不能安全匹配等情况才显式报错。这不是回退到 legacy re-tokenize。
 
 当 `rollout.n > 1` 时，V1 在同一 prompt `uid` 下启动多个 session，trajectory key 形如 `{uid}_{session_id}_{index}`。GRPO/RLOO 仍按 `uid` 聚合候选；若丢失关联，优势估计会把不同题目的回答混组。
 
-代码入口：[`verl/utils/dataset/rl_dataset.py`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/utils/dataset/rl_dataset.py)（`RLHFDataset` 类 72 行起，`_read_files_and_tokenize` 169，`__getitem__` 386）。
+代码入口：[`verl/utils/dataset/rl_dataset.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/utils/dataset/rl_dataset.py)（`RLHFDataset` 类 72 行起，`_read_files_and_tokenize` 169，`__getitem__` 386）。
 
 ## 2. rollout 与多轮 AgentLoop
 
@@ -67,7 +69,7 @@ RewardManager/RewardLoop 最终把结果整理为 token-shaped score。纯 outco
 ## 4. log-prob 与 value
 
 - rollout log-prob：真实生成轨迹的策略概率（由推理引擎返回）。
-- actor old log-prob：固定 PPO 更新的分母。decoupled 模式（默认，`rollout_correction.bypass_mode=false`）在训练该 batch 前由 actor 重算；bypass 模式直接使用 rollout 值（[`trainer_base.py:1479-1493`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/v1/trainer_base.py#L1479-L1493)）。自 #7188 起 `separate_async` 也支持 decoupled，不再强制 bypass。
+- actor old log-prob：固定 PPO 更新的分母。decoupled 模式（默认，`rollout_correction.bypass_mode=false`）在训练该 batch 前由 actor 的 `_compute_old_log_prob` 重算；bypass 模式直接使用 rollout 值。自 #7188 起 `separate_async` 也支持 decoupled，不再强制 bypass。
 - reference log-prob：仅在 KL 约束需要时计算。
 - values：仅在 GAE/critic 路径需要。
 
@@ -79,7 +81,7 @@ RewardManager/RewardLoop 最终把结果整理为 token-shaped score。纯 outco
 
 V1 对多轨迹 GRPO 还有额外语义：只用每个 `{uid, session_id}` 的最终输出做组相对计算，再把标量广播到该 session 的其他输出（`v1/utils.py` 的 `compute_advantage_for_multi_trajectories`）；非 GRPO estimator 走普通公共路径，不能据此类推。
 
-Decoupled 模式下，`_compute_advantage` 之前还会调用 `compute_rollout_correction_and_add_to_batch`（[`trainer_base.py:1607-1617`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/v1/trainer_base.py#L1607-L1617)），基于 rollout/old 两套 log-prob 计算 IS/RS 权重与训推偏移指标；bypass 模式跳过这一步，由 `bypass_mode` policy loss 直接处理。
+Decoupled 模式下，`_compute_advantage` 之前还会调用 `compute_rollout_correction_and_add_to_batch`（见 [`verl/trainer/ppo/v1/trainer_base.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/v1/trainer_base.py) 的 `_compute_old_log_prob` 及后续 correction 分支），基于 rollout/old 两套 log-prob 计算 IS/RS 权重与训推偏移指标；bypass 模式跳过这一步，由 `bypass_mode` policy loss 直接处理。
 
 特别注意 ReMax：公共 estimator 强制需要 `reward_baselines`，完整 greedy-baseline rollout 与字段写入目前只见 V0 `RayPPOTrainer`；默认 V1 `_compute_advantage` 没有准备该字段，因此不能只设置 `algorithm.adv_estimator=remax`。使用前必须核查 recipe 是否切到 `trainer.use_v1=false`，或目标版本的 V1 是否已补齐 baseline 数据链路。
 
@@ -93,8 +95,10 @@ GAE 时先用 returns 更新 critic，再用 advantage 更新 actor。actor 内�
 
 actor 更新后，rollout 必须看到新版本权重。V1 统一由 `CheckpointEngineManager` 协调：
 
-- **共置（sync/colocate_async）**：基类强制 `backend="naive"`（[`trainer_base.py:356-362`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/v1/trainer_base.py#L356-L362)），走进程内 per-tensor 拷贝。`ActorRolloutRefWorker.update_weights` 的顺序是：`resume(tags=["weights"])` → 写入新权重（LoRA 可 merge）→ actor 参数可 offload 回 CPU → `resume(tags=["kv_cache"])` 恢复推理（[`engine_workers.py:719-805`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/workers/engine_workers.py#L719-L805)）。
+- **共置（sync/colocate_async）**：基类强制 `backend="naive"`，走进程内 per-tensor 拷贝。`ActorRolloutRefWorker.update_weights` 的顺序是：`resume(tags=["weights"])` → 写入新权重（LoRA 可 merge）→ actor 参数可 offload 回 CPU → `resume(tags=["kv_cache"])` 恢复推理。
 - **分离（separate_async）**：断言 backend 非 naive，可选 `nccl`（HCCL 同名覆盖注册）、`nixl`、`mooncake`、`kimi_ckpt_engine`、`delta_sharded` 等（`checkpoint_engine/` registry），面向 standalone rollout 做跨节点传输。
+
+当前 NCCL engine 的构造签名默认开启 node-local `multi_sender`：actor rank 0 同节点的其他 actor rank 作为 relay 参与同一个 broadcast group，利用 NVLink 把根部 fan-out 扩到多块 NIC；它们不是额外权重源。`delta_sharded` 则只在 FSDP1/FSDP2/TorchTitan → SGLang BF16 的分离场景支持，不能把 roadmap 中的 Megatron 当作已支持。
 
 典型共置生命周期是：休眠/释放 rollout → actor 训练 → 恢复 rollout weights → 同步 → actor 参数可 offload → 恢复 KV cache。
 

@@ -2,6 +2,7 @@
 title: "2025–2026 大厂面试真题与热点精讲：verl 与 LLM RL"
 description: "字节、阿里、快手、腾讯、百度真题逐题精讲，加训推不一致、异步 RL、Agentic RL 三大热点专题。"
 date: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - interview
@@ -14,7 +15,7 @@ series: verl-interview-guide
 seriesOrder: 15
 ---
 
-本篇基于 2025–2026 年公开面经（牛客网、面试大师等）与各厂公开技术材料整理，覆盖大模型厂商（字节、阿里、百度、MiniMax、智谱系等）、大厂（腾讯、快手、美团等）与中厂的真实提问。每题给出"面试官想听什么 + 参考回答骨架 + 结合 verl 的加分点"。
+本章基于 2025–2026 年公开面经（牛客网、面试大师等）与各厂公开技术材料整理，覆盖大模型厂商（字节、阿里、百度、MiniMax、智谱系等）、大厂（腾讯、快手、美团等）与中厂的真实提问。每题给出"面试官想听什么 + 参考回答骨架 + 结合 verl 的加分点"。其中所有 verl 具体结论已于 2026-08-29 对照 `main=ea532913`（`0.10.0.dev`）重新核实。
 
 先记住三条命题规律：
 
@@ -99,7 +100,7 @@ seriesOrder: 15
 
 **回答骨架**：优势 $A(s,a)=Q(s,a)-V(s)$，衡量动作比平均好多少，作用是给策略梯度降方差。GAE 用 TD 残差 $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ 做指数加权：$A_t = \sum_l (\gamma\lambda)^l \delta_{t+l}$，等价递推 $A_t = \delta_t + \gamma\lambda A_{t+1}$ 从序列末端往回扫。$\lambda \to 0$ 低方差高偏差（一步 TD），$\lambda \to 1$ 无偏高方差（蒙特卡洛）。LLM 场景 $\gamma$ 常取 1，outcome reward 落在最后一个有效 token 上往回传。
 
-**verl 加分点**：`compute_gae_advantage_return`（[`core_algos.py:215-263`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/core_algos.py#L215-L263)）先用未白化递推得到 `returns = raw_advantages + values` 给 critic 当回归目标，再只对 actor 用的 advantage 做 masked whitening；多轮场景 mask=0 的 observation token 跳过 TD 更新但递推状态跨越传递。能讲出"critic target 不用白化后的优势"这一实现细节非常加分。
+**verl 加分点**：`compute_gae_advantage_return`（[`verl/trainer/ppo/core_algos.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/core_algos.py)）先用未白化递推得到 `returns = raw_advantages + values` 给 critic 当回归目标，再只对 actor 用的 advantage 做 masked whitening；多轮场景 mask=0 的 observation token 跳过 TD 更新但递推状态跨越传递。能讲出"critic target 不用白化后的优势"这一实现细节非常加分。
 
 ### A3. 为什么组内全对/全错时这一步不起作用（字节原题）
 
@@ -107,13 +108,13 @@ seriesOrder: 15
 
 **解决方案（面试官等着你主动说）**：DAPO 的 Dynamic Sampling——过采样后把全对/全错组过滤掉并补充新组，保证 batch 内有效梯度密度；或者调 reward 粒度（加过程分/格式分制造差异）、调温度和 n 增加多样性、课程学习控制题目难度使 pass rate 处于中间区间。
 
-**verl 加分点**：V1 的 ReplayBuffer 内置 group filter + refill 逻辑（`verl/trainer/ppo/v1/replay_buffer.py`，evict 后按 2k credit 补生成）；但过滤指标必须在 sampling 前可得——规则/流式 reward 可以，普通 colocated reward model 是 sample 之后才算分，无法驱动 refill，需要给 RM 配独立资源池。这个"数据依赖顺序"细节是区分背书和真懂的分水岭。
+**verl 加分点**：V1 的 ReplayBuffer 内置 group filter + refill 逻辑（[`verl/trainer/ppo/v1/replay_buffer.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/v1/replay_buffer.py)）。要分清两种语义：同步 DAPO 路径可按 `2k` credit 过量采样再过滤；异步路径会汇总过滤与 staleness 原因，evict `k` 条后 refill `k` 条，并不一律是 `2k`。过滤指标还必须在 sampling 前可得——规则/流式 reward 可以，普通 colocated reward model 是 sample 之后才算分，无法驱动 refill，需要给 RM 配独立资源池。这个"数据依赖顺序"细节是区分背书和真懂的分水岭。
 
 ### A4. 组大小 n 如何影响训练（字节原题）
 
 **回答骨架**：n 是"baseline 质量 vs rollout 成本"的旋钮。n 越大：组均值/方差估计越准，优势噪声越小；全对/全错概率越低（有效样本率高）；pass@k 类信号越丰富；但 rollout 计算量线性涨、单 step 时间被最长回答拖住（长尾更明显）。n 太小（如 2）时 baseline 噪声大，RLOO 场景 n=1 时 leave-one-out 数学上无定义。常见取 4–16，数学/代码任务 8 上下。
 
-**verl 加分点**：`actor_rollout_ref.rollout.n` 控制；V1 里同一 `uid` 展开成多个 session（trajectory key `{uid}_{session_id}_{index}`），GRPO 按 uid 聚合。可顺带提：verl 的 RLOO 循环实现对 n=1 组保留原始 reward，而向量化实现会把它清零——两个"等价"实现语义相反，这是我提的 [PR #7150](https://github.com/verl-project/verl/pull/7150) 修复的 bug（修复在 review 中；详见 [PR 拆解篇](/blog/verl-guide-pr-deep-dive/)）。
+**verl 加分点**：`actor_rollout_ref.rollout.n` 控制；V1 里同一 `uid` 展开成多个 session（trajectory key `{uid}_{session_id}_{index}`），GRPO 按 uid 聚合。可顺带提：verl 的 RLOO 循环实现对 n=1 组保留原始 reward，而向量化实现会把它清零——两个"等价"实现语义相反，这是我提的 PR #7150 修复的 bug（修复在 review 中；如果你是这位候选人，这里是你的主场，详见第 15 章）。
 
 ### A5. GRPO 公式里为什么 clip 了外面还要 mean（字节原题）
 
@@ -146,7 +147,7 @@ seriesOrder: 15
 | 变体 | 修什么失败模式 | 核心手段 |
 |---|---|---|
 | DAPO（字节+清华） | 熵坍缩、无效组、长度噪声 | Clip-Higher 非对称裁剪 + 动态采样过滤全对全错 + token 级 loss + 超长软惩罚，去 KL |
-| Dr.GRPO | std 归一化的难度偏差 + 序列均值的长度偏差 | 去掉除 std；用固定常数（最大长度）代替 \|o\| 做分母 |
+| Dr.GRPO | std 归一化的难度偏差 + 序列均值的长度偏差 | 去掉除 std；用固定常数（最大长度）代替 |o| 做分母 |
 | GSPO（Qwen） | token 级 IS 权重高方差（长 CoT、MoE 尤甚） | ratio 提升到序列级（长度归一的序列似然比），整序列 clip |
 | CISPO（MiniMax） | clip 直接丢掉低概率关键 token（如转折词 "wait"）的梯度 | 不裁 token 更新、改为裁 IS 权重本身，保留所有 token 梯度 |
 | GFPO（微软） | 可验证 RL 后回答长度膨胀 | 采样更多候选，按长度/token 效率过滤后再更新 |
@@ -163,17 +164,17 @@ seriesOrder: 15
 **再答"verl 里改哪些地方"（这才是这道题的真考点）**：不需要写新 Trainer，DAPO 在 verl 里是配置组合 + 少量组件：
 
 - Clip-Higher → `actor.clip_ratio_low/clip_ratio_high` 非对称设置；
-- token 级 loss → `actor.policy_loss.loss_agg_mode=token-mean`；
+- token 级 loss → `actor.policy_loss.loss_agg_mode=token-mean`（或按 recipe 用 token-sum 系）；
 - 去 KL → `actor.use_kl_loss=False` + `algorithm.use_kl_in_reward=False`（省 ref policy）；
 - Overlong shaping → reward 函数里对接近 `max_response_length` 的样本做线性软惩罚；
 - Dynamic Sampling → V1 ReplayBuffer 的 group filter + refill（注意 reward 必须在 sampling 前可得，RM 需独立资源池）；
-- 参考 [`docs/algo/dapo.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/algo/dapo.md)。
+- 参考 [`docs/algo/dapo.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/algo/dapo.md)。
 
 ### B2. GSPO 为什么"序列级"（百度/字节追问）
 
-**回答骨架**：GRPO 的 ratio 是逐 token 的 $\pi_\theta(y_t|\cdot)/\pi_{old}(y_t|\cdot)$，但 reward/advantage 是序列级的——优化单元和信号单元错位。长序列上逐 token ratio 连乘方差极大；MoE 下同一 token 两次前向可能路由到不同 expert，token 级 ratio 噪声更大。GSPO 定义序列级 ratio $s_i = (\pi_\theta(y|x)/\pi_{old}(y|x))^{1/|y|}$（长度归一防爆炸），clip 作用在整条序列上。效果：被 clip 的 token 比例远高于 GRPO 却训得更稳（丢的是整条偏移序列而不是随机 token）；对 MoE RL 稳定性改善明显，也是 Qwen3 系公开使用的算法。
+**回答骨架**：GRPO 的 ratio 是逐 token 的 $\pi_\theta(y_t|·)/\pi_{old}(y_t|·)$，但 reward/advantage 是序列级的——优化单元和信号单元错位。长序列上逐 token ratio 连乘方差极大；MoE 下同一 token 两次前向可能路由到不同 expert，token 级 ratio 噪声更大。GSPO 定义序列级 ratio $s_i = (\pi_\theta(y|x)/\pi_{old}(y|x))^{1/|y|}$（长度归一防爆炸），clip 作用在整条序列上。效果：被 clip 的 token 比例远高于 GRPO 却训得更稳（丢的是整条偏移序列而不是随机 token）；对 MoE RL 稳定性改善明显，也是 Qwen3 系公开使用的算法。
 
-**verl 加分点**：`actor.policy_loss.loss_mode=gspo`（`core_algos.py` 注册 `gspo`），与 `adv_estimator=grpo` 组合使用——再次印证"estimator 与 policy loss 是两个正交维度"。
+**verl 加分点**：`actor.policy_loss.loss_mode=gspo`（`core_algos.py` 注册 `gspo`），与 `adv_estimator=grpo` 组合使用——再次印证"estimator 与 policy loss 是两个正交维度"。还要分清 **ratio 粒度**与 **loss 聚合粒度**：GSPO 把 ratio/clip 提到序列级，但最终标量 loss 仍遵守 `loss_agg_mode`；`compute_policy_loss_gspo` 的函数默认是序列均值，actor 全局默认与官方 recipe 又可不同，因此判断实际语义要看最终解析后的配置，不能只看函数签名。
 
 ### B3. Dr.GRPO：std 归一化为什么有偏（百度/字节追问）
 
@@ -191,7 +192,7 @@ seriesOrder: 15
 
 ### C1. verl 是什么？HybridFlow 的 hybrid 体现在哪？
 
-90 秒版本见[系列第 1 篇](/blog/verl-guide-overview/)。hybrid 双关：**hybrid controller**——算法控制流用 single-controller（driver 全局视角，改算法只改控制流），模型计算用 multi-controller（SPMD，各 rank 自治高效），Ray 做胶水；**hybrid engine**——训练与推理分时共享同一批 GPU，通过权重 reshard 而不是复制来切换角色。论文 EuroSys 2025，对比 DeepSpeed-Chat/OpenRLHF/NeMo-Aligner 吞吐提升 1.5–20 倍。
+90 秒版本见第 0 章。hybrid 双关：**hybrid controller**——算法控制流用 single-controller（driver 全局视角，改算法只改控制流），模型计算用 multi-controller（SPMD，各 rank 自治高效），Ray 做胶水；**hybrid engine**——训练与推理分时共享同一批 GPU，通过权重 reshard 而不是复制来切换角色。论文 EuroSys 2025，对比 DeepSpeed-Chat/OpenRLHF/NeMo-Aligner 吞吐提升 1.5–20 倍。
 
 ### C2. 训推共卡时显存怎么管？（高频）
 
@@ -203,12 +204,13 @@ seriesOrder: 15
 4. `update_weights`：`resume(tags=["weights"])` → 训练引擎按 per-tensor 导出并写入推理引擎（FSDP 聚合分片→vLLM 布局，LoRA 可先 merge）→ actor 参数可再 offload → `resume(tags=["kv_cache"])` 重建 KV cache；
 5. 进入下一轮 rollout。
 
-关键点：权重在 GPU 内存中转换布局，不落盘；顺序错了就是 OOM（两边状态叠加）或用旧权重生成（版本错乱）。代码：[`ActorRolloutRefWorker.update_weights`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/workers/engine_workers.py#L719-L805)。
+关键点：权重在 GPU 内存中转换布局，不落盘；顺序错了就是 OOM（两边状态叠加）或用旧权重生成（版本错乱）。代码从 `ActorRolloutRefWorker.update_weights`（[`verl/workers/engine_workers.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/workers/engine_workers.py)）这个符号开始追；行号会随开发线变动，面试前不要死记。
 
 ### C3. 权重同步的方案与保证（高频）
 
 - 共置：进程内 naive 拷贝（V1 colocate 强制）；
 - 分离：CheckpointEngine 统一抽象——NCCL 广播（bucketed）、NIXL P2P、Mooncake/Kimi 引擎，以及 delta_sharded（bytewise 稀疏差分，只传变化的位置和值，首轮全量 seed）；
+- 当前边界：NCCL 路径支持 multi-sender 的全量权重发送；`delta_sharded` 当前是 FSDP1/FSDP2/TorchTitan 到 SGLang、BF16 语义，Megatron 仍是 roadmap，不要答成已支持；
 - 必须保证：完整性（checksum）、版本原子性（一个 server 不能混两个版本的分片）、同步与请求边界一致（in-flight 请求要么 drain 要么 abort+续跑）、失败可检测可回退。
 - 面试常追问 abort vs drain：drain 等在途请求完成（慢但简单），abort + partial rollout 保留半成品下次续（快但要处理跨版本轨迹的 log-prob 归属）。
 
@@ -220,8 +222,16 @@ V0 所有 DataProto 都经 driver 单点搬运，规模大了成瓶颈。V1 把�
 
 - sync：版本最干净，先跑正确性；
 - colocate_async：GPU 不够但想把生成和训练流水起来，sample 后 abort+sleep，支持 partial rollout；
-- separate_async：有独立推理卡，hybrid 与 standalone replicas 并存，`parameter_sync_step`（默认 4）+ replay buffer `max_off_policy_threshold`（默认 8，drop/wait）控制陈旧度；自 #7188 起也支持 decoupled PPO（不再强制 bypass）。
+- separate_async：有独立推理卡，hybrid 与 standalone replicas 并存，`parameter_sync_step`（默认 4）+ replay buffer `max_off_policy_threshold`（默认 8）控制 prompt 样本年龄/staleness，超限时 drop/wait；自 #7188 起也支持 decoupled PPO（不再强制 bypass）。
+- 实验性动态借卡：当 `trainer.v1.separate_async.hybrid_rollout.enable_switch=true` 时，训练与 rollout 可在 step 边界动态切换 GPU 角色，默认关闭。切换时要同时看 `separate_async/switch/wait_samples`、吞吐与 staleness，不能只看训练 GPU 利用率。自定义 sampler 还必须实现 `get_sampleable_count` / `wait_for_sampleable`。
 - 决策依据：rollout 占 wall-clock 的比例、长尾程度、是否能容忍 off-policy、有没有独立资源。汇报吞吐收益时必须同时报 staleness 和最终学习曲线。
+
+### C6. 0.10 开发线的后端边界怎么答？
+
+- 最新正式版是 v0.9.0，当前 main 已是 `0.10.0.dev`；V0 的代码和入口仍然存在，不能因旧的弃用日期就说"已删除"。
+- 新增 `fsdp_turbo` 是 CUDA/NPU 的 language-model-only 路径，主打 FSDP + EP + CP；当前 TP=1，且不能同时开 verl Ulysses SP。
+- TorchTitan 当前支持 FSDP2/HSDP + TP/CP/EP，不支持 PP，仍是 nightly 边界。
+- 独立 `mindspeed` strategy/config 已移除；Ascend 适配现在注册在 `(backend=megatron, device=npu)` 组合下。面试时说"底层用 MindSpeed 适配 Megatron/NPU"可以，说"选 mindspeed 独立后端"就过时了。
 
 ---
 
@@ -236,12 +246,12 @@ V0 所有 DataProto 都经 driver 单点搬运，规模大了成瓶颈。V1 把�
 **修法光谱**（从算法到工程）：
 
 1. **Token 级 TIS**：每 token IS 权重 $\min(\pi_{train}/\pi_{rollout}, C)$——有偏，字节实验显示后期仍可能崩；
-2. **Sequence 级 TIS/MIS**：序列级权重截断（Seq-TIS）或超阈值整条丢弃（MIS/掩码 IS）——理论上更优（MIS 丢弃是无偏的拒绝采样视角），实验最稳，是社区当前推荐默认；DeepSeek-V3.2 论文用的 off-policy sequence masking 同思路（偏移大且 advantage 为负的序列直接 mask）；
+2. **Sequence 级 TIS/MIS**：序列级权重截断（Seq-TIS）或超阈值整条丢弃（MIS/掩码 IS）——理论上无偏（MIS 丢弃是无偏的拒绝采样视角），实验最稳，是社区当前推荐默认；DeepSeek-V3.2 论文用的 off-policy sequence masking 同思路（偏移大且 advantage 为负的序列直接 mask）；
 3. **拒绝采样（RS/IcePop 系）**：按 k1/k3 散度阈值过滤 token/序列；
 4. **工程对齐（Truly On Policy）**：对齐两侧算子做到 bit 级一致（slime 框架已演示 SGLang vs FSDP KL=0），代价是吞吐；
 5. **定点修复**：MiniMax 案例——lm_head 用 FP32 后训推相关性大幅改善；排查思路就是把两侧 log-prob 打出来做散点图，看分段/离群。
 
-**verl 对应**：`algorithm.rollout_correction` 全家桶——`rollout_is: token|sequence`（TIS，阈值默认 2.0，支持 IcePop 上下界写法）、`rollout_rs`（`token_k1`/`seq_sum_k1`/`seq_mean_k3` 等）、decoupled（三策略，重算 old）vs bypass（两策略，old=rollout）。监控 `rollout_corr/*` 指标（KL、k3_kl、训推 PPL 差、χ²、IS 有效样本率 ESS、RS 掩蔽比例）。数学推导见 [`docs/algo/rollout_corr_math.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/algo/rollout_corr_math.md)——面试前值得通读，它就是按 REINFORCE→PPO→Decoupled PPO 的顺序写的教科书式材料。工程对齐一侧，verl 2026/05 还发布了 vexact（zero-mismatch 的 HF rollout 路径），可作为"框架自身也在做 bit 级对齐"的论据。
+**verl 对应**：`algorithm.rollout_correction` 全家桶——`rollout_is: token|sequence`（TIS，阈值默认 2.0，支持 IcePop 上下界写法）、`rollout_rs`（`token_k1`/`seq_sum_k1`/`seq_mean_k3` 等）、decoupled（三策略，重算 old）vs bypass（两策略，old=rollout）。监控 `rollout_corr/*` 指标（KL、k3_kl、训推 PPL 差、χ²、IS 有效样本率 ESS、RS 掩蔽比例）。数学推导见 [`docs/algo/rollout_corr_math.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/algo/rollout_corr_math.md)——面试前值得通读，它就是按 REINFORCE→PPO→Decoupled PPO 的顺序写的教科书式材料。工程对齐一侧，verl 2026/05 还发布了 vexact（zero-mismatch 的 HF rollout 路径），可作为"框架自身也在做 bit 级对齐"的论据。
 
 **面试标准答案模板**：先定义（同权重不同引擎分布不等）→ 后果（on-policy 假设破坏、长序列累积、MoE 放大、崩溃案例）→ 修法（seq 级 TIS/MIS 优先，token 级有偏；极致走 bit 对齐；定点查关键层精度）→ 监控（训推 KL、ESS、ratio 分布、clip fraction）→ 框架落点（verl rollout_correction / slime TIS+MIS / swift 同类参数）。
 
@@ -252,8 +262,8 @@ V0 所有 DataProto 都经 driver 单点搬运，规模大了成瓶颈。V1 把�
 **方案光谱**（面试按这个演进顺序讲）：
 
 1. **one-step off-policy**：生成第 N+1 批时训练第 N 批，固定一步陈旧，实现简单但不灵活；
-2. **fully async / streaming**（AReaL、StreamRL、MiniMax Forge、verl 的 fully_async_policy 实验路径）：Rollouter 与 Trainer 完全解耦，样本经队列流式供给，`staleness_threshold` 控制版本差，**partial rollout** 在参数同步时中断在途生成、保存前缀下个版本续写；verl 实测 32–128 卡约 2× 提速；
-3. **verl V1 separate_async**（当前主推）：hybrid + standalone replicas 并存，`parameter_sync_step` 批间同步 + replay buffer 按模型版本 drop/wait，CI 已从实验路径迁移至此。
+2. **fully async / streaming**（AReaL、StreamRL、MiniMax Forge、verl 的 fully_async_policy 实验路径）：Rollouter 与 Trainer 完全解耦，样本经队列流式供给，`staleness_threshold` 控制版本差，**partial rollout** 在参数同步时中断在途生成、保存前缀下个版本续写；
+3. **verl V1 separate_async**（当前主推）：hybrid + standalone replicas 并存，`parameter_sync_step` 批间同步 + replay buffer 按 prompt age/staleness drop/wait；还可实验性开启 `hybrid_rollout.enable_switch`，在 step 边界把 GPU 动态借给 rollout 或训练。这与静态 colocate/disaggregate 比例是两层独立选择。
 
 **核心权衡**：吞吐 vs 数据新鲜度。陈旧样本破坏 on-policy 假设 → 需要 rollout correction（decoupled PPO 的三策略框架天然覆盖：rollout→old 的偏移用 IS 修，old→current 用 PPO clip 管）。评价异步方案永远要同时报 wall-clock 学习曲线和 staleness 分布，不能只报 tokens/s。
 
@@ -270,10 +280,16 @@ V0 所有 DataProto 都经 driver 单点搬运，规模大了成瓶颈。V1 把�
 **核心考点三：异步 Agent Loop 为什么必要？**
 工具调用延迟成百上千毫秒，同步会让 GPU 等 IO。verl 用 asyncio 协程并发跑每条轨迹的 agent loop，LLM server 按最少请求负载均衡 + 多轮 sticky session（prefix cache 命中）。
 
-**核心考点四：长程信用分配与 reward 设计。**
+**核心考点四：多模态连续 token 为什么要改 AgentLoop 后处理？**
+0.10 开发线的 Multimodal Continuous Token 是 AgentLoop 唯一 tokenization 路径。未知 `model_type` 会告警并选用 generic text/VL builder，已识别族与 processor 无法安全匹配才明确失败；这种 generic builder fallback 不等于回退 legacy re-tokenize。核心原因是：Continuous Token 已逐轮维护最终 `input_ids`，轨迹完成后需要用最终 token stream 的完整文本和累计媒体对象，重建 `pixel_values` / grid 等 multimodal processor tensors 及其绑定；多模态超长不能靠静默截断解决，否则文本 token 和图像/视频位置就会失配。media processing 还被放到 executor，避免阻塞 event loop。
+
+**核心考点五：如何观测并复现 Agent 轨迹？**
+AgentLoop 可以用 RL-Insight Agent telemetry 建 session/span（需 RL-Insight ≥0.3.0）；请求 id 与 priority 也已做成确定性语义，便于复现调度和对齐 trace。要区分这些可观测/可复现改动与 #7151 的 sparse `reward_extra_info` schema 修复：前者已在 main，后者仍是 OPEN PR。
+
+**核心考点六：长程信用分配与 reward 设计。**
 纯 outcome reward 在 50 步任务上信号太稀疏。业界做法（MiniMax M2.x 公开分享）：过程奖励（每步合法性/进度）+ 任务完成时间惩罚 + reward-to-go 降方差；轨迹过滤掉统计异常的长尾（防梯度爆炸）；多 domain 混训防遗忘。verl 侧的对应物：AgentLoop 输出逐 turn 结构、reward 可按 step 落点、GRPO 之外可选 token 级 estimator。
 
-**核心考点五：环境工程。**
+**核心考点七：环境工程。**
 数十万沙箱环境的调度、幂等重试（训练恢复后 prompt 会重发）、防 reward hacking（模型伪造 observation、钻 verifier 漏洞）。回答时把"环境失败 ≠ 策略失败"（要分开计数、不能一律零分）说出来会很加分。
 
 ---
@@ -320,12 +336,14 @@ def ppo_loss(logp, old_logp, adv, mask, clip_low=0.2, clip_high=0.2):
 
 ## 七、F 组：把自己的 PR 讲成故事（如适用）
 
-如果你有 verl 贡献（[PR 拆解篇](/blog/verl-guide-pr-deep-dive/)有 #7150/#7151 的完整精讲），面试叙事链建议：
+如果你有 verl 贡献，[第 15 章](/blog/verl-guide-pr-deep-dive/)有 #7150/#7151 按当前 PR 形态整理的完整精讲（含预期追问清单）。本章和第 15 章已自包含公开面试所需的技术叙事，不依赖工作区外的私人笔记。面试叙事链建议：
 
 1. 用 C 组的语言介绍 verl 定位（30 秒）；
 2. 引到你的 PR 所在链路："advantage 估计器注册表里同一算法有循环版和向量化版，框架隐含承诺等价"（#7150）/"reward loop 汇总逐样本 extra_info 进 batch"（#7151）；
 3. 讲 bug 本质（契约违反/schema 假设）→ 方法论（等价实现互测、契约验证）→ 修复取舍（向参考实现对齐、并集+None 填充）→ 验证纪律（fail-before/pass-after、基线 diff）；
-4. 收尾接热点：这类"静默改变优化目标"的 bug 与训推不一致同属一族——都不报错、只让曲线慢慢不对，所以我的排查习惯是先对数据分布和等价性做审计。
+4. 收尾接热点：这类正确性 bug 与训推不一致都会污染训练信号，但不要概括成"都不报错"——负索引、缺 key 可以显式崩溃，稀疏大标签、单样本组或列丢失则可能静默改变语义。我的排查习惯是同时做契约验证、等价实现互测和数据分布审计。
+
+截至本文档更新（2026-08-29，`main=ea532913`），这两个 PR 仍为 OPEN、未合入 main（`as_torch_index` 整数路径仍未稠密化）；GitHub PR 页面当时没有可见的 status checks，因此不要把"已申请 CI"说成"已通过 CI"。面试前再打开 PR 页面确认 review/check 状态。
 
 ---
 
@@ -343,6 +361,6 @@ def ppo_loss(logp, old_logp, adv, mask, clip_low=0.2, clip_high=0.2):
 
 - 真题来源：牛客网字节/阿里/快手/腾讯面经（2025–2026 校招、实习）、面试大师（百度 GRPO 变体题）。
 - 训推不一致：字节《When Speed Kills Stability》相关分析、slime 框架 mismatch 博客（TIS/MIS/Truly On Policy）、ms-swift Training-Inference-Mismatch 文档、DeepSeek-V3.2 off-policy sequence masking。
-- 异步 RL：verl `docs/advance/fully_async.md`、verl v0.7 release blog（checkpoint engine、server mode）、AReaL/StreamRL 论文、MiniMax Forge 系统分享。
-- Agentic RL：verl `docs/advance/agent_loop.rst`、`docs/start/agentic_rl.rst`、MiniMax M2.1/M2.5 后训练分享（CISPO、FP32 lm_head、过程奖励）。
-- 算法变体：DAPO/GSPO/Dr.GRPO/GFPO 论文与 verl `docs/algo/` 对应文档、`docs/algo/rollout_corr_math.md`。
+- 异步 RL：verl [`docs/advance/v1_async_trainer.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/v1_async_trainer.md)、[`docs/advance/fully_async.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/fully_async.md)、verl v0.7 release blog（checkpoint engine、server mode）、AReaL/StreamRL 论文、MiniMax Forge 系统分享。
+- Agentic RL：verl [`docs/advance/agent_loop.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/agent_loop.rst)、[`docs/start/agentic_rl.rst`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/start/agentic_rl.rst)、MiniMax M2.1/M2.5 后训练分享（CISPO、FP32 lm_head、过程奖励）。
+- 算法变体：DAPO/GSPO/Dr.GRPO/GFPO 论文与 [`docs/algo/`](https://github.com/verl-project/verl/tree/ea53291385ce764019a2b40733605f21d8317583/docs/algo) 对应文档、verl [`docs/algo/rollout_corr_math.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/algo/rollout_corr_math.md)。

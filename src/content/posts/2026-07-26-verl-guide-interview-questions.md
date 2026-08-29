@@ -1,8 +1,8 @@
 ---
 title: "verl 高频面试题与回答框架"
-description: "覆盖定位、架构、算法、系统性能、数据奖励与落地场景的 40 道高频题。"
+description: "覆盖定位、架构、算法、系统性能、数据奖励与落地场景的 48 道高频题。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - interview
@@ -14,9 +14,9 @@ series: verl-interview-guide
 seriesOrder: 11
 ---
 
-建议先遮住答案口述，每题控制在 1～3 分钟。回答架构题用"问题 → 抽象 → 数据流 → 取舍"，场景题用"约束 → 方案 → 指标 → 风险"。
+建议先遮住答案口述，每题控制在 1～3 分钟。回答架构题用“问题 → 抽象 → 数据流 → 取舍”，场景题用“约束 → 方案 → 指标 → 风险”。
 
-本篇是"框架内功"题；各公司真题、GRPO 变体对比、训推不一致/异步 RL/Agentic RL 三大热点见[真题热点篇](/blog/verl-guide-real-interview-questions/)。
+本章是"框架内功"题；各公司真题、GRPO 变体对比、训推不一致/异步 RL/Agentic RL 三大热点见[第 14 章](/blog/verl-guide-real-interview-questions/)。
 
 ## 基础与定位
 
@@ -28,13 +28,13 @@ seriesOrder: 11
 
 因为一轮 RL 同时包含变长大规模生成、规则/模型 reward、多个模型 forward、分布式优化和频繁权重同步。它们使用不同并行策略与显存状态，还可能跨节点异步。普通循环能做小实验，但很快遇到资源编排和吞吐瓶颈。
 
-### 3. HybridFlow 的"hybrid"体现在哪里？
+### 3. HybridFlow 的“hybrid”体现在哪里？
 
 一是 hybrid-controller：driver 的集中控制流与 worker 的分布式 SPMD 计算结合；二是 hybrid engine：actor 训练和 rollout 推理在同一 GPU 池分时复用，并在不同权重/显存布局间转换。
 
 ### 4. V0 与 V1 的关系？
 
-V0 `RayPPOTrainer` 是经典 DataProto 经过单 controller 的同步实现，容易读但已 deprecated（入口注明 v0.9.0 移除）。当前默认 V1 使用 TransferQueue/replay buffer，并提供 sync、colocate async、separate async。算法依赖基本相同，数据调度更细粒度。
+V0 `RayPPOTrainer` 是经典 DataProto 经过单 controller 的同步实现，容易读但已 deprecated。当前默认 V1 使用 TransferQueue/replay buffer，并提供 sync、colocate async、separate async。算法依赖基本相同，数据调度更细粒度。
 
 ## 架构
 
@@ -74,7 +74,7 @@ GAE 用 `V(s_t)` 和 `V(s_{t+1})` 构造 TD residual，再做 lambda-return 递�
 
 ### 13. GRPO 与 RLOO 的区别？
 
-GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样本 i 减"排除 i 后其余样本均值"。RLOO 不是简单关闭 GRPO 标准差归一。
+GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样本 i 减“排除 i 后其余样本均值”。RLOO 不是简单关闭 GRPO 标准差归一。
 
 ### 14. ReMax 的 baseline 是什么？
 
@@ -90,7 +90,7 @@ GRPO 对每个样本减完整组均值，通常再除组标准差；RLOO 对样�
 
 ### 17. 为什么 loss aggregation 影响长度偏置？
 
-严格说 `token-mean` 是全局每 token 等权，并非"每条长回答天然获得固定更大权重"的独立样本目标；`seq-mean-token-sum` 才明确让序列内 token 累加，`seq-mean-token-mean` 使非空序列近似等权，`sum-norm` 再用固定尺度归一；2026-08 还新增了 `token-sum`（全局 token 求和、以全局 batch 信息定分母）。可变长任务中，分母就是目标的一部分。当前共五种模式，见 `core_algos.py` 的 `agg_loss`。
+严格说 `token-mean` 是全局每 token 等权，并非“每条长回答天然获得固定更大权重”的独立样本目标；`seq-mean-token-sum` 才明确让序列内 token 累加，`seq-mean-token-mean` 使非空序列近似等权，`sum-norm` 再用固定尺度归一；2026-08 还新增了 `token-sum`（全局 token 求和、以全局 batch 信息定分母）。可变长任务中，分母就是目标的一部分。当前共五种模式，见 `core_algos.py` 的 `agg_loss`。
 
 ## 系统与性能
 
@@ -112,7 +112,7 @@ TP 增大让模型可装下、单请求算得更快，但通信增加并减少�
 
 ### 22. 权重同步需要保证什么？
 
-完整性、版本原子性、布局转换正确、同步与请求边界一致、失败可检测。若一个 rollout server 混到不同版本分片，可能不崩溃却生成错误数据，因此 checksum/版本确认很重要。
+完整性、版本原子性、布局转换正确、同步与请求边界一致、失败可检测。若一个 rollout server 混到不同版本分片，可能不崩溃却生成错误数据，因此 checksum/版本确认很重要。NCCL multi-sender 仍传全量，只增加同节点 relay 扩大 NIC fan-out；`delta_sharded` 改的是 payload，当前只支持 FSDP1/FSDP2/TorchTitan → SGLang BF16，不能把 Megatron roadmap 当现状。
 
 ### 23. 为什么变长序列导致 straggler？
 
@@ -164,7 +164,7 @@ Decoupled 保留 rollout、old、current 三策略：训练前重算 old anchor�
 
 ### 34. V1 三种 mode 与 fully async 是什么关系？
 
-sync、colocate_async、separate_async 是 V1 的三个 trainer mode。`experimental/fully_async_policy` 是独立入口和架构，以 MessageQueue、Rollouter、Trainer、ParameterSynchronizer 支持 streaming/partial rollout；不能称为第四种 V1 mode。2026-08 更新：其 CI 已整体迁移到 V1 `separate_async`（#7357），官方注明准备将 fully_async 移入 recipe 仓库——回答时应把它定位成"正被 V1 吸收的历史实验路径"。
+sync、colocate_async、separate_async 是 V1 的三个 trainer mode。[`verl/experimental/fully_async_policy/`](https://github.com/verl-project/verl/tree/ea53291385ce764019a2b40733605f21d8317583/verl/experimental/fully_async_policy) 是独立入口和架构，以 MessageQueue、Rollouter、Trainer、ParameterSynchronizer 支持 streaming/partial rollout；不能称为第四种 V1 mode。2026-08 更新：其 CI 已整体迁移到 V1 `separate_async`（#7357），官方注明准备将 fully_async 移入 recipe——回答时应把它定位成"正被 V1 吸收的历史实验路径"。`separate_async.hybrid_rollout.enable_switch` 只是这个 mode 内的实验性 step-boundary 借卡开关，也不是第四/第五种 mode。
 
 ### 35. On-policy distillation 与 reference policy 有何区别？
 
@@ -180,15 +180,49 @@ teacher 提供 response-token log-prob 等学习目标；只有 `forward_kl_topk
 
 ### 38. 相同 config 两次运行为何仍不一致？
 
-seed 只控制部分随机源。continuous batching、请求路由、工具延迟、reward 并发和非确定 kernel 都会改变轨迹。full determinism 有性能和后端限制，目前不能对 SGLang/TRT-LLM 或 multi-turn/tool 一概承诺 bitwise 复现。
+seed 只控制部分随机源。continuous batching、请求路由、工具延迟、reward 并发和非确定 kernel 都会改变轨迹。full determinism 会稳定部分 AgentLoop request-id/priority 与 vLLM batch-invariant 路径，但有性能和后端限制，仍不能对 SGLang/TRT-LLM 或外部 multi-turn/tool 环境一概承诺 bitwise 复现。
 
 ### 39. RLOO 组大小为 1 会怎样？
 
-循环实现不会报错，而是保留原始 reward，静默偏离 leave-one-out 定义；向量化实现则把它清零，与循环版语义相反（该等价性 bug 由 [PR #7150](https://github.com/verl-project/verl/pull/7150) 修复中）。因此必须在数据/采样配置层保证每组至少两条，并监控实际 group size。
+当前两套实现语义不一致：循环版 `rloo` 保留原始 reward，向量版 `rloo_vectorized` 清零 advantage，都不会因此报错，但会静默分叉。PR #7150 选择让向量版对齐历史参考实现的"保留原分数"语义，仍在 review 中。实际训练应尽量在数据/采样配置层保证每组至少两条，并监控实际 group size。
 
 ### 40. 为什么 DAPO 动态过滤不能直接依赖普通 colocated RM？
 
 group refill 在 replay-buffer sampling 前就要知道 reward metric；普通 colocated RM 是 sample 后才计算。应使用规则/流式 reward，或让 reward model 启用独立 resource pool，使指标在筛选时可用。
+
+还要区分 refill 语义：sync DAPO 路径可按 evict `k` 给 `2k` generation credit；async buffer 对 stale/DAPO/failure 原因先取并集，evict `k` 就精确 refill `k` 个 prompt group。不能把 `2k` 泛化成整个 V1。
+
+### 41. v0.9.0 已发布，V0 trainer 到底删了吗？
+
+没有。main 已是 `0.10.0.dev`，`trainer.use_v1=true` 仍默认，但 `main_ppo_v0.py`/`RayPPOTrainer` 仍存在；入口还打印“将在 v0.9.0 移除”的旧警告。正确口径是“V0 deprecated、删除期限已逾期、不可依赖其长期兼容性”，不要照着警告说“已经删除”或“马上必删”。
+
+### 42. separate_async 为什么还要把训练 GPU 借给 rollout？
+
+固定 trainer/rollout 比例很难适配不断变化的 response 长度；step 结束后 hybrid GPU 可能空等 standalone 产出。启用 `hybrid_rollout.enable_switch` 后，它们先加入 rollout，达到 sampleable threshold 再 remove/abort/sleep 收回训练；阈值可按真实 idle 自适应，并用预计生成收益和历史切换成本做决策。默认关闭，不能与 rollout PD disaggregation 同开；应先平衡资源，再用 timing/staleness/质量验证收益。
+
+### 43. FSDP-Turbo、FSDP2、MindSpeed 在当前 registry 是什么关系？
+
+`fsdp_turbo` 是新增独立 strategy，基于外部 FSDPTurbo，支持 CUDA/NPU 的 FSDP+EP+CP，当前只注册 language model、TP 保持 1，且 Turbo CP 不能与 verl Ulysses 同开。独立 `strategy=mindspeed` 已删除；Ascend 的 MindSpeed patch 现在以 `(backend=megatron, device=npu)` 接入，所以用户仍配 `strategy=megatron`。目录名、strategy、device dispatch 和 model type 必须一起看。
+
+### 44. GSPO 是 sequence-level，为什么 `loss_agg_mode` 还能是 token-mean？
+
+“序列级”首先描述 importance ratio/clip：先把 token log-ratio 沿序列平均，再整条共享 ratio。最终如何把逐 token loss 聚合成标量是另一个层次。当前 GSPO 实现尊重传入的 `loss_agg_mode`；函数默认、actor 全局默认、官方 recipe 显式值还不完全相同。要复现论文应检查 resolved config，不能只看 `loss_mode=gspo`。
+
+### 45. Multimodal Continuous Token 解决什么？
+
+它保证多轮/多模态训练 token 与 rollout runtime prefix 一致：processor 负责展开 image placeholder，builder 增量合并边界与 observation token，并给非策略 token `mask=0/logprob=0`；轨迹结束后用最终 token stream 解码得到的完整文本和累计媒体对象，重建 `pixel_values` 等 multimodal processor tensors。当前 AgentLoop 只有这一条 tokenization 路径；未知模型可告警后使用 generic text/VL builder，无法安全匹配的 processor/family 才显式失败，两者都不是 legacy re-tokenize fallback。VL prompt 不能随意文本截断，因为会破坏 placeholder 与媒体 tensor 对齐。
+
+### 46. checkpoint callback 触发是否代表 checkpoint 已持久化？
+
+不一定。`trainer.checkpoint_callback_class` 是 driver-side 保存后 hook，异常默认终止训练。普通同步保存完成后可以使用目录；Megatron async-save 时 hook 触发可能只表示异步写入已发起，文件与 latest marker 仍在路上。外部上传/模型注册要识别 `async_save` 并等待真正 durable 的完成条件。
+
+### 47. 有 [`uv.lock`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/uv.lock) 后为什么还会环境不一致？
+
+lock 只覆盖被选择的 extras 和支持平台。当前统一 uv 路径面向 Linux x86_64、Python 3.12、CUDA 13.0/torch 2.11，并通过 `runtime_env.py_executable` 让 Ray workers 使用同一环境；NPU、ROCm、aarch64、TRT-LLM 仍走其他路径。还要固定容器/driver/模型 revision，不能把 Python lock 当完整系统镜像。
+
+### 48. PD disaggregation 现在只有 SGLang 支持吗？
+
+不是。`get_rollout_replica_class` 在 `disaggregation_enabled=true` 时已能 dispatch SGLang 与 vLLM 的 PD replica。但"有实现"不等于"任意组合都能跑"：当前 vLLM PD 只支持 `nixl|mooncake` transfer backend、`prefill_replicas=1`、单节点、DP=1、PP=1，NPU 未验证。面试时应回答"两种后端均已 dispatch，但 replica 实现与支持矩阵不同"。
 
 ## 反问面试官可用的问题
 

@@ -2,7 +2,7 @@
 title: "verl 性能分析、稳定性与排障"
 description: "按阶段时间、显存、通信、数值、训推不一致和奖励问题建立可复用的诊断流程。"
 date: 2026-07-26
-updatedDate: 2026-08-14
+updatedDate: 2026-08-29
 tags:
   - verl
   - performance
@@ -25,9 +25,10 @@ seriesOrder: 9
 - 学习正确性：score/reward、advantage/return、actor ratio/clip fraction/KL/entropy、critic loss 与 explained variance。
 - 数据质量：response clip/abort、有效 mask 比例、reward component、失败/过滤/refill 数。
 - 异步：model-version span、staleness、drop/wait、importance weight、rejection/有效样本率。
+- separate-async 借卡：`switch_wait`、`switch_to_rollout`、`switch_to_trainer`、实际 `wait_samples`、sampleable count、remaining、阈值比例、收益/切换成本与最终 decision。
 - Agent/MoE：turn/tool 调用与错误/延迟、expert load balance、跨 rank 负载。
 
-指标定义入口：[`verl/trainer/ppo/metric_utils.py`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/verl/trainer/ppo/metric_utils.py)（`compute_data_metrics` 429 行起、`compute_timing_metrics` 611、`compute_throughout_metrics` 655、MoE 负载均衡指标 274/312）。启用 rollout correction 时还有 `rollout_corr/*` 系列指标（rollout/old 两分布的 KL、k3_kl、训练/rollout PPL 及其差、χ²、IS 权重均值/极值/有效样本率 ESS、RS 掩蔽比例），是诊断训推不一致与异步陈旧度的第一入口。
+指标定义入口：[`verl/trainer/ppo/metric_utils.py`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/verl/trainer/ppo/metric_utils.py)（`compute_data_metrics` 429 行起、`compute_timing_metrics` 611、`compute_throughout_metrics` 655、MoE 负载均衡指标 274/312）。启用 rollout correction 时还有 `rollout_corr/*` 系列指标（rollout/old 两分布的 KL、k3_kl、训练/rollout PPL 及其差、χ²、IS 权重均值/极值/有效样本率 ESS、RS 掩蔽比例），是诊断训推不一致与异步陈旧度的第一入口。
 
 ## OOM 分类
 
@@ -41,6 +42,8 @@ seriesOrder: 9
 
 降低 micro-batch 或 per-GPU token budget；开 activation checkpoint/remove padding；核对 sequence parallel；必要时 CPU offload。不要先降全局 train batch，因为可以保持算法 batch、只增加 gradient accumulation。
 
+若 profiler 显示 actor 在 old-log-prob/update 前后的 CPU↔GPU 整模迁移形成空洞，当前 FSDP2 helper 已使用 pinned CPU storage + non-blocking copy；这项优化只覆盖 FSDP2 的 whole-model transfer，不应外推到 FSDP1、optimizer offload 或 Megatron。确认依赖/硬件真正走异步拷贝，再判断剩余瓶颈。
+
 ### optimizer/checkpoint OOM
 
 检查 optimizer state 分片/offload、保存时是否召回 full state dict、LoRA merge、峰值临时 tensor。OOM 发生在保存步骤通常不是训练 activation 问题。
@@ -53,6 +56,7 @@ seriesOrder: 9
 - 某一 rank 总是晚：长度不均或硬件/网络 straggler。
 - rollout 单请求快但总吞吐低：DP 副本/调度 batch 不足。
 - train kernel 很密但 MFU 低：小矩阵、通信占比或 checkpoint 重算。
+- separate async 的 hybrid GPU 大段空闲、standalone rollout 忙：先调资源比例；仍有稳定 `timing_s/gen` 等待，再试 step-boundary 借卡并把切换成本纳入收益。
 
 ## Ray 启动或 placement 卡住
 
@@ -101,13 +105,24 @@ seriesOrder: 9
 
 ## Profiling 策略
 
-先用框架 timing 找阶段，再用 PyTorch profiler/Nsight 找 kernel/通信。只 profile 少数稳定 step，避开模型初始化和 checkpoint；多 rank 时先选代表 rank。框架支持 nsys、torch、torch_memory 等配置，见 `global_profiler` 和 [`docs/perf/`](https://github.com/verl-project/verl/tree/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/perf)。
+先用框架 timing 找阶段，再用 PyTorch profiler/Nsight 找 kernel/通信。只 profile 少数稳定 step，避开模型初始化和 checkpoint；多 rank 时先选代表 rank。框架支持 nsys、torch、torch_memory 等配置，见 `global_profiler` 和 [`docs/perf/`](https://github.com/verl-project/verl/tree/ea53291385ce764019a2b40733605f21d8317583/docs/perf)。
+
+当前 profiler 还支持：
+
+- `relocate_results=true` 把 Ray 固定目录与 rollout 子目录中的 trace 汇总到 `save_path`；
+- `finish_hook_cmd` 在最后一个 profile step 后执行一次，可上传/登记整目录，配合 `finish_hook_ranks` 选择每节点一个 rank，避免重复上传；
+- Torch profiler 的 mini-batch schedule 与 `record_function("micro_batch<i>")`，能把 forward-only/训练的细粒度空洞标出来；
+- V1 会去重 colocated alias worker group，并覆盖 hybrid 与 standalone rollout managers。
+
+代码当前输出的借卡等待量指标是 `separate_async/switch/wait_samples`；上游异步文档一处仍写 `sample_wait_seconds`，做 dashboard 时应以目标 commit 的实际 metric key 为准。若 torch trace 只有 CPU op 没有 CUDA kernel，还要检查 CUPTI subscriber 冲突；verl 在 torch profiler 模式下会处理 `NVTX_INJECTION64_PATH`，除非显式设置 `VERL_KEEP_NVTX_INJECTION=1`。
+
+线上/长任务可用 RL-Insight 把 scalar、rollout/TQ 状态与 Agent session/span trace 关联；但 trace 是定位工具，不替代独立训练指标和原始样本留存。
 
 ## 结果不可复现
 
-只设置 seed 不保证分布式 rollout bitwise 一致：continuous batching 的请求组合、路由、工具延迟、reward 并发和非确定 kernel 都会改变结果。仓库的 full determinism 会传播确定性环境变量（`VERL_FULL_DETERMINISM`、`VLLM_BATCH_INVARIANT`、`PYTHONHASHSEED`）并启用 vLLM batch-invariant 路径，但有性能代价和明确边界；当前 SGLang/TRT-LLM、multi-turn/tool 场景不能据此承诺完整 bitwise reproducibility。
+只设置 seed 不保证分布式 rollout bitwise 一致：continuous batching 的请求组合、路由、工具延迟、reward 并发和非确定 kernel 都会改变结果。仓库的 full determinism 会传播确定性环境变量并启用 vLLM batch-invariant 路径，但有性能代价和明确边界；当前 SGLang/TRT-LLM、multi-turn/tool 场景不能据此承诺完整 bitwise reproducibility。
 
-排查时先区分"统计结果在合理方差内"与"必须逐 token 一致"。后者需要固定模型/依赖/硬件、数据顺序、请求路由、reward 执行顺序和 checkpoint 状态，并按 [`docs/advance/determinism.md`](https://github.com/verl-project/verl/blob/09ac37258ea66b0cb69b2738eec3074ea4e7261c/docs/advance/determinism.md) 的支持矩阵验证。
+排查时先区分“统计结果在合理方差内”与“必须逐 token 一致”。后者需要固定模型/依赖/硬件、数据顺序、请求路由、reward 执行顺序和 checkpoint 状态，并按 [`docs/advance/determinism.md`](https://github.com/verl-project/verl/blob/ea53291385ce764019a2b40733605f21d8317583/docs/advance/determinism.md) 的支持矩阵验证。
 
 ## 一套面试可复用的排障回答
 

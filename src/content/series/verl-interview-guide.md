@@ -10,7 +10,7 @@ draft: false
 
 阅读时建议先建立三条主线：算法下一步需要计算什么；每个字段由谁生产、谁消费；这些计算在哪些 GPU 上、以什么后端执行。掌握这三条线后，大量配置项会自然落到对应位置。
 
-本专题 2026-08-14 全面更新，依据 verl main 分支 commit [`09ac37258ea66b0cb69b2738eec3074ea4e7261c`](https://github.com/verl-project/verl/tree/09ac37258ea66b0cb69b2738eec3074ea4e7261c)（版本 `0.9.0.dev`，最新正式 release 为 v0.8.0）编写。相比 7 月初版的主要变化：`separate_async` 已支持 Decoupled PPO（#7188）、loss 聚合新增 `token-sum`、policy loss 注册表补齐 `dro`/`cispo` 等 12 种、`fully_async_policy` 的 CI 已迁移到 V1 `separate_async`（#7357）、V0 trainer 移除在即。verl 演进很快，原理相对稳定，具体支持矩阵仍应以目标版本的 registry、配置校验、示例和 CI 为准。
+本专题于 2026-08-29 再次全面复核，依据 verl main 分支 commit [`ea53291385ce764019a2b40733605f21d8317583`](https://github.com/verl-project/verl/tree/ea53291385ce764019a2b40733605f21d8317583)（版本 `0.10.0.dev`，最新正式 release 为 [v0.9.0](https://github.com/verl-project/verl/releases/tag/v0.9.0)）编写。本轮逐项核对了上一版基线后的 62 个上游提交，新增 separate-async step 间动态借卡、FSDP-Turbo、多模态 Continuous Token、uv 锁文件环境、checkpoint callback、vLLM/SGLang PD 边界、NCCL multi-sender 和 GSPO 聚合语义，并重新核实了 #7150/#7151。verl 演进很快，原理相对稳定，具体支持矩阵仍应以目标版本的 registry、配置校验、示例和 CI 为准。
 
 ## 如何使用
 

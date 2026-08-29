@@ -15,7 +15,7 @@
   <rect class="node" x="450" y="490" width="300" height="72" rx="15"/><text class="label" x="600" y="522">Ray Actors</text><text class="sub" x="600" y="545">多进程 SPMD 执行</text>
   <rect class="data node" x="35" y="255" width="300" height="82" rx="15"/><text class="label" x="185" y="288">TransferQueue / DataProto</text><text class="sub" x="185" y="313">轨迹字段与批计算协议</text>
   <rect class="data node" x="865" y="255" width="300" height="82" rx="15"/><text class="label" x="1015" y="288">AgentLoop / RewardLoop</text><text class="sub" x="1015" y="313">生成、工具、奖励与 Teacher</text>
-  <rect class="control node" x="140" y="590" width="380" height="58" rx="14"/><text class="label" x="330" y="625">Training Engine</text><text class="sub" x="330" y="645">FSDP2 / Megatron / …</text>
+  <rect class="control node" x="140" y="590" width="380" height="58" rx="14"/><text class="label" x="330" y="625">Training Engine</text><text class="sub" x="330" y="645">FSDP2 / FSDP-Turbo / Megatron</text>
   <rect class="control node" x="680" y="590" width="380" height="58" rx="14"/><text class="label" x="870" y="625">Rollout Server</text><text class="sub" x="870" y="645">vLLM / SGLang / TRT-LLM</text>
   <path class="line" d="M600 102V145"/><path class="line" d="M600 217V260"/><path class="line" d="M600 332V375"/><path class="line" d="M600 447V490"/>
   <path class="line" d="M510 562L390 590"/><path class="line" d="M690 562L810 590"/>
