@@ -1,5 +1,6 @@
 local DataStorage = require("datastorage")
 local Device = require("device")
+local DocSettings = require("docsettings")
 local InfoMessage = require("ui/widget/infomessage")
 local LuaSettings = require("luasettings")
 local NetworkMgr = require("ui/network/manager")
@@ -22,6 +23,13 @@ local MANIFEST_URL = "https://keepkeen.github.io/ebooks/library.json"
 local LIBRARY_ROOT = Device.home_dir .. "/documents/KeepKeen Blog"
 local AUTO_SYNC_INTERVAL = 24 * 60 * 60
 local FAILED_SYNC_RETRY_INTERVAL = 60 * 60
+local LEGACY_PATHS_BY_SLUG = {
+    ["china-agent-interview-guide-2025-2026"] = "china-agent-interview-guide-2025-2026.epub",
+    ["rl-paper-03-gae"] = "rl-paper-03-gae.epub",
+    ["slime-debugging-reliability-performance"] = "slime-debugging-reliability-performance.epub",
+}
+local LEGACY_PATH_SET = {}
+for _, path in pairs(LEGACY_PATHS_BY_SLUG) do LEGACY_PATH_SET[path] = true end
 
 local KeepKeenSync = WidgetContainer:extend{
     name = "keepkeensync",
@@ -75,6 +83,10 @@ local function valid_book(book)
         and type(book.sha256) == "string"
         and #book.sha256 == 64
         and book.sha256:match("^[0-9a-f]+$") ~= nil
+end
+
+local function safe_previous_path(relative_path)
+    return safe_relative_path(relative_path) or LEGACY_PATH_SET[relative_path] == true
 end
 
 local function fetch_manifest()
@@ -177,14 +189,10 @@ local function download_verified(book, destination)
 end
 
 local function migrate_sidecar(old_path, new_path)
-    if not old_path or old_path == new_path then return end
-    local old_sidecar = old_path .. ".sdr"
-    local new_sidecar = new_path .. ".sdr"
-    if lfs.attributes(old_sidecar, "mode") == "directory"
-            and not lfs.attributes(new_sidecar) then
-        util.makePath(ffiUtil.dirname(new_sidecar))
-        os.rename(old_sidecar, new_sidecar)
-    end
+    if not old_path or old_path == new_path then return true end
+    local ok, migration_error = pcall(DocSettings.updateLocation, old_path, new_path, false)
+    if not ok then return false, migration_error end
+    return true
 end
 
 function KeepKeenSync:performSync()
@@ -200,7 +208,7 @@ function KeepKeenSync:performSync()
         errors = {},
         paths_by_slug = {},
     }
-    local previous_paths = self.settings:readSetting("paths_by_slug", {})
+    local previous_paths = self.settings:readSetting("paths_by_slug", LEGACY_PATHS_BY_SLUG)
 
     for _, book in ipairs(manifest.books) do
         local destination = LIBRARY_ROOT .. "/" .. book.relativePath
@@ -211,22 +219,36 @@ function KeepKeenSync:performSync()
             and attributes.mode == "file"
             and attributes.size == book.bytes
             and sha256_file(destination) == book.sha256
+        local installed = unchanged
         if unchanged then
             result.unchanged = result.unchanged + 1
         else
             local ok, download_error = download_verified(book, destination)
             if ok then
+                installed = true
                 result.updated = result.updated + 1
-                local old_relative = previous_paths[book.slug]
-                if old_relative and safe_relative_path(old_relative) then
-                    local old_path = LIBRARY_ROOT .. "/" .. old_relative
-                    migrate_sidecar(old_path, destination)
-                    if old_path ~= destination and is_file(old_path) then os.remove(old_path) end
-                end
             else
                 result.failed = result.failed + 1
                 if #result.errors < 5 then
                     table.insert(result.errors, book.relativePath .. "：" .. tostring(download_error))
+                end
+            end
+        end
+        local old_relative = previous_paths[book.slug]
+        if installed and old_relative and safe_previous_path(old_relative)
+                and old_relative ~= book.relativePath then
+            local old_path = LIBRARY_ROOT .. "/" .. old_relative
+            local migrated, migration_error = migrate_sidecar(old_path, destination)
+            if migrated then
+                if is_file(old_path) then os.remove(old_path) end
+            else
+                result.failed = result.failed + 1
+                result.paths_by_slug[book.slug] = old_relative
+                if #result.errors < 5 then
+                    table.insert(
+                        result.errors,
+                        old_relative .. "：阅读进度迁移失败：" .. tostring(migration_error)
+                    )
                 end
             end
         end
