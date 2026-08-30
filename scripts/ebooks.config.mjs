@@ -67,5 +67,10 @@ export const ebookSeries = [
     slug: 'other',
     title: '其他',
     directory: '10 其他'
+  },
+  {
+    slug: 'algorithm-exam-training',
+    title: '算法与笔试训练',
+    directory: '11 算法与笔试训练'
   }
 ];
