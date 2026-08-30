@@ -1,7 +1,8 @@
 ---
-title: "大厂笔试超纲补丁（模板 28–35）"
-description: "Hot100 覆盖不到、但字节/美团/华为/拼多多笔试高频的考点：第 3–4 题靠这里，全部给出可直接运行的 ACM 骨架。"
+title: "大厂笔试超纲补丁：模板 28–35"
+description: "集中补齐二分答案、差分、最短路、快速幂、数论、区间贪心、单调队列与模拟题。"
 date: 2026-07-26
+updatedDate: 2026-08-31
 tags:
   - algorithms
   - leetcode
@@ -9,11 +10,10 @@ tags:
 featured: false
 draft: false
 lang: zh-CN
-series: llm-algo-job-hunt
-seriesOrder: 9
+series: algorithm-exam-training
+seriesOrder: 7
 ---
-
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文完整同步自个人求职工作区，更新于 2026-08-31。源文件及后续更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
 
 > 面向:**能做简单题 → 冲国内大厂笔试**。这里收录的是 **Hot100 覆盖不到、但字节/美团/华为/拼多多笔试高频**的考点。
 > 大厂笔试 = **ACM 模式(自读 stdin)+ 3~5 题难度递增 + 部分分制**。前 2 题靠 Hot100 Medium,**第 3~4 题就靠本篇**。
@@ -55,6 +55,10 @@ seriesOrder: 9
 ```python
 # 通法:最小化「最大值」——找第一个可行的 x
 def min_feasible(lo, hi, check):
+    # 契约:整数闭区间 [lo, hi] 内存在答案,check 单调 False -> True
+    # 循环不变量:第一个可行值始终在 [lo, hi]
+    if lo > hi or not check(hi):
+        raise ValueError("[lo, hi] must contain a feasible value")
     while lo < hi:
         mid = (lo + hi) // 2
         if check(mid):        # mid 可行 → 尝试更小
@@ -115,7 +119,7 @@ main()
 
 **常见坑**
 - 先想清是「找第一个可行」还是「最后一个可行」,模板的 `hi=mid` / `lo=mid+1` 别写反。
-- `lo, hi` 边界要能覆盖真实答案(hi 取 `sum` 或 `max`,别取小了)。
+- 上面模板的明确不变量是:**答案始终在闭区间 `[lo, hi]`**,且 `check` 为 `False -> True`;初始 `hi` 必须可行。否则别直接返回 `hi` 制造一个“看起来合理”的错答案。
 - `check` 里向上取整用 `(p+k-1)//k`,别用浮点。
 
 **口诀**:*最大最小求分界,答案空间上二分。*
@@ -312,7 +316,11 @@ MOD = 10**9 + 7
 
 # 快速幂:a^b % mod
 def qpow(a, b, mod=MOD):
-    res = 1
+    if b < 0:
+        raise ValueError("exponent must be non-negative")
+    if mod <= 0:
+        raise ValueError("mod must be positive")
+    res = 1 % mod
     a %= mod
     while b:
         if b & 1:
@@ -321,14 +329,24 @@ def qpow(a, b, mod=MOD):
         b >>= 1
     return res
 
-# 逆元(费马小定理,mod 为质数时):a 的逆元 = a^(mod-2)
+# 逆元(费马小定理):调用方必须保证 mod 为质数
 def inv(a, mod=MOD):
+    if mod <= 1:
+        raise ValueError("mod must be greater than 1")
+    if a % mod == 0:
+        raise ValueError("a has no modular inverse")
     return qpow(a, mod - 2, mod)
 
-# 组合数取模 C(n, k) % mod(预处理阶乘)——大厂计数题常用
+# 组合数取模 C(n, k) % mod:调用方须保证 mod 为质数,且要求 0 <= n < mod
 def comb_mod(n, k, mod=MOD):
+    if mod <= 1:
+        raise ValueError("mod must be greater than 1")
+    if n < 0:
+        raise ValueError("n must be non-negative")
     if k < 0 or k > n:
         return 0
+    if n >= mod:
+        raise ValueError("n must be smaller than mod; use Lucas when n >= mod")
     fac = [1] * (n + 1)
     for i in range(1, n + 1):
         fac[i] = fac[i - 1] * i % mod
@@ -341,7 +359,9 @@ import sys
 def main():
     a, b = map(int, sys.stdin.read().split())
     MOD = 10**9 + 7
-    res, a = 1, a % MOD
+    if b < 0:
+        raise ValueError("exponent must be non-negative")
+    res, a = 1 % MOD, a % MOD
     while b:
         if b & 1: res = res * a % MOD
         a = a * a % MOD; b >>= 1
@@ -349,13 +369,14 @@ def main():
 main()
 ```
 
-**复杂度**:O(log b)。组合数预处理 O(n)。
+**复杂度**:`qpow` 是 O(log b)；费马逆元是 O(log mod)；单次 `comb_mod` 是 O(n + log mod) 时间、O(n) 空间。
 
 **典型题**:Pow(x,n)(LeetCode 50)、超级次方、各类「方案数 mod 1e9+7」的计数 DP、组合数取模。
 
 **常见坑**
 - Python 内置 `pow(a, b, mod)` **就是快速幂**,笔试可直接用 `pow(2, 100000, MOD)`!但要会手写原理以防被要求。
-- 逆元法求组合数**要求 mod 是质数**(1e9+7 是),否则用扩展欧几里得。
+- `qpow` 这里仅接收非负指数和正模数；负指数需要先求逆元,而逆元只在 `gcd(a, mod)=1` 时存在。
+- **质数模数是调用前提**,模板不做昂贵的试除判质数；费马逆元还要求 `a % mod != 0`。阶乘组合数模板要求 `n < mod`;当 `n >= mod` 时阶乘含 0,应改用 **Lucas 定理**(或按题目模数选别的方法)。
 - 全程 `% mod`,别只在最后取一次(中间会爆成大整数拖慢)。
 
 **口诀**:*指数砍半平方乘,取模逆元费马幂。*
@@ -378,7 +399,9 @@ main()
 ```python
 from math import gcd            # Python 自带 gcd,直接用
 def lcm(a, b):
-    return a // gcd(a, b) * b   # 先除再乘防溢出
+    if a == 0 or b == 0:
+        return 0
+    return abs(a // gcd(a, b) * b)   # 先除再乘,结果约定非负
 
 # 判质数 O(√n)
 def is_prime(n):
@@ -393,6 +416,8 @@ def is_prime(n):
 
 # 埃氏筛:求 [2, n] 所有质数
 def sieve(n):
+    if n < 2:
+        return []
     is_p = [True] * (n + 1)
     is_p[0] = is_p[1] = False
     for i in range(2, int(n ** 0.5) + 1):
@@ -420,6 +445,9 @@ def factorize(n):
 import sys
 def main():
     n = int(sys.stdin.readline())
+    if n < 2:
+        print()
+        return
     is_p = [True]*(n+1)
     is_p[0] = is_p[1] = False
     for i in range(2, int(n**0.5)+1):
@@ -433,7 +461,7 @@ main()
 
 **常见坑**
 - 埃氏筛内层从 `i*i` 开始(小于 i*i 的已被更小质数筛过)。
-- `lcm` 先除后乘防溢出:`a//gcd*b` 而非 `a*b//gcd`。
+- `lcm(0, b)=0`,且通常约定最小公倍数非负；先除后乘防溢出。
 - 质因数分解最后 `if n>1` 别忘(剩下的是个大质数)。
 
 **口诀**:*辗转相除求 gcd,埃氏筛法标合数。*
@@ -458,9 +486,9 @@ main()
 ```python
 # 最多不重叠区间数(等价:最少删除数 = n - 该值)
 def max_non_overlap(intervals):
-    intervals.sort(key=lambda x: x[1])        # 按右端点排
+    ordered = sorted(intervals, key=lambda x: x[1])  # 不改调用方输入
     cnt, end = 0, float('-inf')
-    for s, e in intervals:
+    for s, e in ordered:
         if s >= end:                          # 不重叠,选它
             cnt += 1
             end = e
@@ -468,9 +496,9 @@ def max_non_overlap(intervals):
 
 # 合并区间(56,按左端点排)
 def merge(intervals):
-    intervals.sort(key=lambda x: x[0])
+    ordered = sorted(intervals, key=lambda x: x[0])
     res = []
-    for s, e in intervals:
+    for s, e in ordered:
         if res and s <= res[-1][1]:
             res[-1][1] = max(res[-1][1], e)   # 有重叠,合并
         else:
@@ -537,6 +565,8 @@ main()
 from collections import deque
 # 239 滑动窗口最大值
 def max_sliding_window(nums, k):
+    if not 1 <= k <= len(nums):
+        raise ValueError("k must be in [1, len(nums)]")
     dq = deque()          # 存下标,nums[下标] 单调递减
     res = []
     for i, x in enumerate(nums):
@@ -558,6 +588,8 @@ def main():
     data = sys.stdin.read().split()
     n, k = int(data[0]), int(data[1])
     nums = list(map(int, data[2:2 + n]))
+    if not 1 <= k <= n:
+        raise ValueError("k must be in [1, n]")
     dq, res = deque(), []
     for i, x in enumerate(nums):
         while dq and nums[dq[-1]] <= x: dq.pop()
@@ -573,6 +605,7 @@ main()
 **典型题**:滑动窗口最大值(239,也在 Hot100)、绝对差不超过限制的最长子数组、跳跃游戏 VI(单调队列优化 DP)。
 
 **常见坑**
+- 先检查 `1 <= k <= len(nums)`;`k=0`、负数或大于数组长度都没有有效定长窗口。
 - 队列存**下标**不是值(要靠下标判断是否滑出窗口)。
 - 求最大值维护**递减**队列(弹掉更小的);求最小值反过来。
 - 判滑出用 `dq[0] <= i-k`,收集答案用 `i >= k-1`,两个边界别错。
@@ -689,3 +722,6 @@ main()
 33. 区间贪心:不重叠按右端排,合并区间按左端。
 34. 单调队列:定长窗口求最值,单调队列存下标。
 35. 模拟题:长题面别慌张,拆规则分函数,样例走一遍。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/%E5%A4%A7%E5%8E%82%E7%AC%94%E8%AF%95%E8%B6%85%E7%BA%B2%E8%A1%A5%E4%B8%81.md)。

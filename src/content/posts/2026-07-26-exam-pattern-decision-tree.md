@@ -1,7 +1,8 @@
 ---
 title: "大厂笔试模式识别与组合题决策树"
-description: "从背关键词套模板，升级为形式化题目、写最小充分状态、按复杂度筛选、用反例验伪——Hot100 模板与超纲模板之间的桥梁。"
+description: "用约束、状态、不变量和复杂度识别原题、同构题与多算法组合题，减少错误套模板。"
 date: 2026-07-26
+updatedDate: 2026-08-31
 tags:
   - algorithms
   - leetcode
@@ -9,11 +10,10 @@ tags:
 featured: false
 draft: false
 lang: zh-CN
-series: llm-algo-job-hunt
-seriesOrder: 7
+series: algorithm-exam-training
+seriesOrder: 6
 ---
-
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文完整同步自个人求职工作区，更新于 2026-08-31。源文件及后续更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
 
 > 目标：从“背关键词套模板”升级为“形式化题目、写最小充分状态、按复杂度筛选、用反例验伪”。本篇是 [Hot100 模板](/blog/hot100-templates/) 与 [大厂超纲模板](/blog/exam-beyond-syllabus-patch/) 之间的桥梁。
 
@@ -148,7 +148,7 @@ seriesOrder: 7
 | 限步最短路 | 最多走 K 条边/中转 | `cheapest_with_edge_limit` | 同轮必须读旧 dist |
 | MITM | `n≈40` 的子集优化 | `min_abs_subset_sum_difference` | 空子集、负数、左右二分 |
 
-以上可执行实现位于 [algorithm_exam_advanced.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/templates/algorithm_exam_advanced.py)。
+以上可执行实现位于 [algorithm_exam_advanced.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E8%BF%9B%E9%98%B6%E5%AE%9E%E7%8E%B0/templates/algorithm_exam_advanced.py)。
 
 ### 差分约束不要混成一种
 
@@ -171,3 +171,6 @@ Kruskal 解决“总权最小”。若题目要求特定度数、颜色或最大
 - 能从约束推导复杂度，而不是先选模板再解释。
 - 组合题能分阶段列出复杂度和接口。
 - 24 小时后从空文件盲写，并用边界用例或随机暴力对拍。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/%E5%A4%A7%E5%8E%82%E7%AC%94%E8%AF%95%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E4%B8%8E%E7%BB%84%E5%90%88%E9%A2%98%E5%86%B3%E7%AD%96%E6%A0%91.md)。

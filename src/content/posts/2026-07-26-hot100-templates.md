@@ -1,7 +1,8 @@
 ---
 title: "LeetCode Hot100 · 18 大算法模板与决策术"
-description: "18 个主力算法模板的 9 件套：识别信号、解题步骤、Python 与 ACM 双模板、复杂度、Hot100 对应题与常见坑，末尾附把题目定位到模板的决策术。"
+description: "从识别信号到 Python/ACM 模板、复杂度和常见坑，系统掌握 Hot100 的 18 个核心算法模式。"
 date: 2026-07-26
+updatedDate: 2026-08-31
 tags:
   - algorithms
   - leetcode
@@ -9,22 +10,32 @@ tags:
 featured: false
 draft: false
 lang: zh-CN
-series: llm-algo-job-hunt
-seriesOrder: 5
+series: algorithm-exam-training
+seriesOrder: 1
 ---
-
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文完整同步自个人求职工作区，更新于 2026-08-31。源文件及后续更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
 
 > 用法:先看最后的「决策术」把题目定位到某个模板,再翻到对应模板套路。
 > 每个模板 9 件套:识别信号 / 为什么 / 解题步骤 / Python 模板 / ACM 模板 / 复杂度 / Hot100 对应题(按难度排序) / 常见坑 / 一句话口诀。
 >
-> **ACM 模板说明**:LeetCode 是「核心代码模式」(只写函数),ACM 是「自测模式」(自己读 stdin、打印 stdout)。下面每个模板的 ACM 版都给出「读入 → 建结构 → 调用 → 输出」的完整骨架,可直接本地 `python x.py < in.txt` 跑。
+> **代码说明**:下文的 Python 函数是便于记忆的**算法核心**,不是可直接粘贴的 LeetCode 完整提交;提交时要按题目签名放进 `class Solution`,把蛇形函数名映射成题目要求的 camelCase,链表/树节点类型由平台提供。ACM 是「自测模式」(自己读 stdin、打印 stdout),其完整骨架可本地 `python x.py < in.txt` 跑。
+>
+> 例如 `two_sum` 提交时映射为:
+> ```python
+> class Solution:
+>     def twoSum(self, nums, target):
+>         seen = {}
+>         for i, x in enumerate(nums):
+>             if target - x in seen:
+>                 return [seen[target - x], i]
+>             seen[x] = i
+> ```
 
 ## 模板总览(先记这张表)
 
 | # | 模板 | 一句话触发条件 |
 |---|------|----------------|
-| 1 | 哈希表 | 「是否出现过 / 配对 / 计数 / 分组」→ O(1) 查 |
+| 1 | 哈希表 | 「是否出现过 / 配对 / 计数 / 分组」→ 期望 O(1) 查 |
 | 2 | 双指针 | 有序数组 / 原地整理 / 首尾夹逼 |
 | 3 | 滑动窗口 | 连续子串子数组 + 最长/最短/定长 |
 | 4 | 前缀和 | 子数组「和 / 差」为定值、区间和反复查 |
@@ -52,7 +63,7 @@ seriesOrder: 5
 - 需要把 O(n²) 的「两两查找」降成 O(n)。
 
 **为什么**
-用空间换时间:哈希把「查找某个值是否存在/它的下标」从 O(n) 降到 O(1),边遍历边把已见过的存进去,当前元素只需回头查一次。
+用空间换时间:哈希把「查找某个值是否存在/它的下标」从 O(n) 降到**平均/期望 O(1)**,边遍历边把已见过的存进去,当前元素只需回头查一次。
 
 **解题步骤**
 
@@ -110,7 +121,7 @@ def main():
 main()
 ```
 
-**复杂度**:时间 O(n),空间 O(n)。
+**复杂度**:`two_sum`、`longest_consecutive` 期望时间 O(n),辅助空间 O(n);`group_anagrams` 还包含对每个字符串排序的成本(设平均长度 k,时间 O(n·k log k),辅助空间 O(n·k),返回结果也占 O(n·k))。
 
 **Hot100 对应题(按难度)**
 - 🟢 1. 两数之和
@@ -145,7 +156,7 @@ main()
 ```python
 # 对撞:三数之和
 def three_sum(nums):
-    nums.sort()
+    nums = sorted(nums)                  # 保留调用方输入;允许修改时可用 nums.sort()
     n, res = len(nums), []
     for i in range(n):
         if nums[i] > 0:
@@ -215,7 +226,7 @@ def main():
 main()
 ```
 
-**复杂度**:排序 O(n log n),双指针扫描 O(n)(三数之和整体 O(n²));空间 O(1)(不计排序)。
+**复杂度**:排序 O(n log n),双指针扫描 O(n)(三数之和整体 O(n²));上述不修改输入的写法辅助空间 O(n),若允许原地排序则不计排序栈可视为 O(1)。
 
 **Hot100 对应题(按难度)**
 - 🟢 283. 移动零
@@ -239,12 +250,12 @@ main()
 - 涉及「无重复」「包含所有字符」「和 ≥ / ≤ 某值」「异位词」。
 
 **为什么**
-窗口的「可行性」随右端扩张单调变差、随左端收缩单调变好,于是右指针只进不退、左指针只进不退,每个元素进出各一次 → O(n),省掉枚举所有子区间的 O(n²)。
+当条件随窗口边界具有单调性时,右指针只进不退、左指针也只进不退,每个元素至多进出一次 → O(n),省掉枚举所有子区间的 O(n²)。最长题保持「收缩后合法」;最短覆盖题则在「已经合法」时记录答案并继续收缩,直到刚好失效。
 
 **解题步骤**
 1. 右指针 `right` 遍历,把新元素纳入窗口(更新计数)。
-2. `while 窗口不合法`:收缩左边界 `left`,弹出元素。
-3. 在合法处更新答案(最长在收缩后更新,最短在收缩时更新)。
+2. 最长题:`while 不合法` 收缩,恢复合法后更新;最短题:`while 合法` 先更新再收缩。
+3. 先写清一个可直接判断的不变量;最小覆盖子串用 `missing == 0` 表示窗口已覆盖全部所需字符。
 
 **Python 模板**
 ```python
@@ -276,6 +287,30 @@ def find_anagrams(s, p):
         if win == need:
             res.append(right - len(p) + 1)
     return res
+
+# 变长 + 计数：最小覆盖子串
+from collections import Counter
+def min_window(s, t):
+    if not t or len(t) > len(s):
+        return ""
+    need = Counter(t)
+    missing = len(t)                    # 还缺多少个字符(含重复次数)
+    left = start = 0
+    min_len = float("inf")
+    for right, c in enumerate(s):
+        if need[c] > 0:
+            missing -= 1
+        need[c] -= 1
+        while missing == 0:             # 已覆盖:记录并缩到刚好失效
+            cur_len = right - left + 1
+            if cur_len < min_len:
+                start, min_len = left, cur_len
+            left_ch = s[left]
+            need[left_ch] += 1
+            if need[left_ch] > 0:
+                missing += 1
+            left += 1
+    return "" if min_len == float("inf") else s[start:start + min_len]
 ```
 
 **ACM 模板**
@@ -299,9 +334,10 @@ main()
 **Hot100 对应题(按难度)**
 - 🟡 3. 无重复字符的最长子串
 - 🟡 438. 找到字符串中所有字母异位词
-- 🔴 76. 最小覆盖子串(变长窗口 + need 计数 + `valid` 计满足个数)
+- 🔴 76. 最小覆盖子串(变长窗口 + need 计数 + `missing == 0` 判覆盖)
 
 **常见坑**
+
 - 「连续」才用窗口;不连续(可跳)是 DP/子序列问题。
 - 定长窗口先移入右、再移出左,顺序别乱。
 - Counter 比较相等时要删掉计数为 0 的键。
@@ -325,6 +361,7 @@ main()
 3. 每步先查 `s-k` 的出现次数累加进答案,再把 `s` 记入。
 
 **Python 模板**
+
 ```python
 from collections import defaultdict
 def subarray_sum(nums, k):
@@ -363,6 +400,7 @@ main()
 - 🟡 238. 除自身以外数组的乘积(前缀积 × 后缀积,思想同源)
 
 **常见坑**
+
 - 忘记 `prefix[0]=1`,会漏掉「从头开始的子数组」。
 - 有负数时**不能**用滑动窗口,必须前缀和 + 哈希。
 - 求个数是「累加次数」,不是「置 1」。
@@ -381,6 +419,7 @@ main()
 栈的 LIFO 天然匹配「最近未处理」的语义:括号要和最近的左括号配对;单调栈维护一个「还在等待更大/更小值」的候选序列,新元素来了就把被它「终结」的元素一次性弹出结算。
 
 **解题步骤(单调栈)**
+
 1. 决定栈里存**下标**还是值(通常存下标好算距离/宽度)。
 2. 决定单调方向:找更大 → 维护**递减**栈;找更小 → 维护**递增**栈。
 3. 新元素破坏单调性时,`while` 弹栈并结算被弹元素的答案,再入栈。
@@ -412,17 +451,55 @@ def daily_temperatures(temps):
     return res
 
 # 单调栈:柱状图中最大的矩形
-def largest_rectangle(heights):
-    heights = heights + [0]           # 哨兵,收尾清算
-    stack = [-1]                      # 哨兵左界
-    best = 0
-    for i, h in enumerate(heights):
-        while stack[-1] != -1 and heights[stack[-1]] >= h:
-            height = heights[stack.pop()]
-            width = i - stack[-1] - 1
-            best = max(best, height * width)
-        stack.append(i)
-    return best
+from typing import List
+class Solution:
+    def largestRectangleArea(self, heights: List[int]) -> int:
+        # -1 是左边界哨兵
+        stack = [-1]
+        ans = 0
+        # 最后额外遍历一个高度为 0 的虚拟柱子
+        for i in range(len(heights) + 1):
+            current_height = 0 if i == len(heights) else heights[i]
+            # 当前柱子更矮，说明栈顶柱子的右边界确定了
+            while stack[-1] != -1 and current_height < heights[stack[-1]]:
+                mid = stack.pop()
+                height = heights[mid]
+
+                # 弹栈后的栈顶，是左边第一个更矮柱子的下标
+                width = i - stack[-1] - 1
+
+                ans = max(ans, height * width)
+
+            stack.append(i)
+
+        return ans
+
+# 字符串解码
+class Solution:
+    def decodeString(self, s: str) -> str:
+        stack = []
+        current_string = ""
+        current_num = ""
+        for char in s:
+            if char.isdigit():
+                # 数字先作为字符串保存
+                current_num += char
+            elif char == "[":
+                # 保存上一层的字符串和重复次数
+                stack.append((current_string, int(current_num)))
+                # 开始处理括号里面的内容
+                current_string = ""
+                current_num = ""
+            elif char == "]":
+                previous_string, repeat = stack.pop()
+                current_string = (
+                    previous_string
+                    + current_string * repeat
+                )
+            else:
+                # 普通字母
+                current_string += char
+        return current_string
 ```
 
 **ACM 模板**
@@ -775,6 +852,8 @@ main()
 **为什么**
 树是递归定义的,「解决整棵树 = 解决左子树 + 解决右子树 + 当前节点合并」。核心是想清楚**递归函数返回什么**、以及**用不用全局变量记答案**。
 
+递归最适合讲清分治关系,但 Python 的递归深度有限,合法的极深偏斜树也可能触发 `RecursionError`。面试先写递归核心;若题目树高可能上千,可靠做法是把「调用/返回」改成显式栈(遍历)或队列(BFS),不要只依赖调大递归上限。下面保留递归主模板,并给出直径题的等价迭代兜底。
+
 **解题步骤**
 1. 定义 `dfs(node)` 的**返回值语义**(如「以我为根的最大深度/最大链」)。
 2. 写 base case:`if not node: return 空值`。
@@ -786,7 +865,7 @@ class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val; self.left = left; self.right = right
 
-# 通法:返回值 + 全局答案(直径 543 / 最大路径和 124 同构)
+# 必背主模板(递归):返回值 + 全局答案(直径 543 / 最大路径和 124 同构)
 def diameter(root):
     best = 0
     def depth(node):
@@ -798,6 +877,27 @@ def diameter(root):
         best = max(best, l + r)          # 经过 node 的路径
         return 1 + max(l, r)             # 返回给父亲的「链长」
     depth(root)
+    return best
+
+# 深树追问/可靠兜底:显式栈模拟后序,不受 Python 递归深度限制
+def diameter_iter(root):
+    if not root:
+        return 0
+    depth, best = {}, 0
+    stack = [(root, False)]
+    while stack:
+        node, visited = stack.pop()
+        if visited:
+            left = depth.get(node.left, 0)
+            right = depth.get(node.right, 0)
+            best = max(best, left + right)
+            depth[node] = 1 + max(left, right)
+        else:
+            stack.append((node, True))
+            if node.right:
+                stack.append((node.right, False))
+            if node.left:
+                stack.append((node.left, False))
     return best
 
 # 校验 BST:用上下界约束
@@ -821,7 +921,7 @@ def lowest_common_ancestor(root, p, q):
     return l or r
 ```
 
-**树题分四类(命中模板 9 后先归类,再选打法)**
+**树题分五类(命中模板 9 后先归类,再选打法)**
 
 | 类型 | 特征 | 代表题 | 打法 |
 |------|------|--------|------|
@@ -889,19 +989,28 @@ def flatten(root):                        # 114:原地 O(1) 展开成右链
 
 **路径型:437 路径总和 III(树上前缀和 = 把模板 4 搬上树)**
 ```python
-from collections import defaultdict
 def path_sum(root, target):
-    prefix = defaultdict(int); prefix[0] = 1     # 根前的空前缀
+    if not root:
+        return 0
+    prefix = {0: 1}                              # 根前的空前缀
     res = 0
-    def dfs(node, cur):
-        nonlocal res
-        if not node: return
-        cur += node.val
-        res += prefix[cur - target]     # 多少个祖先前缀使这段和 = target
-        prefix[cur] += 1
-        dfs(node.left, cur); dfs(node.right, cur)
-        prefix[cur] -= 1                # 回溯:离开本节点撤销
-    dfs(root, 0)
+    stack = [(root, 0, False)]                    # 节点,父前缀和,是否退出
+    while stack:
+        node, cur, exiting = stack.pop()
+        if exiting:
+            prefix[cur] -= 1                      # 退出:撤销当前节点前缀
+            if prefix[cur] == 0:
+                del prefix[cur]
+            continue
+
+        cur += node.val                            # 进入:统计并加入当前路径
+        res += prefix.get(cur - target, 0)
+        prefix[cur] = prefix.get(cur, 0) + 1
+        stack.append((node, cur, True))            # 子树结束后再撤销
+        if node.right:
+            stack.append((node.right, cur, False))
+        if node.left:
+            stack.append((node.left, cur, False))
     return res
 ```
 
@@ -947,8 +1056,16 @@ def build(tokens):
                 q.append(child)
     return root
 
-def max_depth(node):
-    return 0 if not node else 1 + max(max_depth(node.left), max_depth(node.right))
+def max_depth(root):
+    if not root:
+        return 0
+    q = deque([(root, 1)])
+    depth = 0
+    while q:
+        node, depth = q.popleft()
+        if node.left: q.append((node.left, depth + 1))
+        if node.right: q.append((node.right, depth + 1))
+    return depth
 
 def main():
     tokens = sys.stdin.readline().split()
@@ -956,7 +1073,7 @@ def main():
 main()
 ```
 
-**复杂度**:一般 O(n) 时间;空间 O(h)(递归栈,h 为树高,最坏 O(n))。
+**复杂度**:一般 O(n) 时间;递归模板辅助空间 O(h)(h 为树高,最坏 O(n));显式后序的直径兜底需 O(n) 深度表,层序最大深度需 O(w) 队列(w 为最大层宽)。
 
 **Hot100 对应题(按难度)**
 - 🟢 94/104/226/101/543/108(遍历、深度、翻转、对称、直径、有序数组转 BST)
@@ -966,7 +1083,7 @@ main()
 **常见坑**
 - 直径 / 最大路径和:返回给父亲的是「单边链」,更新答案用「左+右」,两者别写成一样。
 - 校验 BST 要传上下界,只比父子不够(要全局有序)。
-- 递归深度大时注意栈溢出(可 `sys.setrecursionlimit`)。
+- 深偏斜树不要只靠 `sys.setrecursionlimit`;改用上面的显式栈/队列,避免合法输入触发 `RecursionError`。
 
 **口诀**:*想清返回值,左右合并再更新全局。*
 
@@ -1115,7 +1232,7 @@ def subsets(nums):
 # 组合总和(39):可重复选 → 递归传 i 而非 i+1
 def combination_sum(candidates, target):
     res, path = [], []
-    candidates.sort()
+    candidates = sorted(candidates)      # 保留调用方输入
     def bt(start, remain):
         if remain == 0:
             res.append(path[:]); return
@@ -1188,29 +1305,33 @@ main()
 - 二维矩阵求「连通块个数 / 面积 / 边界」「把一片区域染色」「单词在网格里的路径」。
 
 **为什么**
-把网格看成图,每格是点、上下左右是边。DFS/BFS 从一个点出发吃掉整片连通区域;为了不重复访问,**访问即改标记**(原地改成 0 或另开 visited)。
+把网格看成图,每格是点、上下左右是边。DFS/BFS 从一个点出发吃掉整片连通区域;为了不重复访问,**访问即改标记**(原地改成 0 或另开 visited)。网格连通块可能包含 m·n 个格子,Python 递归 DFS 会在合法大岛上溢栈,所以岛屿数量主模板直接用显式栈。
 
 **解题步骤**
 1. 双重循环找到没访问过的「陆地」。
-2. 从它出发 DFS/BFS,沿途标记为已访问,吃掉整块。
-3. 每启动一次 DFS 计数 +1(或累计面积)。
+2. 从它出发迭代 DFS/BFS,沿途标记为已访问,吃掉整块。
+3. 每启动一次搜索计数 +1(或累计面积)。
 
 **Python 模板**
 ```python
 # 岛屿数量(200)
 def num_islands(grid):
-    if not grid: return 0
+    if not grid or not grid[0]: return 0
     m, n = len(grid), len(grid[0])
-    def dfs(i, j):
-        if i < 0 or i >= m or j < 0 or j >= n or grid[i][j] != '1':
-            return
-        grid[i][j] = '0'                 # 访问即沉岛,防重复
-        dfs(i+1, j); dfs(i-1, j); dfs(i, j+1); dfs(i, j-1)
     count = 0
     for i in range(m):
         for j in range(n):
             if grid[i][j] == '1':
-                count += 1; dfs(i, j)
+                count += 1
+                grid[i][j] = '0'         # 入栈即沉岛,防止重复入栈
+                stack = [(i, j)]
+                while stack:
+                    x, y = stack.pop()
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < m and 0 <= ny < n and grid[nx][ny] == '1':
+                            grid[nx][ny] = '0'
+                            stack.append((nx, ny))
     return count
 
 # 单词搜索(79):带回溯的网格 DFS
@@ -1236,21 +1357,25 @@ def main():
     data = sys.stdin.read().split('\n')
     m, n = map(int, data[0].split())
     grid = [list(data[1 + i]) for i in range(m)]
-    def dfs(i, j):
-        if i < 0 or i >= m or j < 0 or j >= n or grid[i][j] != '1':
-            return
-        grid[i][j] = '0'
-        dfs(i+1,j); dfs(i-1,j); dfs(i,j+1); dfs(i,j-1)
     count = 0
     for i in range(m):
         for j in range(n):
             if grid[i][j] == '1':
-                count += 1; dfs(i, j)
+                count += 1
+                grid[i][j] = '0'
+                stack = [(i, j)]
+                while stack:
+                    x, y = stack.pop()
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < m and 0 <= ny < n and grid[nx][ny] == '1':
+                            grid[nx][ny] = '0'
+                            stack.append((nx, ny))
     print(count)
 main()
 ```
 
-**复杂度**:时间 O(m·n),空间 O(m·n)(递归栈/队列最坏)。
+**复杂度**:时间 O(m·n),显式栈最坏辅助空间 O(m·n)。
 
 **Hot100 对应题(按难度)**
 - 🟡 200. 岛屿数量
@@ -1260,9 +1385,9 @@ main()
 **常见坑**
 - 单词搜索必须回溯恢复格子(同一格不能重复用,但换条路要能再用)。
 - 岛屿数量沉岛后不用恢复(每格只算一次)。
-- 四方向数组 `((1,0),(-1,0),(0,1),(0,-1))` 统一管理,少写错。
+- 四方向数组 `((1,0),(-1,0),(0,1),(0,-1))` 统一管理,少写错;大连通块优先显式栈/队列。
 
-**口诀**:*连通块起一次 DFS,访问即标记吃整片。*
+**口诀**:*连通块起一次搜索,入栈即标记吃整片。*
 
 ---
 
@@ -1274,7 +1399,7 @@ main()
 
 **为什么**
 - 拓扑:不断取出「入度为 0(无前置依赖)」的点,BFS(Kahn 算法)排序;若最终排不完,说明有环。
-- 并查集:用「父指针 + 路径压缩」把「谁和谁在一组」压成近 O(1) 的查询/合并。
+- 并查集:用「父指针 + 路径压缩 + 按大小合并」把「谁和谁在一组」压成近 O(1) 的查询/合并。
 
 **解题步骤(拓扑)**
 1. 建邻接表 + 统计每个点入度。
@@ -1305,6 +1430,7 @@ def can_finish(num_courses, prerequisites):
 class DSU:
     def __init__(self, n):
         self.p = list(range(n))
+        self.size = [1] * n
         self.cnt = n                      # 连通分量数
     def find(self, x):
         while self.p[x] != x:
@@ -1314,7 +1440,11 @@ class DSU:
     def union(self, a, b):
         ra, rb = self.find(a), self.find(b)
         if ra != rb:
-            self.p[ra] = rb; self.cnt -= 1
+            if self.size[ra] < self.size[rb]:
+                ra, rb = rb, ra             # 小树挂到大树下
+            self.p[rb] = ra
+            self.size[ra] += self.size[rb]
+            self.cnt -= 1
 ```
 
 **ACM 模板**
@@ -1342,7 +1472,7 @@ def main():
 main()
 ```
 
-**复杂度**:拓扑 O(点+边);并查集近似 O(α(n))≈O(1) 每次操作。
+**复杂度**:拓扑 O(点+边);路径压缩 + 按大小合并使并查集每次操作摊还 O(α(n))≈O(1)。
 
 **Hot100 对应题(按难度)**
 - 🟡 207. 课程表(拓扑排序判环)
@@ -1351,7 +1481,7 @@ main()
 **常见坑**
 - 建图方向别反:「a 依赖 b」是 `b → a`,入度加在 a 上。
 - 判环:拓扑排序排不完(`seen < n`)即有环。
-- 并查集别忘路径压缩,否则退化成链 O(n)。
+- 并查集要同时记住路径压缩和按大小/秩合并,才能保证上述摊还 O(α(n)) 界。
 
 **口诀**:*依赖入度零先出,连通合并并查集。*
 
@@ -1801,7 +1931,7 @@ main()
 
 # 📚 代码案例题解索引
 
-> 本索引按上文代码出现顺序补全“题目描述 + 题目解析”。同一算法的 ACM 块仅改变输入输出形式，除非特别说明，题意与解析和对应 Python 函数相同。
+> 本索引按上文代码出现顺序补全“题目描述 + 题目解析”。每个模板通常只选一道题演示 ACM 输入输出;只有条目明确写出「ACM 块对应本题」时才存在对应关系。
 
 ## 1. 哈希表
 
@@ -1811,7 +1941,7 @@ main()
 
 ## 2. 双指针
 
-- **15. 三数之和**：找出所有和为 0 且不重复的三元组。排序后枚举第一个数，在右侧以对撞指针按和的大小移动，并跳过三处重复值；时间 O(n²)，额外空间 O(1)（不计排序和答案）。ACM 块是本题的输出版本。
+- **15. 三数之和**：找出所有和为 0 且不重复的三元组。排序副本后枚举第一个数，在右侧以对撞指针按和的大小移动，并跳过三处重复值；时间 O(n²)，保留输入的写法额外空间 O(n)（不计答案）。ACM 块是本题的输出版本。
 - **283. 移动零**：原地将所有 0 移到末尾且保持非零元素相对顺序。快指针扫描，慢指针指向下一个非零值的落位处，遇到非零值就交换并推进慢指针；时间 O(n)，空间 O(1)。
 - **42. 接雨水**：计算柱状图能接住的雨水量。维护左右两侧最高柱，较低侧当前位置的水位已确定，因此结算后移动该侧；时间 O(n)，空间 O(1)。
 
@@ -1819,6 +1949,7 @@ main()
 
 - **3. 无重复字符的最长子串**：求不含重复字符的最长连续子串长度。记录字符最近下标，右端扩展时若字符仍在窗口内，就将左端直接跳到其上次出现位置之后；双指针均只前进，时间 O(n)，空间 O(|Σ|)。
 - **438. 找到字符串中所有字母异位词**：返回 `s` 中与 `p` 互为异位词的定长子串起点。维护长度为 `len(p)` 的频次窗口，每次加入右字符、移出左字符，计数相等即记录；固定小写字母表时为 O(n) 时间、O(|Σ|) 空间。
+- **76. 最小覆盖子串**：返回 `s` 中覆盖 `t` 全部字符及重复次数的最短子串。`missing` 表示窗口还缺的字符总数;右扩至 `missing == 0` 后先记录答案,再左缩到刚好失效；时间 O(n)，空间 O(|Σ|)。
 
 ## 4. 前缀和
 
@@ -1828,13 +1959,13 @@ main()
 
 - **20. 有效的括号**：判断括号字符串是否正确闭合。左括号入栈，右括号必须匹配栈顶；中途不匹配或结束后仍有左括号即无效；时间、空间均为 O(n)。
 - **739. 每日温度**：对每一天求首次出现更高温度所需天数。维护温度单调不增的下标栈，当前温度更高时不断弹栈并用下标差结算；每个下标进出各一次，时间、空间均为 O(n)。
-- **84. 柱状图中最大的矩形**：求柱状图可形成的最大矩形面积。递增下标栈保证栈内柱子尚未遇到右侧更矮柱；遇到更矮高度时弹栈，以当前下标和新栈顶确定宽度，尾部哨兵负责清算；时间、空间均为 O(n)。ACM 块为本题版本。
+- **84. 柱状图中最大的矩形**：求柱状图可形成的最大矩形面积。递增下标栈保证栈内柱子尚未遇到右侧更矮柱；遇到更矮高度时弹栈，以当前下标和新栈顶确定宽度，尾部哨兵负责清算；时间、空间均为 O(n)。
 
 ## 6. 堆 / 优先队列
 
 - **215. 数组中的第 K 个最大元素**：返回排序后第 k 大元素（不是第 k 个不同值）。用大小至多为 k 的小顶堆保留最大 k 个数，堆顶即答案；时间 O(n log k)，空间 O(k)。
 - **347. 前 K 个高频元素**：返回出现频率最高的 k 个元素。先哈希计数，再按频次取 Top-K；设不同元素数为 m，时间 O(n + m log k)，空间 O(m)。
-- **295. 数据流的中位数**：设计支持插入和查询中位数的结构。大顶堆存较小半边、小顶堆存较大半边，并维持前者数量最多只多一个；插入 O(log n)、查询 O(1)、空间 O(n)。ACM 块使用同一对顶堆不变量。
+- **295. 数据流的中位数**：设计支持插入和查询中位数的结构。大顶堆存较小半边、小顶堆存较大半边，并维持前者数量最多只多一个；插入 O(log n)、查询 O(1)、空间 O(n)。
 
 ## 7. 二分查找
 
@@ -1860,7 +1991,7 @@ main()
 - **105. 从前序与中序遍历序列构造二叉树**：由无重复的两种遍历重建树。前序当前位置给根，中序索引表 O(1) 划分左右区间，再递归构造；时间、空间均为 O(n)。
 - **108. 将有序数组转换为二叉搜索树**：把升序数组转换为高度平衡 BST。每个区间取中点为根，递归处理左右半区；时间 O(n)，递归空间 O(log n)（不计输出树）。
 - **114. 二叉树展开为链表**：按前序将树原地展开为仅含右指针的链。若有左树，找到其最右节点并接上原右树，再把左树移到右侧；时间 O(n)，额外空间 O(1)。
-- **437. 路径总和 III**：统计和为目标值的向下路径数。DFS 维护根到当前节点的前缀和频次，`cur-target` 的出现次数就是新增路径，回溯时撤销当前和；时间 O(n)，空间 O(h)。
+- **437. 路径总和 III**：统计和为目标值的向下路径数。显式栈以“进入/退出”帧维护根到当前节点的前缀和频次：进入时统计 `cur-target` 并加入当前和，退出时撤销，从而保留递归回溯语义且不受 Python 递归深度限制；时间 O(n)，辅助空间 O(h)。
 - **230. 二叉搜索树中第 K 小的元素**：返回 BST 中第 k 小值。中序遍历天然升序，迭代弹栈第 k 次即答案；时间 O(h+k)（最坏 O(n)），空间 O(h)。
 - **101. 对称二叉树**：判断左右子树是否镜像。同步比较镜像节点值，并递归比较交叉子树；时间 O(n)，空间 O(h)。
 - **104. 二叉树的最大深度**：ACM 建树块中的案例，求根到最深叶子的节点数。空树为 0，非空树取左右最大深度加 1；时间 O(n)，空间 O(h)。
@@ -1874,18 +2005,18 @@ main()
 
 - **46. 全排列**：返回无重复数组的全部排列。`used` 标记当前路径已选元素，选一个、递归、撤销一个，长度为 n 时收集答案；时间 O(n·n!)，辅助空间 O(n)。ACM 块为同题版本。
 - **78. 子集**：返回所有子集（含空集）。搜索树每个节点都是一个合法答案，`start` 只允许向后选数，从而避免同一集合以不同顺序重复；时间 O(n·2ⁿ)，辅助空间 O(n)。
-- **39. 组合总和**：从候选数选取若干个使和为目标，元素可复用。排序后以剩余值剪枝，递归仍传 `i` 允许重复选当前数，传 `i+1` 才会禁止复用；时间指数级，递归空间 O(target/min(candidate))。
+- **39. 组合总和**：从候选数选取若干个使和为目标，元素可复用。先生成排序副本以保留调用方输入,再按剩余值剪枝;递归仍传 `i` 允许重复选当前数，传 `i+1` 才会禁止复用；时间指数级，辅助空间含 O(n) 排序副本与 O(target/min(candidate)) 递归路径。
 - **17. 电话号码的字母组合**：返回数字串 2–9 对应的所有字母组合。递归层数对应数字位置，每层枚举按键字母并回溯；设长度为 d，时间 O(d·4^d)，辅助空间 O(d)。
 
 ## 12. 网格搜索
 
-- **200. 岛屿数量**：统计四方向连通陆地块数。遍历网格，遇到未访问陆地便计数并 DFS 将整个连通块标记为水，保证不重复计数；时间 O(mn)，最坏递归空间 O(mn)。ACM 块为同题版本。
+- **200. 岛屿数量**：统计四方向连通陆地块数。遍历网格，遇到未访问陆地便计数,再用显式栈将整个连通块标记为水,避免大岛触发 Python 递归深度限制；时间 O(mn)，最坏辅助空间 O(mn)。ACM 块为同题版本。
 - **79. 单词搜索**：判断单词能否由相邻格依次组成且格子不可重复。每个格子作为起点 DFS，匹配后临时标记访问，探索四邻并在返回时恢复现场；设词长 L，时间上界 O(mn·4^L)，空间 O(L)。
 
 ## 13. 图：拓扑排序 + 并查集
 
 - **207. 课程表**：给定先修关系，判断能否修完所有课程。建图并统计入度，从所有入度为 0 的点开始 Kahn BFS；最终出队数量等于课程数说明无环；时间、空间均为 O(V+E)。ACM 块输出可行顺序，因而也可直接对应 **210. 课程表 II**。
-- **通用并查集模板**：维护动态连通分量，支持合并与查询。父指针树的 `find` 使用路径压缩，`union` 合并两个根并减少分量数；摊还近 O(α(n)) 每次操作，空间 O(n)。
+- **通用并查集模板**：维护动态连通分量，支持合并与查询。`find` 使用路径压缩,`union` 按大小把小树挂到大树并减少分量数；两者结合使每次操作摊还 O(α(n))，空间 O(n)。
 
 ## 14. 贪心
 
@@ -2078,3 +2209,6 @@ main()
 16. 背包:选与不选背包装,0/1 倒序完全正。
 17. 二维 DP:两串开表多一格,左上相邻定转移。
 18. 设计:哈希配链表 O(1),按操作选结构。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%9F%BA%E7%A1%80/Hot100%E7%AE%97%E6%B3%95%E6%A8%A1%E6%9D%BF%E4%B8%8E%E5%86%B3%E7%AD%96%E6%9C%AF.md)。

@@ -1,7 +1,8 @@
 ---
 title: "ACM 模式输入输出速查（Python）"
-description: "专治笔试读入输出：选读法、套解析模板、选输出法三步走，覆盖多测、EOF、大输入与常见格式坑，算法会写不再栽在读入上。"
+description: "覆盖快读、多组测试、EOF、树图构造和常见输出格式，避免算法会写却卡在 I/O。"
 date: 2026-07-26
+updatedDate: 2026-08-31
 tags:
   - algorithms
   - leetcode
@@ -9,11 +10,10 @@ tags:
 featured: false
 draft: false
 lang: zh-CN
-series: llm-algo-job-hunt
-seriesOrder: 8
+series: algorithm-exam-training
+seriesOrder: 5
 ---
-
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文完整同步自个人求职工作区，更新于 2026-08-31。源文件及后续更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
 
 > 配套《Hot100 算法模板》使用。LeetCode 是「核心代码模式」——平台喂给你参数、你只写函数体;
 > 而牛客 / ACM / 笔试多是「**ACM 模式**」——你要**自己从 stdin 读入、把结果 print 到 stdout**。
@@ -339,31 +339,42 @@ print('null')
 | 大数据用 `input()` 循环 | TLE 超时 | `sys.stdin.read()` 或 `input=sys.stdin.readline` |
 | 循环里频繁 `print` | 输出慢到 TLE | 攒 `out` 列表,末尾 `'\n'.join` |
 | 忘记 `.strip()` | 字符串带 `\n` 比较不相等 | `readline().strip()` |
-| 递归深度大(树/DFS) | `RecursionError` 或**段错误直接崩**(见下) | `setrecursionlimit` + 改迭代/开大栈线程/换 PyPy |
+| 递归深度大(树/DFS) | `RecursionError` 或进程直接崩溃(见下) | **优先改显式栈 / BFS**；仅在深度可控时适度调高限制 |
 | 读入 token 数错位 | `IndexError` / 结果错 | 用游标 `idx` 或先 `read().split()` 全拆 |
 | 整行含空格却 `split()` | 字符串被拆断 | 用 `readline().rstrip('\n')` 整行读 |
 | 多组数据没读完 | 只算了第一组 | `for line in sys.stdin` 读到 EOF |
 
-**竞赛开头三件套**(需要时加):
+**竞赛常用开头**(按需添加):
 ```python
 import sys
 input = sys.stdin.readline          # 提速:后续 input() 都变快
-sys.setrecursionlimit(10 ** 6)      # 防递归爆栈
+# 只有已证明递归深度可控时才适度调高 recursionlimit；它不会增加 C 栈
 # from math import inf  等按需导入
 ```
 
 **⚠️ 递归深度真坑(Python 笔试头号翻车点)**
 
-`setrecursionlimit(10**6)` 只是「允许」递归更深,但 **CPython 真递归到几万层会直接段错误崩溃**——进程被杀、退出码非 0,**不是能 `try` 捕获的异常**,给人虚假安全感。对策三选一:
-1. **能改迭代 / BFS 就改**(树的 DFS 用显式栈、链表递归改循环)——最稳。
-2. 平台**能选 PyPy 就选 PyPy**:常数快数倍,很多「算法对却 TLE」能救回来(记忆化 / DP 尤其明显)。
-3. 必须深递归时,开一个**大栈线程**跑主逻辑:
+`sys.setrecursionlimit(...)` 只改变解释器的递归次数上限,**不会扩充进程的 C 栈**；设得很大仍可能让进程直接崩溃。新建线程的栈大小也依赖平台,默认并不保证更大,因此不能把「开线程」当深递归修复。安全顺序是:
+1. 输入规模可能形成长链时,**先改迭代 / BFS**(树 DFS 用显式栈,链表递归改循环)。
+2. 只有能证明最坏深度较小、只是略超默认上限时,才适度调高 `recursionlimit`,并在目标解释器实测。
+
+```python
+# 树/图遍历的安全骨架；需要后序时用 (node, parent, visited) 二次入栈
+stack = [(start, -1)]
+while stack:
+    node, parent = stack.pop()
+    for nxt in graph[node]:
+        if nxt != parent:
+            stack.append((nxt, node))
+```
+
+不要使用下面这种做法来“加大栈”:
 ```python
 import sys, threading
 sys.setrecursionlimit(1 << 25)
 def main():
     ...            # 你的深递归逻辑放这里
-threading.Thread(target=main).start()   # 线程栈更大,不易崩
+threading.Thread(target=main).start()   # 默认线程栈不保证更大,仍可能崩溃
 ```
 
 **部分分策略(大厂笔试按测试点给分,别放空)**
@@ -380,7 +391,6 @@ threading.Thread(target=main).start()   # 线程栈更大,不易崩
 
 ```python
 import sys
-sys.setrecursionlimit(10 ** 6)
 
 def solve(nums, target):
     # ===== 这里放你的算法(和 LeetCode 函数体一样)=====
@@ -451,7 +461,10 @@ main()
   判定     → 'YES'/'NO'
   浮点     → f'{x:.2f}'
 
-三件套:input=sys.stdin.readline / setrecursionlimit / 攒 out 再打印
+常用件:input=sys.stdin.readline / 攒 out 再打印；深遍历优先显式栈
 ```
 
 > **一句话总结**:ACM 模式无非「`sys.stdin.read().split()` 全读进来 → 用游标 `idx` 按格式取 → 跑算法 → `print(*ans)` 或 `'\n'.join` 打出去」。算法照搬 LeetCode,I/O 套这套骨架即可。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/ACM%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E9%80%9F%E6%9F%A5.md)。

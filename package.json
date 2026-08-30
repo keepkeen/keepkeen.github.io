@@ -11,6 +11,7 @@
     "build:release": "npm run build:ebooks && npm run validate:ebooks && npm run build",
     "install:kindle": "node scripts/install-kindle-library.mjs",
     "preview": "astro preview",
+    "publish:algorithm-notes": "node scripts/publish-algorithm-exam-notes.mjs",
     "check": "astro check",
     "test": "vitest run",
     "ship": "node scripts/ship-content.mjs",

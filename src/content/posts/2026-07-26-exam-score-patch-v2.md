@@ -1,7 +1,8 @@
 ---
-title: "大厂笔试提分补丁 v2（模板 36–44）"
-description: "超纲补丁续篇：一次 100 题体检与多视角审阅暴露的高性价比缺口，用已会的暴力与递归换不会的 DP 与构造，代码均已实测。"
+title: "大厂笔试提分补丁 v2：模板 36–44"
+description: "补齐记忆化、二维前缀和、背包、进制、区间/树形 DP、逆序对、自定义排序与恰好 K。"
 date: 2026-07-26
+updatedDate: 2026-08-31
 tags:
   - algorithms
   - leetcode
@@ -9,15 +10,14 @@ tags:
 featured: false
 draft: false
 lang: zh-CN
-series: llm-algo-job-hunt
-seriesOrder: 10
+series: algorithm-exam-training
+seriesOrder: 8
 ---
-
-> 本文是个人求职工作区文档的发布版，最后核验 2026-07-26。文档源文件与可运行模板、测试托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；文中所有面经均为公开帖子的转述，证据分级见正文说明。
+> 本文完整同步自个人求职工作区，更新于 2026-08-31。源文件及后续更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)。
 
 > 这是《大厂笔试超纲补丁》的续篇,专门补齐一次「100 题体检 + 多视角审阅」中发现的**高性价比缺口**。
 > 面向:能做简单题、一周冲大厂笔试。这些是**用你已会的(暴力/递归)换你不会的(DP/构造)**、以及送分基本功的关键工具。
-> 格式沿用 9 件套。所有代码均已实测。
+> 格式沿用 9 件套。本文关键模板已做编译与代表性边界检查；带 `...` 的思路骨架需按题意补全后再运行。
 
 ## 本篇总览
 
@@ -90,16 +90,16 @@ def solve(n):
 **ACM 模板**
 ```python
 import sys
-from functools import lru_cache
-sys.setrecursionlimit(1 << 25)          # 记忆化常递归深,先调大
 def main():
     data = sys.stdin.read().split()
     m, n = int(data[0]), int(data[1])
-    @lru_cache(None)
-    def dfs(i, j):
-        if i == 0 or j == 0: return 1
-        return dfs(i-1, j) + dfs(i, j-1)
-    print(dfs(m-1, n-1))
+    if m <= 0 or n <= 0:
+        raise ValueError("m and n must be positive")
+    dp = [1] * n                         # 深状态链优先改递推,不靠超大递归上限
+    for _ in range(1, m):
+        for j in range(1, n):
+            dp[j] += dp[j - 1]
+    print(dp[-1])
 main()
 ```
 
@@ -109,7 +109,7 @@ main()
 
 **常见坑**
 - **参数必须可哈希**:传 `list` 会报错,改传下标 `i` 或 `tuple`。
-- 递归深度大要 `sys.setrecursionlimit`;但太深仍可能 CPython 崩溃(见 IO 文档「递归深度真坑」),这时改递推。
+- 状态依赖形成长链时优先改递推/显式栈；`setrecursionlimit` 不会增加 C 栈,不能保证深递归安全(见 IO 文档「递归深度真坑」)。
 - 别在被缓存的函数里读写会变的全局变量,否则缓存结果是错的。
 
 **口诀**:*暴力递归加缓存,子问题只算一遍。*
@@ -196,6 +196,10 @@ main()
 ```python
 # 0/1 背包:容量 cap,最大化价值
 def knapsack_01(weights, values, cap):
+    if len(weights) != len(values):
+        raise ValueError("weights and values must have the same length")
+    if cap < 0 or any(w <= 0 for w in weights):
+        raise ValueError("cap must be non-negative and weights must be positive")
     dp = [0] * (cap + 1)
     for w, v in zip(weights, values):
         for c in range(cap, w - 1, -1):       # 倒序:每个物品用一次
@@ -204,6 +208,10 @@ def knapsack_01(weights, values, cap):
 
 # 完全背包(物品无限次)只改内层为正序
 def knapsack_complete(weights, values, cap):
+    if len(weights) != len(values):
+        raise ValueError("weights and values must have the same length")
+    if cap < 0 or any(w <= 0 for w in weights):
+        raise ValueError("cap must be non-negative and weights must be positive")
     dp = [0] * (cap + 1)
     for w, v in zip(weights, values):
         for c in range(w, cap + 1):           # 正序:可重复用
@@ -218,9 +226,13 @@ def main():
     data = sys.stdin.read().split()
     idx = 0
     n, cap = int(data[idx]), int(data[idx+1]); idx += 2
+    if cap < 0:
+        raise ValueError("cap must be non-negative")
     dp = [0]*(cap+1)
     for _ in range(n):
         w, v = int(data[idx]), int(data[idx+1]); idx += 2
+        if w <= 0:
+            raise ValueError("weights must be positive")
         for c in range(cap, w-1, -1):
             dp[c] = max(dp[c], dp[c-w] + v)
     print(dp[cap])
@@ -232,6 +244,7 @@ main()
 **典型题**:标准 0/1 背包、完全背包、分组背包、二维费用背包(加一维容量)。
 
 **常见坑**
+- 模板契约:`len(weights) == len(values)`,`cap >= 0`,且每个重量 `w > 0`;否则 `zip` 会静默丢物品,零/负重量也会破坏转移含义。
 - **0/1 倒序、完全正序**(和超纲篇模板 16 一致,最易错)。
 - 「恰好装满」要 `dp[0]=0, 其余=-inf`;「不超过容量」全 0 即可。
 - 内层下界 `range(cap, w-1, -1)`,别把 `w` 写掉导致越界。
@@ -262,6 +275,8 @@ bin(10)    # '0b1010'      oct(10)  # '0o12'      hex(255) # '0xff'
 bin(10)[2:]                # '1010'  去前缀
 # 十进制 -> 任意 k 进制(手写)
 def to_base(n, b):
+    if not 2 <= b <= 36:
+        raise ValueError("base must be in [2, 36]")
     if n == 0: return "0"
     d = "0123456789abcdefghijklmnopqrstuvwxyz"
     neg, n, out = n < 0, abs(n), []
@@ -292,14 +307,16 @@ import sys
 def main():
     data = sys.stdin.read().split()
     s, from_b, to_b = data[0], int(data[1]), int(data[2])
+    if not 2 <= from_b <= 36 or not 2 <= to_b <= 36:
+        raise ValueError("bases must be in [2, 36]")
     n = int(s, from_b)                   # 先转十进制
     if n == 0:
         print("0"); return
     d = "0123456789abcdefghijklmnopqrstuvwxyz"
-    out = []
+    neg, n, out = n < 0, abs(n), []
     while n:
         out.append(d[n % to_b]); n //= to_b
-    print(''.join(reversed(out)))
+    print(('-' if neg else '') + ''.join(reversed(out)))
 main()
 ```
 
@@ -308,6 +325,7 @@ main()
 **典型题**:进制转换、罗马数字、字符串转整数(atoi)、有效数字判定、单词计数、字符统计。
 
 **常见坑**
+- 任意进制模板只接收 `2 <= base <= 36`;负数先保存符号,对绝对值做除基取余,最后补回 `-`。
 - `int(s, base)` 的 s 不含前缀(`int("ff",16)` 对,`int("0xff",16)` 也对但别依赖)。
 - 字母转下标 `ord(c)-ord('a')`,大写用 `'A'`。
 - 读「整行含空格」的字符串别用 `split()`(见 IO 文档)。
@@ -336,6 +354,8 @@ main()
 # 最长回文子序列(516):区间 DP 入门(i 倒序保证 i+1 已算)
 def longest_palindrome_subseq(s):
     n = len(s)
+    if n == 0:
+        return 0
     dp = [[0] * n for _ in range(n)]
     for i in range(n - 1, -1, -1):
         dp[i][i] = 1                          # 单字符回文长 1
@@ -348,6 +368,8 @@ def longest_palindrome_subseq(s):
 
 # 戳气球(312):经典区间 DP(枚举最后戳破的 k)
 def max_coins(nums):
+    if any(x < 0 for x in nums):
+        raise ValueError("nums must be non-negative")
     a = [1] + nums + [1]
     n = len(a)
     dp = [[0] * n for _ in range(n)]
@@ -377,13 +399,14 @@ def main():
 main()
 ```
 
-**复杂度**:O(n³)(两维区间 + 一维分割点),适用 n ≤ 500。
+**复杂度**:最长回文子序列是 O(n²) 时间、O(n²) 空间；戳气球是 O(n³) 时间、O(n²) 空间。
 
 **典型题**:最长回文子序列、戳气球、石子合并、多边形三角剖分、矩阵连乘、括号匹配。
 
 **常见坑**
+- 空串的最长回文子序列是 0；先返回,避免访问 `dp[0][-1]`。
 - 填表顺序必须保证「子区间先于大区间」:要么外层枚举长度,要么 `i` 倒序 `j` 正序。
-- 戳气球加**哨兵** `[1]+nums+[1]`,`k` 是「最后」戳破的才无后效性。
+- LC 312 的 `max_coins` 契约是 `nums` **非负**；负数会使“每个气球最终都戳破”的零初始化逻辑失效。加哨兵 `[1]+nums+[1]`,`k` 是「最后」戳破的才无后效性。
 - n³ 只适合 n≤500,再大要换思路。
 
 **口诀**:*小区间先算大后合,枚举分割点 k。*
@@ -397,48 +420,62 @@ main()
 - 「树上打家劫舍、树的直径、监控二叉树、选课(树上背包)」。
 
 **为什么**
-树天然递归。`dfs(node)` 返回「以 node 为根的子树在**若干状态下**的最优值」(常是元组,如「选 node / 不选 node」),父节点据此合并。本质是二叉树递归(主篇模板 9)的「带状态返回值」升级。
+树形 DP 的状态天然按**后序**合并:`state[node]` 表示以 node 为根的子树在若干状态下的最优值(常是「选 / 不选」元组)。用显式栈或父节点顺序拿到后序,就能兼顾清晰状态与深树安全。
 
 **解题步骤**
-1. 定义 `dfs(node)` 返回**一组状态**(如 `(不选node最优, 选node最优)`)。
-2. 递归左右子树拿到它们的状态元组。
+1. 定义每个节点的**一组状态**(如 `(不选node最优, 选node最优)`)。
+2. 用 `(node, visited)` 显式栈或 `parent + order` 得到后序,保证孩子先算。
 3. 按「选了 node 则子节点不能选」等约束合并,返回本节点的状态元组。
 
 **Python 模板**
 ```python
 # 打家劫舍 III(337):树上不能偷相邻节点
 def rob_tree(root):
-    def dfs(node):
-        if not node:
-            return (0, 0)                     # (不偷该点最优, 偷该点最优)
-        l = dfs(node.left)
-        r = dfs(node.right)
-        not_rob = max(l) + max(r)             # 不偷:孩子随意取最优
-        rob = node.val + l[0] + r[0]          # 偷:孩子必须不偷
-        return (not_rob, rob)
-    return max(dfs(root))
+    if not root:
+        return 0
+    stack = [(root, False)]
+    state = {}                                  # id(node) -> (不偷, 偷)
+    while stack:
+        node, visited = stack.pop()
+        if not visited:
+            stack.append((node, True))
+            if node.right: stack.append((node.right, False))
+            if node.left: stack.append((node.left, False))
+            continue
+        left = state.get(id(node.left), (0, 0))
+        right = state.get(id(node.right), (0, 0))
+        state[id(node)] = (max(left) + max(right),
+                           node.val + left[0] + right[0])
+    return max(state[id(root)])
 
-# 树的直径(通用图版):最长路径的边数/点数
+# 树的直径(通用邻接表版):返回最长路径的边数
 def tree_diameter(n, graph):                  # graph 邻接表
-    best = 0
-    def dfs(u, parent):
-        nonlocal best
+    if n == 0:
+        return 0
+    parent = [-2] * n
+    parent[0] = -1
+    order = [0]
+    for u in order:
+        for v in graph[u]:
+            if parent[v] == -2:
+                parent[v] = u
+                order.append(v)
+    best, down = 0, [0] * n
+    for u in reversed(order):                  # 孩子先于父亲
         top1 = top2 = 0                        # 最长、次长的向下链
         for v in graph[u]:
-            if v == parent: continue
-            d = dfs(v, u) + 1
+            if parent[v] != u: continue
+            d = down[v] + 1
             if d > top1: top1, top2 = d, top1
             elif d > top2: top2 = d
-        best = max(best, top1 + top2)          # 经过 u 的最长路
-        return top1
-    dfs(0, -1)
-    return best
+        down[u] = top1
+        best = max(best, top1 + top2)
+    return best                                 # 非空树的路径点数 = best + 1
 ```
 
 **ACM 模板**
 ```python
 import sys
-sys.setrecursionlimit(1 << 25)
 def main():
     data = sys.stdin.read().split()
     idx = 0
@@ -447,30 +484,36 @@ def main():
     for _ in range(n - 1):                     # 树有 n-1 条边
         a, b = int(data[idx]), int(data[idx+1]); idx += 2
         graph[a].append(b); graph[b].append(a)
-    best = 0
-    def dfs(u, p):
-        nonlocal best
+    parent = [-2] * n
+    parent[0] = -1
+    order = [0]
+    for u in order:                            # 显式栈展开父子关系
+        for v in graph[u]:
+            if parent[v] == -2:
+                parent[v] = u
+                order.append(v)
+    best, down = 0, [0] * n
+    for u in reversed(order):                  # 逆序就是后序
         t1 = t2 = 0
         for v in graph[u]:
-            if v == p: continue
-            d = dfs(v, u) + 1
+            if parent[v] != u: continue
+            d = down[v] + 1
             if d > t1: t1, t2 = d, t1
             elif d > t2: t2 = d
+        down[u] = t1
         best = max(best, t1 + t2)
-        return t1
-    dfs(0, -1)
     print(best)
 main()
 ```
 
-**复杂度**:O(n)(每个节点访问一次),空间 O(树高) 递归栈。
+**复杂度**:O(n)(每个节点访问一次),空间 O(n)(显式顺序与 DP 数组)。
 
 **典型题**:打家劫舍 III、二叉树的直径/最大路径和(主篇模板 9)、监控二叉树、没有上司的舞会、树上背包(选课)。
 
 **常见坑**
-- 无根树 DFS 要传 `parent` 防止走回头路。
+- 无根树要记录 `parent` 防止走回头路；`tree_diameter` 返回**边数**,非空树若要路径点数再加 1。
 - 返回元组时别把「选/不选」两个状态用混。
-- 递归深度 = 树高,退化成链时要防栈溢出(改迭代或调 limit)。
+- 递归深度 = 树高,退化成链时必须优先改显式栈/后序数组,不要把超大 `recursionlimit` 当安全保证。
 
 **口诀**:*子树返状态给父亲,选与不选合并算。*
 
@@ -562,8 +605,10 @@ from functools import cmp_to_key
 
 # 拼接最大数(179):a+b 和 b+a 谁大谁在前
 def largest_number(nums):
-    strs = list(map(str, nums))
-    strs.sort(key=cmp_to_key(lambda a, b: (a + b < b + a) - (a + b > b + a)))
+    if not nums:
+        return ''
+    strs = sorted(map(str, nums),
+                  key=cmp_to_key(lambda a, b: (a + b < b + a) - (a + b > b + a)))
     res = ''.join(strs)
     return '0' if res[0] == '0' else res     # 全 0 特判
 
@@ -573,9 +618,9 @@ def sort_people(people):                      # people: [(name, score), ...]
 
 # 根据身高重建队列(406):高的先站,按 k 插入
 def reconstruct_queue(people):
-    people.sort(key=lambda p: (-p[0], p[1]))  # 身高降序,k 升序
+    ordered = sorted(people, key=lambda p: (-p[0], p[1]))  # 不改调用方输入
     res = []
-    for p in people:
+    for p in ordered:
         res.insert(p[1], p)                   # 插到下标 k
     return res
 ```
@@ -587,6 +632,8 @@ from functools import cmp_to_key
 def main():
     data = sys.stdin.read().split()
     n = int(data[0]); nums = data[1:1+n]      # 直接当字符串
+    if not nums:
+        print(''); return
     nums.sort(key=cmp_to_key(lambda a, b: (a+b < b+a) - (a+b > b+a)))
     res = ''.join(nums)
     print('0' if res[0] == '0' else res)
@@ -598,6 +645,7 @@ main()
 **典型题**:最大数、根据身高重建队列、按频率排序、区间调度(超纲篇模板 33)、合并区间。
 
 **常见坑**
+- 空输入先返回空串/输出空行,避免访问 `res[0]`。
 - `cmp(a,b)` 返回值:负→a 在前,正→b 在前,0→相等;用 `(x<y)-(x>y)` 生成。
 - 拼接最大数记得**全 0 特判**(`[0,0]` 结果是 `"0"` 不是 `"00"`)。
 - Python3 没有 `sort(cmp=...)`,必须 `cmp_to_key` 包一层。
@@ -691,23 +739,27 @@ main()
 
 # 📎 附录:浮点二分答案(补超纲篇模板 28)
 
-超纲篇模板 28 只讲了**整数**二分答案;当答案是**小数**(如最优比率、最小半径)时,用 eps 控制精度:
+超纲篇模板 28 只讲了**整数**二分答案;浮点二分更适合固定轮数,同时把单调方向和端点真假写进契约:
 
 ```python
-def float_binary(lo, hi, check, eps=1e-6):
-    while hi - lo > eps:
+def max_feasible_float(lo, hi, check, iterations=100):
+    # 契约:check 单调 True -> False,check(lo)=True,check(hi)=False
+    # 循环不变量:lo 始终可行、hi 始终不可行,答案夹在二者之间
+    if lo >= hi or iterations <= 0 or not check(lo) or check(hi):
+        raise ValueError("need feasible lo, infeasible hi, and positive iterations")
+    for _ in range(iterations):
         mid = (lo + hi) / 2
-        if check(mid):          # mid 可行 → 往一侧收
+        if check(mid):          # 最大化可行值:可行下界右移
             lo = mid
         else:
             hi = mid
-    return lo
+    return lo                   # 返回仍可行的一侧,不会伪装成不可行答案
 
 # 例:求 x 使某单调条件成立(如最大化平均值、最小化最大距离的浮点版)
-# 也可固定循环 100 次代替 eps:for _ in range(100): mid=(lo+hi)/2; ...
+# 若题目是找第一个可行值(False -> True),对称维护 lo 不可行、hi 可行并返回 hi
 ```
 
-**要点**:① 用 `hi-lo > eps` 或**固定循环 100 次**(更稳,不怕死循环);② eps 比要求精度小 1~2 个数量级;③ 输出用 `f'{ans:.6f}'` 控制小数位。
+**要点**:① 先写清 `check` 的单调方向和两端真假,不满足契约就报错,不能直接返回一个貌似合理的边界;② 固定循环 100 次通常足够 double 精度;③ 输出用 `f'{ans:.6f}'` 控制小数位。
 
 **口诀**:*浮点二分卡精度,循环百次最省心。*
 
@@ -724,3 +776,6 @@ def float_binary(lo, hi, check, eps=1e-6):
 42. 逆序对:归并合并时计数,右小则左剩全逆。
 43. 自定义排序:两两比较看组合,cmp_to_key 转 key。
 44. 滑窗恰好 K:恰好等于至多差,两趟滑窗相减得。
+---
+
+原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/%E7%BA%AF%E5%8A%9B%E6%89%A3%E7%AE%97%E6%B3%95/%E5%BA%94%E8%AF%95/%E5%A4%A7%E5%8E%82%E7%AC%94%E8%AF%95%E6%8F%90%E5%88%86%E8%A1%A5%E4%B8%81v2.md)。
