@@ -52,7 +52,7 @@ const standardSite = withBasePath('/blog/');
       body {
         max-width: 43rem;
         margin: 0 auto;
-        padding: 0 1rem;
+        padding: 0 1rem 5rem;
         background: #fff;
         color: #111;
         font-family: Georgia, 'Songti SC', 'STSong', 'SimSun', serif;
@@ -117,6 +117,31 @@ const standardSite = withBasePath('/blog/');
         border-top: 1px solid #777;
         font-family: Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
         font-size: 0.8rem;
+      }
+
+      .kindle-pager {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 20;
+        padding: 0.35rem;
+        border-top: 3px solid #111;
+        background: #fff;
+        text-align: center;
+      }
+
+      .kindle-pager button {
+        width: 46%;
+        min-height: 3.1rem;
+        margin: 0 1%;
+        border: 2px solid #111;
+        border-radius: 0;
+        background: #fff;
+        color: #000;
+        font-family: Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
       }
 
       .eyebrow,
@@ -339,7 +364,7 @@ const standardSite = withBasePath('/blog/');
         }
 
         body {
-          padding: 0 0.75rem;
+          padding: 0 0.75rem 5rem;
         }
 
         h1 {
@@ -364,8 +389,17 @@ const standardSite = withBasePath('/blog/');
     <footer class="kindle-footer">
       <p>纯静态内容、无网页字体，仅保留电子墨水屏翻页控制。</p>
     </footer>
+    <nav class="kindle-pager" aria-label="整屏翻页">
+      <button id="kindle-page-up" type="button">↑ 上一屏</button>
+      <button id="kindle-page-down" type="button">下一屏 ↓</button>
+    </nav>
     <script is:inline>
       (function () {
+        function turnKindlePage(direction) {
+          var viewport = window.innerHeight || document.documentElement.clientHeight || 800;
+          window.scrollBy(0, Math.round(viewport * 0.86) * direction);
+        }
+
         function handleKindlePageTurn(event) {
           if (event.source !== window.parent) {
             return;
@@ -379,9 +413,21 @@ const standardSite = withBasePath('/blog/');
           }
 
           if (direction !== 0) {
-            var viewport = window.innerHeight || document.documentElement.clientHeight || 800;
-            window.scrollBy(0, Math.round(viewport * 0.86) * direction);
+            turnKindlePage(direction);
           }
+        }
+
+        var pageUp = document.getElementById('kindle-page-up');
+        var pageDown = document.getElementById('kindle-page-down');
+        if (pageUp) {
+          pageUp.onclick = function () {
+            turnKindlePage(-1);
+          };
+        }
+        if (pageDown) {
+          pageDown.onclick = function () {
+            turnKindlePage(1);
+          };
         }
 
         if (window.addEventListener) {
