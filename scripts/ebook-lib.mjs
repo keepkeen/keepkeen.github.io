@@ -81,6 +81,18 @@ export function normalizeDate(value) {
   return date.toISOString();
 }
 
+export function scaleSvgIntrinsicSize(svg, factor) {
+  if (!Number.isFinite(factor) || factor <= 0) {
+    throw new Error(`SVG scale must be positive, received ${factor}`);
+  }
+  return svg.replace(/^<svg\b[^>]*>/u, (root) =>
+    root.replace(/\b(width|height)="([0-9]+(?:\.[0-9]+)?)ex"/gu, (_, attribute, value) => {
+      const scaled = Number.parseFloat(value) * factor;
+      return `${attribute}="${Number(scaled.toFixed(3))}ex"`;
+    })
+  );
+}
+
 export function buildCoverSvg({ title, description, date, author }) {
   const titleLines = wrapMixedText(title, 15.5, 5);
   const descriptionLines = wrapMixedText(description, 27, 4);

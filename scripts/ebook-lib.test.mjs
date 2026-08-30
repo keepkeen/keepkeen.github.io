@@ -4,6 +4,7 @@ import {
   buildOpds,
   escapeXml,
   normalizeDate,
+  scaleSvgIntrinsicSize,
   slugFromPostFile,
   wrapMixedText
 } from './ebook-lib.mjs';
@@ -34,6 +35,13 @@ describe('ebook helpers', () => {
     expect(svg).toContain('width="1200"');
     expect(svg).toContain('height="1600"');
     expect(svg).toContain('GAE &amp; PPO');
+  });
+
+  it('scales only intrinsic ex dimensions on the SVG root', () => {
+    const svg = '<svg width="2.5ex" height="1.25ex" viewBox="0 0 100 50"><path width="0"/></svg>';
+    expect(scaleSvgIntrinsicSize(svg, 1.6)).toBe(
+      '<svg width="4ex" height="2ex" viewBox="0 0 100 50"><path width="0"/></svg>'
+    );
   });
 
   it('emits an OPDS 1.2-compatible acquisition entry', () => {

@@ -101,13 +101,14 @@ try {
     const { file, expects = {} } = spec;
     const { path: sourcePath, raw, data } = readPost(file);
     const slug = slugFromPostFile(file);
+    const outputStem = spec.filenameStem ?? slug;
     const articleWorkDirectory = join(workDirectory, slug);
     const mathDirectory = join(articleWorkDirectory, 'math');
     const statsPath = join(articleWorkDirectory, 'math-stats.json');
     const metadataPath = join(articleWorkDirectory, 'metadata.yaml');
     const coverWorkPath = join(articleWorkDirectory, 'cover.png');
-    const coverFilename = `${slug}.png`;
-    const epubFilename = `${slug}.epub`;
+    const coverFilename = `${outputStem}.png`;
+    const epubFilename = `${outputStem}.epub`;
     const epubPath = join(stagingDirectory, epubFilename);
     mkdirSync(mathDirectory, { recursive: true });
 
@@ -159,7 +160,9 @@ try {
         EBOOK_MATH_STATS: statsPath,
         EBOOK_RESOURCE_DIR: postsDirectory,
         EBOOK_SITE_URL: ebookCatalog.siteUrl,
-        EBOOK_ARTICLE_URL: articleUrl
+        EBOOK_ARTICLE_URL: articleUrl,
+        EBOOK_INLINE_MATH_SCALE: String(ebookCatalog.mathScale.inline),
+        EBOOK_DISPLAY_MATH_SCALE: String(ebookCatalog.mathScale.display)
       }
     );
 

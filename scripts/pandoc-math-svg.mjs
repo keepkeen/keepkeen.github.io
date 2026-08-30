@@ -4,12 +4,15 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import MathJax from 'mathjax';
+import { scaleSvgIntrinsicSize } from './ebook-lib.mjs';
 
 const mathDirectory = process.env.EBOOK_MATH_DIR;
 const statsPath = process.env.EBOOK_MATH_STATS;
 const resourceDirectory = process.env.EBOOK_RESOURCE_DIR;
 const siteUrl = process.env.EBOOK_SITE_URL;
 const articleUrl = process.env.EBOOK_ARTICLE_URL;
+const inlineScale = Number.parseFloat(process.env.EBOOK_INLINE_MATH_SCALE ?? '1');
+const displayScale = Number.parseFloat(process.env.EBOOK_DISPLAY_MATH_SCALE ?? '1');
 
 if (!mathDirectory || !statsPath || !resourceDirectory || !siteUrl || !articleUrl) {
   throw new Error(
@@ -50,7 +53,10 @@ async function renderMath(tex, display) {
     throw new Error(`MathJax produced no SVG for: ${tex}`);
   }
 
-  const svg = adaptor.serializeXML(svgNode);
+  const svg = scaleSvgIntrinsicSize(
+    adaptor.serializeXML(svgNode),
+    display ? displayScale : inlineScale
+  );
   if (svg.includes('data-mjx-error')) {
     throw new Error(`MathJax could not render: ${tex}`);
   }
@@ -157,7 +163,9 @@ writeFileSync(
   `${JSON.stringify({
     formulaCount,
     uniqueFormulaCount: cache.size,
-    sanitizedSvgCount
+    sanitizedSvgCount,
+    inlineScale,
+    displayScale
   }, null, 2)}\n`
 );
 process.stdout.write(JSON.stringify(output));
