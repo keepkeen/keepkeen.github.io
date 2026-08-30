@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+
+import KindleLayout from '../../layouts/KindleLayout.astro';
+import { formatDate, getPostSlug, sortPosts, withBasePath } from '../../utils/content';
+
+const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+const postsByYear = new Map<number, typeof posts>();
+const postHref = (slug: string) => withBasePath(`/kindle/${slug}/`);
+
+for (const post of posts) {
+  const year = post.data.date.getFullYear();
+  postsByYear.set(year, [...(postsByYear.get(year) ?? []), post]);
+}
+---
+
+<KindleLayout
+  title="全部文章"
+  description={`Kindle 轻量版全部 ${posts.length} 篇文章。`}
+  lang="zh-CN"
+  canonicalPath="/blog/"
+>
+  <p class="eyebrow">Archive</p>
+  <h1>全部文章</h1>
+  <p class="intro">共 {posts.length} 篇。按时间倒序排列。</p>
+
+  {[...postsByYear.entries()].map(([year, yearPosts]) => (
+    <section aria-labelledby={`year-${year}`}>
+      <h2 id={`year-${year}`}>{year}</h2>
+      <ol class="archive-list">
+        {yearPosts.map((post) => (
+          <li class="post-item">
+            <p class="post-meta">{formatDate(post.data.date, 'zh-CN')}</p>
+            <a class="post-title" href={postHref(getPostSlug(post))}>{post.data.title}</a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  ))}
+</KindleLayout>

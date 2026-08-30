@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+
+import KindleLayout from '../../layouts/KindleLayout.astro';
+import { formatDate, getPostSlug, getReadingTime, sortPosts, withBasePath } from '../../utils/content';
+
+const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+const latestPosts = posts.slice(0, 24);
+const archiveHref = withBasePath('/kindle/archive/');
+const postHref = (slug: string) => withBasePath(`/kindle/${slug}/`);
+---
+
+<KindleLayout
+  title="Kindle 阅读版"
+  description="适合 Kindle 电子墨水屏的轻量博客入口。"
+  lang="zh-CN"
+  canonicalPath="/blog/"
+>
+  <section>
+    <p class="eyebrow">Kindle edition</p>
+    <h1>大模型算法与系统笔记</h1>
+    <p class="intro">
+      这是为 Kindle 准备的轻量入口：单栏排版、白底黑字，不加载搜索、主题脚本或网页字体。
+    </p>
+  </section>
+
+  <section aria-labelledby="latest-heading">
+    <h2 id="latest-heading">最新文章</h2>
+    <ol class="post-list">
+      {latestPosts.map((post) => (
+        <li class="post-item">
+          <p class="post-meta">
+            {formatDate(post.data.date, 'zh-CN')} · 约 {getReadingTime(post.body)} 分钟
+          </p>
+          <a class="post-title" href={postHref(getPostSlug(post))}>{post.data.title}</a>
+          <p class="post-description">{post.data.description}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <p><a class="action-link" href={archiveHref}>查看全部 {posts.length} 篇文章</a></p>
+</KindleLayout>

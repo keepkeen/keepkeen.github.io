@@ -1,0 +1,69 @@
+---
+import { getCollection, render } from 'astro:content';
+
+import KindleLayout from '../../layouts/KindleLayout.astro';
+import {
+  formatDate,
+  getPostLang,
+  getPostPath,
+  getPostSlug,
+  getReadingTime,
+  postHasMath,
+  sortPosts,
+  withBasePath
+} from '../../utils/content';
+
+export async function getStaticPaths() {
+  const posts = sortPosts(await getCollection('posts', ({ data }) => !data.draft));
+
+  return posts.map((post, index) => ({
+    params: {
+      slug: getPostSlug(post)
+    },
+    props: {
+      post,
+      newer: index === 0 ? undefined : posts[index - 1],
+      older: index === posts.length - 1 ? undefined : posts[index + 1]
+    }
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const lang = getPostLang(post);
+const kindlePostHref = (slug: string) => withBasePath(`/kindle/${slug}/`);
+---
+
+<KindleLayout
+  title={post.data.title}
+  description={post.data.description}
+  lang={lang}
+  canonicalPath={getPostPath(post)}
+  loadKatex={postHasMath(post)}
+>
+  <article>
+    <header class="article-header">
+      <p class="eyebrow">Kindle edition</p>
+      <h1>{post.data.title}</h1>
+      <p class="article-lead">{post.data.description}</p>
+      <p class="meta">
+        {formatDate(post.data.date, lang)} · 约 {getReadingTime(post.body)} 分钟
+      </p>
+    </header>
+
+    <div class="article-body">
+      <Content />
+    </div>
+
+    <nav class="post-navigation" aria-label="文章导航">
+      {older && (
+        <p><span class="caption">较早一篇：</span><br /><a href={kindlePostHref(getPostSlug(older))}>{older.data.title}</a></p>
+      )}
+      {newer && (
+        <p><span class="caption">较新一篇：</span><br /><a href={kindlePostHref(getPostSlug(newer))}>{newer.data.title}</a></p>
+      )}
+    </nav>
+
+    <p class="standard-link"><a href={getPostPath(post)}>在标准网页中打开本篇</a></p>
+  </article>
+</KindleLayout>

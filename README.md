@@ -111,3 +111,7 @@ If your Notion parent is a data source, optional `NOTION_PROP_*` environment var
 5. `site.config.mjs` is the single source of truth for the site's public metadata. Astro reads `siteUrl` from there for canonicals and the sitemap, with a GitHub Actions fallback while the placeholder URL is still present.
 6. Update `siteUrl`, social links, email, and personal copy in `site.config.mjs` before going live.
 7. If you want the deployed Studio to talk to the gateway, add a repository variable named `PUBLIC_STUDIO_GATEWAY_URL`. The workflow already forwards it into the Astro build.
+
+## Kindle Reader
+
+The site also builds a lightweight reader under `/kindle/` for e-ink browsers. It reuses the same content collection while avoiding client-side JavaScript, web fonts, search indexes, sticky layouts, and dark-mode assets. `/kindle/archive/` lists every published post, and `/kindle/<slug>/` renders the corresponding article with simplified typography and navigation.
