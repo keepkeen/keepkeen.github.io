@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCoverSvg,
   buildOpds,
+  buildOpdsNavigation,
+  buildSeriesFilename,
   escapeXml,
+  normalizeTexForMathml,
   normalizeDate,
+  sanitizeFilenameSegment,
   scaleSvgIntrinsicSize,
   slugFromPostFile,
   wrapMixedText
@@ -23,6 +27,20 @@ describe('ebook helpers', () => {
 
   it('normalizes publication dates to Atom timestamps', () => {
     expect(normalizeDate('2026-08-29')).toBe('2026-08-29T00:00:00.000Z');
+  });
+
+  it('normalizes legacy roman math commands before MathML conversion', () => {
+    expect(normalizeTexForMathml('D_{\\rm KL}(\\pi_{\\rm old})')).toBe(
+      'D_{\\mathrm{KL}}(\\pi_{\\mathrm{old}})'
+    );
+  });
+
+  it('builds ordered, FAT-safe Chinese filenames', () => {
+    expect(buildSeriesFilename('03. GAE：偏差/方差权衡?', 3)).toBe('03 GAE：偏差 方差权衡');
+    expect(sanitizeFilenameSegment('A:B* C')).toBe('A B C');
+    expect(Buffer.byteLength(sanitizeFilenameSegment('中'.repeat(100)), 'utf8')).toBeLessThanOrEqual(
+      180
+    );
   });
 
   it('builds a high-contrast portrait SVG cover', () => {
@@ -54,6 +72,8 @@ describe('ebook helpers', () => {
           updated: '2026-08-30T00:00:00.000Z',
           published: '2026-08-29T00:00:00.000Z',
           bytes: 123,
+          seriesSlug: 'series-a',
+          seriesTitle: '系列 A',
           epubUrl: 'https://keepkeen.github.io/ebooks/a.epub',
           coverUrl: 'https://keepkeen.github.io/ebooks/a.png',
           articleUrl: 'https://keepkeen.github.io/blog/a/'
@@ -71,6 +91,31 @@ describe('ebook helpers', () => {
     expect(xml).toContain('http://opds-spec.org/acquisition');
     expect(xml).toContain('application/epub+zip');
     expect(xml).toContain('A &amp; B');
+    expect(xml).toContain('label="系列 A"');
     expect(xml).toContain('<fh:complete/>');
+  });
+
+  it('emits OPDS navigation entries for series feeds', () => {
+    const xml = buildOpdsNavigation(
+      [
+        {
+          title: '01 强化学习论文精读（51 本）',
+          description: '强化学习论文精读系列',
+          count: 51,
+          updated: '2026-08-30T00:00:00.000Z',
+          feedUrl: 'https://keepkeen.github.io/opds/reinforcement-learning.xml'
+        }
+      ],
+      {
+        title: 'Catalog',
+        author: 'Liuliming',
+        siteUrl: 'https://keepkeen.github.io',
+        feedPath: '/opds.xml',
+        description: 'Books'
+      }
+    );
+    expect(xml).toContain('kind=navigation');
+    expect(xml).toContain('rel="subsection"');
+    expect(xml).toContain('51 本');
   });
 });

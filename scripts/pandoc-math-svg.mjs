@@ -4,20 +4,21 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import MathJax from 'mathjax';
-import { scaleSvgIntrinsicSize } from './ebook-lib.mjs';
+import { normalizeTexForMathml, scaleSvgIntrinsicSize } from './ebook-lib.mjs';
 
 const mathDirectory = process.env.EBOOK_MATH_DIR;
 const statsPath = process.env.EBOOK_MATH_STATS;
 const resourceDirectory = process.env.EBOOK_RESOURCE_DIR;
+const publicDirectory = process.env.EBOOK_PUBLIC_DIR;
 const siteUrl = process.env.EBOOK_SITE_URL;
 const articleUrl = process.env.EBOOK_ARTICLE_URL;
 const mathRenderer = process.env.EBOOK_MATH_RENDERER ?? 'svg';
 const inlineScale = Number.parseFloat(process.env.EBOOK_INLINE_MATH_SCALE ?? '1');
 const displayScale = Number.parseFloat(process.env.EBOOK_DISPLAY_MATH_SCALE ?? '1');
 
-if (!mathDirectory || !statsPath || !resourceDirectory || !siteUrl || !articleUrl) {
+if (!mathDirectory || !statsPath || !resourceDirectory || !publicDirectory || !siteUrl || !articleUrl) {
   throw new Error(
-    'EBOOK_MATH_DIR, EBOOK_MATH_STATS, EBOOK_RESOURCE_DIR, EBOOK_SITE_URL, and EBOOK_ARTICLE_URL are required'
+    'EBOOK_MATH_DIR, EBOOK_MATH_STATS, EBOOK_RESOURCE_DIR, EBOOK_PUBLIC_DIR, EBOOK_SITE_URL, and EBOOK_ARTICLE_URL are required'
   );
 }
 if (!['svg', 'mathml'].includes(mathRenderer)) {
@@ -117,7 +118,9 @@ async function transform(value, context = {}) {
       return { t: 'Str', c: String(tex).replace(/\s+/gu, ' ').trim() };
     }
     formulaCount += 1;
-    if (mathRenderer === 'mathml') return value;
+    if (mathRenderer === 'mathml') {
+      return { ...value, c: [mathType, normalizeTexForMathml(tex)] };
+    }
     const display = mathType.t === 'DisplayMath';
     const outputPath = await renderMath(tex, display);
     return {
@@ -128,6 +131,20 @@ async function transform(value, context = {}) {
         [outputPath, '']
       ]
     };
+  }
+
+  if (value.t === 'RawBlock' || value.t === 'RawInline') {
+    const [format, raw] = value.c;
+    if (format === 'html' || format === 'html5') {
+      const normalized = raw
+        .replace(/<br\s*>/giu, '<br />')
+        .replace(/\bsrc=(["'])(\/images\/[^"']+)\1/giu, (_, quote, target) => {
+          const localPath = resolve(publicDirectory, target.slice(1));
+          if (!existsSync(localPath)) throw new Error(`Missing public image: ${target}`);
+          return `src=${quote}${localPath}${quote}`;
+        });
+      return { ...value, c: [format, normalized] };
+    }
   }
 
   if (value.t === 'Link') {

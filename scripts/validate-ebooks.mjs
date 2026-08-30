@@ -1,14 +1,20 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ebookCatalog, ebookPilotPosts } from './ebooks.config.mjs';
-import { slugFromPostFile } from './ebook-lib.mjs';
+import yaml from 'js-yaml';
+import JSZip from 'jszip';
+import { ebookCatalog, ebookSeries } from './ebooks.config.mjs';
+import { escapeXml, slugFromPostFile } from './ebook-lib.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const postsDirectory = join(projectRoot, 'src/content/posts');
 const ebookDirectory = join(projectRoot, 'public/ebooks');
 const opdsPath = join(projectRoot, 'public/opds.xml');
+const seriesFeedDirectory = join(projectRoot, 'public/opds');
 const manifestPath = join(ebookDirectory, 'catalog.json');
+const syncManifestPath = join(ebookDirectory, 'library.json');
 
 function run(command, args, options = {}) {
   try {
@@ -26,30 +32,122 @@ function run(command, args, options = {}) {
 
 function runEpubcheck(epubPath) {
   if (process.env.EPUBCHECK_JAR) {
-    return run('java', ['-jar', process.env.EPUBCHECK_JAR, epubPath]);
+    return run('java', ['-jar', process.env.EPUBCHECK_JAR, epubPath, '--failonwarnings', '--quiet']);
   }
-  return run('epubcheck', [epubPath]);
+  return run('epubcheck', [epubPath, '--failonwarnings', '--quiet']);
 }
 
-if (!existsSync(manifestPath) || !existsSync(opdsPath)) {
+function readActivePostSlugs() {
+  return readdirSync(postsDirectory)
+    .filter((file) => file.endsWith('.md'))
+    .filter((file) => {
+      const raw = readFileSync(join(postsDirectory, file), 'utf8');
+      const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/u);
+      if (!match) throw new Error(`${file}: missing YAML frontmatter`);
+      return !yaml.load(match[1])?.draft;
+    })
+    .map(slugFromPostFile)
+    .sort();
+}
+
+function assertSafeRelativePath(relativePath, expectedDirectory) {
+  if (
+    !relativePath ||
+    relativePath.startsWith('/') ||
+    relativePath.includes('\\') ||
+    posix.normalize(relativePath) !== relativePath ||
+    !relativePath.startsWith(`${expectedDirectory}/`)
+  ) {
+    throw new Error(`Unsafe or misplaced ebook path: ${relativePath}`);
+  }
+}
+
+if (
+  !existsSync(manifestPath) ||
+  !existsSync(syncManifestPath) ||
+  !existsSync(opdsPath) ||
+  !existsSync(seriesFeedDirectory)
+) {
   throw new Error('Run npm run build:ebooks before validating EPUB output');
 }
 
 run('xmllint', ['--noout', opdsPath]);
 const opds = readFileSync(opdsPath, 'utf8');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-if (manifest.length !== ebookPilotPosts.length) {
-  throw new Error(`Expected ${ebookPilotPosts.length} pilot EPUB files, found ${manifest.length}`);
+const syncManifest = JSON.parse(readFileSync(syncManifestPath, 'utf8'));
+const activePostSlugs = readActivePostSlugs();
+if (manifest.length !== activePostSlugs.length) {
+  throw new Error(`Expected ${activePostSlugs.length} EPUB files, found ${manifest.length}`);
+}
+const manifestSlugs = manifest.map((record) => record.slug).sort();
+if (JSON.stringify(manifestSlugs) !== JSON.stringify(activePostSlugs)) {
+  throw new Error('Generated EPUB catalog does not match the active Markdown post set');
+}
+if (syncManifest.schemaVersion !== 1 || syncManifest.bookCount !== manifest.length) {
+  throw new Error('Invalid library sync manifest header or book count');
+}
+if (syncManifest.rootDirectory !== ebookCatalog.libraryDirectory) {
+  throw new Error('Library sync manifest has the wrong root directory');
+}
+const bundleFilename = 'KeepKeen-Blog-library.zip';
+const bundlePath = join(ebookDirectory, bundleFilename);
+if (!existsSync(bundlePath) || !syncManifest.bundle) {
+  throw new Error('Full-library installation bundle is missing');
+}
+const bundleBuffer = readFileSync(bundlePath);
+const bundleSha256 = createHash('sha256').update(bundleBuffer).digest('hex');
+if (
+  syncManifest.bundle.bytes !== bundleBuffer.length ||
+  syncManifest.bundle.sha256 !== bundleSha256 ||
+  syncManifest.bundle.url !==
+    new URL(
+      `/ebooks/${bundleFilename}?v=${bundleSha256.slice(0, 16)}`,
+      ebookCatalog.siteUrl
+    ).toString()
+) {
+  throw new Error('Full-library installation bundle metadata is invalid');
 }
 
-for (const spec of ebookPilotPosts) {
-  const slug = slugFromPostFile(spec.file);
-  const record = manifest.find((entry) => entry.slug === slug);
-  if (!record) throw new Error(`${slug}: missing from generated catalog`);
-  const epubPath = join(ebookDirectory, record.epubFilename);
-  const coverPath = join(ebookDirectory, record.coverFilename);
+const syncBySlug = new Map(syncManifest.books.map((book) => [book.slug, book]));
+if (syncBySlug.size !== manifest.length) throw new Error('Duplicate or missing sync-manifest slugs');
+const manifestByEpubPath = new Map(manifest.map((record) => [record.epubRelativePath, record]));
+const seriesCounts = new Map();
+const expectedEpubPaths = new Set();
+
+for (const record of manifest) {
+  const { slug } = record;
+  const series = ebookSeries.find((candidate) => candidate.slug === record.seriesSlug);
+  if (!series) throw new Error(`${slug}: unknown series ${record.seriesSlug}`);
+  if (series.title !== record.seriesTitle || series.directory !== record.seriesDirectory) {
+    throw new Error(`${slug}: series metadata does not match ebook configuration`);
+  }
+  assertSafeRelativePath(record.epubRelativePath, series.directory);
+  assertSafeRelativePath(record.coverRelativePath, series.directory);
+  if (expectedEpubPaths.has(record.epubRelativePath)) {
+    throw new Error(`${slug}: duplicate EPUB path ${record.epubRelativePath}`);
+  }
+  expectedEpubPaths.add(record.epubRelativePath);
+  seriesCounts.set(series.slug, (seriesCounts.get(series.slug) ?? 0) + 1);
+
+  const epubPath = join(ebookDirectory, record.epubRelativePath);
+  const coverPath = join(ebookDirectory, record.coverRelativePath);
   if (!existsSync(epubPath) || !existsSync(coverPath)) {
     throw new Error(`${slug}: missing EPUB or cover`);
+  }
+  if (statSync(epubPath).size !== record.bytes) throw new Error(`${slug}: EPUB byte count changed`);
+  const sha256 = createHash('sha256').update(readFileSync(epubPath)).digest('hex');
+  if (sha256 !== record.sha256 || !record.epubUrl.includes(`?v=${sha256.slice(0, 16)}`)) {
+    throw new Error(`${slug}: EPUB checksum or cache-busting URL mismatch`);
+  }
+  const syncBook = syncBySlug.get(slug);
+  if (
+    !syncBook ||
+    syncBook.relativePath !== record.epubRelativePath ||
+    syncBook.url !== record.epubUrl ||
+    syncBook.bytes !== record.bytes ||
+    syncBook.sha256 !== record.sha256
+  ) {
+    throw new Error(`${slug}: sync manifest differs from generated catalog`);
   }
 
   run('unzip', ['-t', epubPath]);
@@ -63,6 +161,19 @@ for (const spec of ebookPilotPosts) {
   if (!entries.some((entry) => entry.endsWith('.opf'))) throw new Error(`${slug}: missing OPF`);
   if (!entries.some((entry) => entry.endsWith('nav.xhtml'))) throw new Error(`${slug}: missing nav`);
   if (!entries.some((entry) => entry.endsWith('.png'))) throw new Error(`${slug}: missing cover image`);
+
+  const opfEntry = entries.find((entry) => entry.endsWith('.opf'));
+  const opf = run('unzip', ['-p', epubPath, opfEntry]);
+  const expectedModified = new Date(record.updated).toISOString().replace('.000Z', 'Z');
+  if (!opf.includes(`<meta property="dcterms:modified">${expectedModified}</meta>`)) {
+    throw new Error(`${slug}: EPUB modified timestamp is not source-derived and reproducible`);
+  }
+  if (!opf.includes('belongs-to-collection') || !opf.includes(record.seriesTitle)) {
+    throw new Error(`${slug}: EPUB collection metadata is missing`);
+  }
+  if (!opf.includes('group-position') || !opf.includes(String(record.seriesOrder))) {
+    throw new Error(`${slug}: EPUB series position metadata is missing`);
+  }
 
   const xhtmlEntries = entries.filter((entry) => entry.endsWith('.xhtml'));
   const xhtml = run('unzip', ['-p', epubPath, ...xhtmlEntries]);
@@ -103,18 +214,80 @@ for (const spec of ebookPilotPosts) {
     }
   }
 
-  if (!opds.includes(record.epubUrl) || !opds.includes(record.coverUrl)) {
+  const seriesFeedPath = join(seriesFeedDirectory, `${series.slug}.xml`);
+  if (!existsSync(seriesFeedPath)) throw new Error(`${series.slug}: missing OPDS series feed`);
+  const seriesFeed = readFileSync(seriesFeedPath, 'utf8');
+  if (
+    !seriesFeed.includes(escapeXml(record.epubUrl)) ||
+    !seriesFeed.includes(escapeXml(record.coverUrl))
+  ) {
     throw new Error(`${slug}: OPDS feed is missing acquisition or cover URL`);
   }
-  console.log(
-    `Validated ${record.epubFilename}: ${record.formulaCount} ${record.mathRenderer} formulas, ${record.sourceImageCount} source images`
-  );
 }
 
-if (!opds.includes('http://opds-spec.org/acquisition')) {
-  throw new Error('OPDS feed has no acquisition relation');
+const actualEpubPaths = readdirSync(ebookDirectory, { recursive: true })
+  .filter((entry) => entry.endsWith('.epub'))
+  .map((entry) => entry.replaceAll('\\', '/'));
+if (
+  actualEpubPaths.length !== expectedEpubPaths.size ||
+  actualEpubPaths.some((entry) => !expectedEpubPaths.has(entry))
+) {
+  throw new Error('Generated ebook directory contains unexpected or missing EPUB files');
+}
+const bundle = await JSZip.loadAsync(bundleBuffer);
+const bundledEpubPaths = Object.values(bundle.files)
+  .filter((entry) => !entry.dir && entry.name.endsWith('.epub'))
+  .map((entry) => entry.name);
+if (
+  bundledEpubPaths.length !== expectedEpubPaths.size ||
+  bundledEpubPaths.some((entry) => !expectedEpubPaths.has(entry))
+) {
+  throw new Error('Full-library installation bundle contains unexpected or missing EPUB files');
+}
+for (const entry of Object.values(bundle.files)) {
+  if (!entry.dir && !expectedEpubPaths.has(entry.name)) {
+    throw new Error(`Unexpected file in full-library installation bundle: ${entry.name}`);
+  }
+  if (!entry.dir) {
+    const bundledEpub = await entry.async('nodebuffer');
+    const expected = manifestByEpubPath.get(entry.name);
+    const bundledSha256 = createHash('sha256').update(bundledEpub).digest('hex');
+    if (bundledEpub.length !== expected.bytes || bundledSha256 !== expected.sha256) {
+      throw new Error(`EPUB content mismatch in full-library installation bundle: ${entry.name}`);
+    }
+  }
 }
 if (!opds.includes(`href="${new URL(ebookCatalog.feedPath, ebookCatalog.siteUrl)}"`)) {
   throw new Error('OPDS feed self URL is incorrect');
 }
-console.log('EPUB and OPDS validation passed.');
+for (const series of ebookSeries) {
+  const count = seriesCounts.get(series.slug) ?? 0;
+  if (count === 0) continue;
+  const feedPath = join(seriesFeedDirectory, `${series.slug}.xml`);
+  run('xmllint', ['--noout', feedPath]);
+  const feedUrl = new URL(
+    `${ebookCatalog.seriesFeedDirectory}/${series.slug}.xml`,
+    ebookCatalog.siteUrl
+  ).toString();
+  if (!opds.includes(feedUrl)) throw new Error(`${series.slug}: missing from root OPDS navigation`);
+  console.log(`Validated ${series.directory}: ${count} EPUB files`);
+}
+
+const syncBooksForRevision = manifest.map((record) => ({
+  slug: record.slug,
+  title: record.title,
+  seriesSlug: record.seriesSlug,
+  seriesTitle: record.seriesTitle,
+  seriesOrder: record.seriesOrder,
+  relativePath: record.epubRelativePath,
+  url: record.epubUrl,
+  bytes: record.bytes,
+  sha256: record.sha256,
+  updated: record.updated
+}));
+const revision = createHash('sha256').update(JSON.stringify(syncBooksForRevision)).digest('hex');
+if (revision !== syncManifest.revision) throw new Error('Library sync revision checksum is invalid');
+
+console.log(
+  `EPUB, series OPDS, and sync-manifest validation passed for ${manifest.length} books.`
+);

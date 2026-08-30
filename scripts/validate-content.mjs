@@ -53,7 +53,19 @@ const tagCasing = new Map();
 
 for (const file of listMarkdown(POSTS_DIR)) {
   const path = `${POSTS_DIR}/${file}`;
+  const raw = readFileSync(join(POSTS_DIR, file), 'utf8');
   const data = readFrontmatter(join(POSTS_DIR, file));
+
+  const illegalControl = raw.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/u);
+  if (illegalControl) {
+    errors.push(
+      `${path}: contains XML-illegal control character U+${illegalControl[0]
+        .codePointAt(0)
+        .toString(16)
+        .toUpperCase()
+        .padStart(4, '0')}`
+    );
+  }
 
   if (!data) {
     errors.push(`${path}: missing frontmatter`);

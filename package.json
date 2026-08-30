@@ -9,6 +9,7 @@
     "build": "astro build",
     "build:ebooks": "node scripts/build-ebooks.mjs",
     "build:release": "npm run build:ebooks && npm run validate:ebooks && npm run build",
+    "install:kindle": "node scripts/install-kindle-library.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",

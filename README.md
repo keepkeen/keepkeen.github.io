@@ -115,3 +115,20 @@ If your Notion parent is a data source, optional `NOTION_PROP_*` environment var
 ## Kindle Reader
 
 The site also builds a lightweight reader under `/kindle/` for e-ink browsers. It reuses the same content collection while avoiding client-side JavaScript, web fonts, search indexes, sticky layouts, and dark-mode assets. `/kindle/archive/` lists every published post, and `/kindle/<slug>/` renders the corresponding article with simplified typography and navigation.
+
+For offline reading, every non-draft post is also built as an EPUB 3 book with native
+MathML. `series` and `seriesOrder` in post frontmatter determine the numbered KOReader
+subdirectory, filename, EPUB collection metadata, and per-series OPDS feed. A normal push
+to `main` runs the complete conversion and validation pipeline in GitHub Actions and
+publishes:
+
+- `/opds.xml`: the root OPDS navigation catalog;
+- `/opds/<series>.xml`: one acquisition catalog per series;
+- `/ebooks/library.json`: the checksum-addressed incremental-sync manifest;
+- `/ebooks/KeepKeen-Blog-library.zip`: an exact full-library bundle for USB installation.
+
+The KOReader plugin source is in `kindle/keepkeensync.koplugin`. Once installed, it checks
+`library.json` after KOReader comes online, downloads only EPUB files whose byte count or
+SHA-256 differs, and stores them below `documents/KeepKeen Blog/<numbered series>/`. It
+checks at most once per day after a successful run and retries failed runs after one hour.
+The built-in OPDS client remains available as a manual fallback.
