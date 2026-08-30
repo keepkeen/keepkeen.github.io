@@ -38,8 +38,17 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install CJK fonts for social-card rendering
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-core
+      - name: Install CJK fonts and pinned ebook tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-core libxml2-utils openjdk-21-jre-headless unzip
+          curl -fsSL https://github.com/jgm/pandoc/releases/download/3.11/pandoc-3.11-1-amd64.deb -o "$RUNNER_TEMP/pandoc.deb"
+          sudo apt-get install -y -qq "$RUNNER_TEMP/pandoc.deb"
+          curl -fsSL https://github.com/w3c/epubcheck/releases/download/v5.3.0/epubcheck-5.3.0.zip -o "$RUNNER_TEMP/epubcheck.zip"
+          unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
+          echo "EPUBCHECK_JAR=$RUNNER_TEMP/epubcheck-5.3.0/epubcheck.jar" >> "$GITHUB_ENV"
+          pandoc --version | head -1
+          java -jar "$RUNNER_TEMP/epubcheck-5.3.0/epubcheck.jar" --version
 
       - name: Install dependencies
         run: npm ci
@@ -55,6 +64,11 @@ jobs:
 
       - name: Syntax-check gateway
         run: node --check gateway/server.mjs
+
+      - name: Build and validate Kindle ebooks
+        run: |
+          npm run build:ebooks
+          npm run validate:ebooks
 
       - name: Build site
         env:
