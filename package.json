@@ -18,7 +18,7 @@
     "studio:gateway": "node gateway/server.mjs"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^5.0.2",
     "@astrojs/sitemap": "^3.7.1",
     "@fontsource-variable/noto-serif-sc": "^5.3.0",
