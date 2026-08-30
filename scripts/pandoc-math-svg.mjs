@@ -4,7 +4,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import MathJax from 'mathjax';
-import { normalizeTexForMathml, scaleSvgIntrinsicSize } from './ebook-lib.mjs';
+import {
+  normalizeTexForMathml,
+  prepareEbookDiagramSvg,
+  scaleSvgIntrinsicSize,
+  setSvgViewBox
+} from './ebook-lib.mjs';
 
 const mathDirectory = process.env.EBOOK_MATH_DIR;
 const statsPath = process.env.EBOOK_MATH_STATS;
@@ -39,6 +44,9 @@ const cache = new Map();
 const sanitizedSvgCache = new Map();
 let formulaCount = 0;
 let sanitizedSvgCount = 0;
+let readableDiagramCount = 0;
+let diagramLabelCount = 0;
+let diagramPanelCount = 0;
 
 async function renderMath(tex, display) {
   const cacheKey = `${display ? 'display' : 'inline'}\0${tex}`;
@@ -73,26 +81,88 @@ async function renderMath(tex, display) {
 
 function sanitizeSourceSvg(target) {
   const sourcePath = resolve(resourceDirectory, target);
-  if (!existsSync(sourcePath)) return target;
+  if (!existsSync(sourcePath)) {
+    return { outputPath: target, panelPaths: [], labelCount: 0 };
+  }
 
   const existing = sanitizedSvgCache.get(sourcePath);
   if (existing) return existing;
 
   const source = readFileSync(sourcePath, 'utf8');
+  const diagram = prepareEbookDiagramSvg(source);
+  if (diagram.labelCount > 0) {
+    const hash = createHash('sha256')
+      .update(sourcePath)
+      .update(diagram.svg)
+      .digest('hex')
+      .slice(0, 20);
+    const outputPath = `${mathDirectory}/diagram-${hash}.svg`;
+    writeFileSync(outputPath, diagram.svg);
+    const panelPaths = diagram.panelViewBoxes.map((viewBox, index) => {
+      const panelPath = `${mathDirectory}/diagram-${hash}-panel-${index + 1}.svg`;
+      writeFileSync(panelPath, setSvgViewBox(diagram.svg, viewBox));
+      return panelPath;
+    });
+    const prepared = { outputPath, panelPaths, labelCount: diagram.labelCount };
+    sanitizedSvgCache.set(sourcePath, prepared);
+    sanitizedSvgCount += 1;
+    readableDiagramCount += 1;
+    diagramLabelCount += diagram.labelCount;
+    diagramPanelCount += panelPaths.length;
+    return prepared;
+  }
+
   // Mermaid currently emits a block <p> inside an inline <span>. EPUBCheck
   // rejects that XHTML nesting even though browsers repair it automatically.
   const sanitized = source.replace(
     /<span([^>]*)>\s*<p>([\s\S]*?)<\/p>\s*<\/span>/gu,
     '<span$1>$2</span>'
   );
-  if (sanitized === source) return target;
+  if (sanitized === source) {
+    const prepared = { outputPath: target, panelPaths: [], labelCount: 0 };
+    sanitizedSvgCache.set(sourcePath, prepared);
+    return prepared;
+  }
 
   const hash = createHash('sha256').update(sourcePath).update(sanitized).digest('hex').slice(0, 20);
   const outputPath = `${mathDirectory}/source-${hash}.svg`;
   writeFileSync(outputPath, sanitized);
-  sanitizedSvgCache.set(sourcePath, outputPath);
+  const prepared = { outputPath, panelPaths: [], labelCount: 0 };
+  sanitizedSvgCache.set(sourcePath, prepared);
   sanitizedSvgCount += 1;
-  return outputPath;
+  return prepared;
+}
+
+function getSimpleFigureImage(value) {
+  if (value.t !== 'Figure') return null;
+  const blocks = value.c?.[2];
+  if (!Array.isArray(blocks) || blocks.length !== 1) return null;
+  const block = blocks[0];
+  if (!['Plain', 'Para'].includes(block?.t) || block.c?.length !== 1) return null;
+  return block.c[0]?.t === 'Image' ? block.c[0] : null;
+}
+
+function diagramNote(text) {
+  return {
+    t: 'Para',
+    c: [{ t: 'Span', c: [['', ['ebook-diagram-label'], []], [{ t: 'Str', c: text }]] }]
+  };
+}
+
+function diagramImage(image, target, className, suffix = '') {
+  const [attributes, caption, [, title]] = image.c;
+  const [identifier, classes, keyValues] = attributes;
+  return {
+    t: 'Para',
+    c: [{
+      t: 'Image',
+      c: [
+        [identifier, [...classes, className], keyValues],
+        suffix ? [...caption, { t: 'Space' }, { t: 'Str', c: suffix }] : caption,
+        [target, title]
+      ]
+    }]
+  };
 }
 
 async function transform(value, context = {}) {
@@ -103,6 +173,51 @@ async function transform(value, context = {}) {
   }
 
   if (!value || typeof value !== 'object') return value;
+
+  const figureImage = getSimpleFigureImage(value);
+  if (figureImage) {
+    const [attributes, caption, [target]] = figureImage.c;
+    if (extname(target).toLowerCase() === '.svg') {
+      const prepared = sanitizeSourceSvg(target);
+      if (prepared.panelPaths.length > 0) {
+        const [identifier, classes, keyValues] = value.c[0];
+        const panelTotal = prepared.panelPaths.length;
+        const content = [
+          diagramNote('流程图总览（下方为分段放大图）'),
+          diagramImage(figureImage, prepared.outputPath, 'ebook-diagram-overview'),
+          ...prepared.panelPaths.flatMap((panelPath, index) => [
+            diagramNote(`放大分段 ${index + 1} / ${panelTotal}`),
+            diagramImage(
+              figureImage,
+              panelPath,
+              'ebook-diagram-panel',
+              `放大分段 ${index + 1} / ${panelTotal}`
+            )
+          ])
+        ];
+        return {
+          ...value,
+          c: [
+            [identifier, [...classes, 'ebook-readable-diagram'], keyValues],
+            await transform(value.c[1], context),
+            await transform(content, context)
+          ]
+        };
+      }
+      return {
+        ...value,
+        c: [
+          value.c[0],
+          await transform(value.c[1], context),
+          [diagramImage(
+            { ...figureImage, c: [attributes, await transform(caption, context), figureImage.c[2]] },
+            prepared.outputPath,
+            prepared.labelCount > 0 ? 'ebook-diagram-native' : 'ebook-source-svg'
+          )]
+        ]
+      };
+    }
+  }
 
   if (value.t === 'Header') {
     const [level, attributes, inlines] = value.c;
@@ -164,7 +279,7 @@ async function transform(value, context = {}) {
   if (value.t === 'Image') {
     const [attributes, caption, [target, title]] = value.c;
     const normalizedTarget = extname(target).toLowerCase() === '.svg'
-      ? sanitizeSourceSvg(target)
+      ? sanitizeSourceSvg(target).outputPath
       : target;
     return {
       ...value,
@@ -188,6 +303,9 @@ writeFileSync(
     formulaCount,
     uniqueFormulaCount: cache.size,
     sanitizedSvgCount,
+    readableDiagramCount,
+    diagramLabelCount,
+    diagramPanelCount,
     mathRenderer,
     inlineScale,
     displayScale

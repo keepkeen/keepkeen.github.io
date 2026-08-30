@@ -7,8 +7,10 @@ import {
   escapeXml,
   normalizeTexForMathml,
   normalizeDate,
+  prepareEbookDiagramSvg,
   sanitizeFilenameSegment,
   scaleSvgIntrinsicSize,
+  setSvgViewBox,
   slugFromPostFile,
   wrapMixedText
 } from './ebook-lib.mjs';
@@ -79,6 +81,34 @@ describe('ebook helpers', () => {
     expect(scaleSvgIntrinsicSize(svg, 1.6)).toBe(
       '<svg width="4ex" height="2ex" viewBox="0 0 100 50"><path width="0"/></svg>'
     );
+  });
+
+  it('converts Mermaid XHTML labels to native high-contrast SVG text', () => {
+    const source = '<svg width="100%" viewBox="0 0 1400 200"><g class="node default" transform="translate(100, 100)"><rect x="-80" width="160"/><g class="label"><foreignObject width="100" height="48"><div xmlns="http://www.w3.org/1999/xhtml"><span><p>第一行<br/>第二行 &amp; A</p></span></div></foreignObject></g></g></svg>';
+    const result = prepareEbookDiagramSvg(source);
+    expect(result.labelCount).toBe(1);
+    expect(result.svg).not.toContain('foreignObject');
+    expect(result.svg).toContain('<text class="ebook-native-label"');
+    expect(result.svg).toContain('第一行');
+    expect(result.svg).toContain('第二行 &amp; A');
+    expect(result.svg).toContain('fill:#fff!important');
+    expect(result.panelViewBoxes.length).toBeGreaterThan(1);
+  });
+
+  it('keeps normal diagrams whole and can assign a panel viewBox', () => {
+    const source = '<svg viewBox="0 0 400 300"><foreignObject width="100" height="24"><p>标签</p></foreignObject></svg>';
+    const result = prepareEbookDiagramSvg(source);
+    expect(result.panelViewBoxes).toEqual([]);
+    expect(setSvgViewBox(result.svg, [20, 0, 200, 300])).toContain(
+      'width="200" height="300" viewBox="20 0 200 300"'
+    );
+  });
+
+  it('segments tall diagrams vertically as well as wide diagrams horizontally', () => {
+    const source = '<svg viewBox="0 0 900 1400"><g class="node default" transform="translate(100, 100)"><foreignObject width="100" height="24"><p>标签</p></foreignObject></g></svg>';
+    const result = prepareEbookDiagramSvg(source);
+    expect(result.panelViewBoxes.length).toBeGreaterThan(2);
+    expect(result.panelViewBoxes.some(([, y]) => y > 0)).toBe(true);
   });
 
   it('emits an OPDS 1.2-compatible acquisition entry', () => {

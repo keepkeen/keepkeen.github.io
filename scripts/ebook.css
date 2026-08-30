@@ -60,6 +60,29 @@ svg {
   page-break-inside: avoid;
 }
 
+figure.ebook-readable-diagram {
+  page-break-inside: auto;
+}
+
+.ebook-diagram-label {
+  display: block;
+  margin: 0.8em 0 0.35em;
+  font-family: "Noto Sans CJK SC", "Noto Sans", sans-serif;
+  font-size: 0.82em;
+  font-weight: 700;
+  text-align: center;
+}
+
+img.ebook-diagram-overview,
+img.ebook-diagram-panel,
+img.ebook-diagram-native {
+  display: block;
+  width: 100%;
+  margin: 0.35em auto 0.9em;
+  border: 0.08em solid #777;
+  background: #fff;
+}
+
 img.math-display {
   display: block;
   max-width: 100%;

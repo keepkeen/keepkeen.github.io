@@ -197,9 +197,11 @@ for (const record of manifest) {
   // Pandoc assigns OCF-safe names (file0.svg, file1.svg, …) while packaging,
   // so identify MathJax assets by their SVG internals rather than source names.
   const svgEntries = entries.filter((entry) => entry.endsWith('.svg'));
-  const mathAssets = svgEntries
-    .map((entry) => ({ entry, svg: run('unzip', ['-p', epubPath, entry]) }))
-    .filter(({ svg }) => /(?:data-mml-node=|id="MJX-)/u.test(svg));
+  const svgAssets = svgEntries.map((entry) => ({
+    entry,
+    svg: run('unzip', ['-p', epubPath, entry])
+  }));
+  const mathAssets = svgAssets.filter(({ svg }) => /(?:data-mml-node=|id="MJX-)/u.test(svg));
   const mathEntries = mathAssets.map(({ entry }) => entry);
   if (record.mathRenderer === 'mathml') {
     if (mathNodeCount !== record.formulaCount) {
@@ -227,6 +229,24 @@ for (const record of manifest) {
     if (!svg.includes('<svg') || !svg.includes('<path') || svg.includes('data-mjx-error')) {
       throw new Error(`${slug}: invalid formula asset ${mathEntry}`);
     }
+  }
+  for (const { entry, svg } of svgAssets) {
+    if (svg.includes('<foreignObject')) {
+      throw new Error(`${slug}: CREngine-incompatible foreignObject remains in ${entry}`);
+    }
+  }
+  const nativeDiagramLabelCount = svgAssets.reduce(
+    (count, { svg }) => count + (svg.match(/<text class="ebook-native-label"/gu) ?? []).length,
+    0
+  );
+  const panelImageCount = (xhtml.match(/class="[^"]*ebook-diagram-panel[^"]*"/gu) ?? []).length;
+  if (
+    nativeDiagramLabelCount < (record.diagramLabelCount ?? 0) ||
+    panelImageCount !== (record.diagramPanelCount ?? 0)
+  ) {
+    throw new Error(
+      `${slug}: readable diagram labels or panels do not match the build manifest`
+    );
   }
 
   const seriesFeedPath = join(seriesFeedDirectory, `${series.slug}.xml`);

@@ -158,6 +158,222 @@ export function scaleSvgIntrinsicSize(svg, factor) {
   );
 }
 
+function decodeXmlText(value) {
+  return String(value)
+    .replace(/&#x([0-9a-f]+);/giu, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&#([0-9]+);/gu, (_, code) => String.fromCodePoint(Number.parseInt(code, 10)))
+    .replaceAll('&nbsp;', ' ')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&apos;', "'")
+    .replaceAll('&amp;', '&');
+}
+
+function parseSvgViewBox(svg) {
+  const match = String(svg).match(
+    /^<svg\b[^>]*\bviewBox="([+-]?[\d.]+)\s+([+-]?[\d.]+)\s+([\d.]+)\s+([\d.]+)"/u
+  );
+  if (!match) return null;
+  const viewBox = match.slice(1).map(Number);
+  return viewBox.every(Number.isFinite) && viewBox[2] > 0 && viewBox[3] > 0
+    ? viewBox
+    : null;
+}
+
+function extractMermaidNodeBounds(svg) {
+  const matches = [...String(svg).matchAll(
+    /<g class="node\b[^>]*\btransform="translate\(\s*([+-]?[\d.]+)(?:\s*,\s*|\s+)([+-]?[\d.]+)\s*\)"/gu
+  )];
+  return matches.flatMap((match, index) => {
+    const centerX = Number(match[1]);
+    const centerY = Number(match[2]);
+    const segment = String(svg).slice(
+      match.index,
+      matches[index + 1]?.index ?? Math.min(String(svg).length, match.index + 3000)
+    );
+    const widthMatch = segment.match(/<foreignObject\b[^>]*\bwidth="([\d.]+)"/u);
+    const heightMatch = segment.match(/<foreignObject\b[^>]*\bheight="([\d.]+)"/u);
+    const labelWidth = Number(widthMatch?.[1]);
+    const labelHeight = Number(heightMatch?.[1]);
+    if (
+      !Number.isFinite(centerX) ||
+      !Number.isFinite(centerY) ||
+      !Number.isFinite(labelWidth) ||
+      !Number.isFinite(labelHeight)
+    ) return [];
+    // Mermaid's standard flowchart node adds 30 units of horizontal padding
+    // on either side of its foreignObject label.
+    const halfWidth = labelWidth / 2 + 30;
+    const halfHeight = labelHeight / 2 + 15;
+    return [[
+      centerX - halfWidth,
+      centerX + halfWidth,
+      centerY - halfHeight,
+      centerY + halfHeight
+    ]];
+  });
+}
+
+function chooseAxisSegments(origin, length, targetLength, intervals) {
+  if (length <= targetLength * 1.1) return [[origin, length]];
+
+  const clippedIntervals = intervals
+    .map(([start, end]) => [
+      Math.max(origin, start),
+      Math.min(origin + length, end)
+    ])
+    .filter(([start, end]) => end > start)
+    .sort((a, b) => a[0] - b[0]);
+  const gaps = [];
+  let occupiedEnd = origin;
+  for (const [start, end] of clippedIntervals) {
+    if (start > occupiedEnd + 12) gaps.push((occupiedEnd + start) / 2);
+    occupiedEnd = Math.max(occupiedEnd, end);
+  }
+
+  const boundaries = [origin];
+  let start = origin;
+  const farEdge = origin + length;
+  while (farEdge - start > targetLength * 1.1) {
+    const desired = start + targetLength;
+    const candidates = gaps.filter(
+      (gap) => gap > start + targetLength * 0.62 && gap < start + targetLength * 1.1
+    );
+    const boundary = candidates.length > 0
+      ? candidates.reduce((best, gap) =>
+          Math.abs(gap - desired) < Math.abs(best - desired) ? gap : best
+        )
+      : desired;
+    if (boundary <= start + 1) break;
+    boundaries.push(boundary);
+    start = boundary;
+  }
+  boundaries.push(farEdge);
+
+  const overlap = Math.min(18, targetLength * 0.035);
+  return boundaries.slice(0, -1).map((boundary, index) => {
+    let panelStart = index === 0 ? origin : boundary - overlap;
+    let panelEnd = index === boundaries.length - 2
+      ? farEdge
+      : boundaries[index + 1] + overlap;
+    const missingLength = targetLength - (panelEnd - panelStart);
+    if (missingLength > 0) {
+      const availableLeft = panelStart - origin;
+      const expandLeft = Math.min(availableLeft, missingLength / 2);
+      panelStart -= expandLeft;
+      panelEnd = Math.min(farEdge, panelEnd + missingLength - expandLeft);
+      panelStart = Math.max(
+        origin,
+        panelStart - Math.max(0, targetLength - (panelEnd - panelStart))
+      );
+    }
+    return [panelStart, panelEnd - panelStart];
+  });
+}
+
+function chooseDiagramPanelViewBoxes(svg, viewBox) {
+  const [originX, originY, width, height] = viewBox;
+  const nodeBounds = extractMermaidNodeBounds(svg);
+  // With a 758 × 900-ish usable Kindle viewport, these source-space limits
+  // keep a 16-unit Mermaid label at about 20 px or larger after fit-to-page.
+  const horizontal = chooseAxisSegments(
+    originX,
+    width,
+    500,
+    nodeBounds.map(([start, end]) => [start, end])
+  );
+  const vertical = chooseAxisSegments(
+    originY,
+    height,
+    600,
+    nodeBounds.map(([, , start, end]) => [start, end])
+  );
+  if (horizontal.length === 1 && vertical.length === 1) return [];
+  return vertical.flatMap(([panelY, panelHeight]) =>
+    horizontal.map(([panelX, panelWidth]) => [panelX, panelY, panelWidth, panelHeight])
+  );
+}
+
+function replaceSvgRootDimensions(svg, viewBox) {
+  const [, , width, height] = viewBox;
+  return String(svg).replace(/^<svg\b[^>]*>/u, (root) => {
+    const withoutDimensions = root
+      .replace(/\swidth="[^"]*"/gu, '')
+      .replace(/\sheight="[^"]*"/gu, '')
+      .replace(/\sviewBox="[^"]*"/gu, '')
+      .replace(/\sstyle="[^"]*"/gu, '');
+    return withoutDimensions.replace(
+      />$/u,
+      ` width="${Number(width.toFixed(3))}" height="${Number(height.toFixed(3))}" viewBox="${viewBox.map((part) => Number(part.toFixed(3))).join(' ')}" style="background-color: white;">`
+    );
+  });
+}
+
+/**
+ * Convert Mermaid's XHTML-in-SVG labels to native SVG text for CREngine and
+ * describe readable two-dimensional panels for diagrams that are too large
+ * for an e-reader screen. The website's source SVG is never modified.
+ */
+export function prepareEbookDiagramSvg(svg) {
+  const source = String(svg);
+  const viewBox = parseSvgViewBox(source);
+  let labelCount = 0;
+  const converted = source.replace(
+    /<foreignObject\b([^>]*)>([\s\S]*?)<\/foreignObject>/gu,
+    (_, attributes, body) => {
+      const width = Number(attributes.match(/\bwidth="([\d.]+)"/u)?.[1]);
+      const height = Number(attributes.match(/\bheight="([\d.]+)"/u)?.[1]);
+      if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+        return '';
+      }
+      const plain = decodeXmlText(
+        body
+          .replace(/<br\s*\/?\s*>/giu, '\n')
+          .replace(/<\/p>\s*<p[^>]*>/giu, '\n')
+          .replace(/<[^>]+>/gu, '')
+      );
+      const lines = plain.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
+      if (lines.length === 0) return '';
+
+      labelCount += 1;
+      const fontSize = 16;
+      const lineHeight = 20;
+      const totalHeight = fontSize + (lines.length - 1) * lineHeight;
+      const firstBaseline = Math.max(fontSize, (height - totalHeight) / 2 + fontSize * 0.82);
+      const tspans = lines.map((line, index) =>
+        `<tspan x="${Number((width / 2).toFixed(3))}" y="${Number((firstBaseline + index * lineHeight).toFixed(3))}">${escapeXml(line)}</tspan>`
+      ).join('');
+      return `<text class="ebook-native-label" x="${Number((width / 2).toFixed(3))}" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans, sans-serif" font-size="${fontSize}" font-weight="600" fill="#000">${tspans}</text>`;
+    }
+  );
+
+  if (labelCount === 0 || !viewBox) {
+    return { svg: source, labelCount: 0, viewBox, panelViewBoxes: [] };
+  }
+
+  const highContrast = converted.replace(
+    /<\/svg>\s*$/u,
+    `<style>
+.node rect,.node polygon,.node circle,.node ellipse{fill:#fff!important;stroke:#000!important;stroke-width:2px!important}
+.flowchart-link,.edgePath path{stroke:#000!important}
+.arrowMarkerPath{fill:#000!important;stroke:#000!important}
+.ebook-native-label{fill:#000!important}
+</style></svg>`
+  );
+  const normalized = replaceSvgRootDimensions(highContrast, viewBox);
+  return {
+    svg: normalized,
+    labelCount,
+    viewBox,
+    panelViewBoxes: chooseDiagramPanelViewBoxes(source, viewBox)
+  };
+}
+
+export function setSvgViewBox(svg, viewBox) {
+  return replaceSvgRootDimensions(svg, viewBox);
+}
+
 export function buildCoverSvg({ title, description, date, author, seriesTitle, seriesOrder }) {
   const titleFontSize = 66;
   const titleLineHeight = 100;
