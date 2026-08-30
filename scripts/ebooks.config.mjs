@@ -5,6 +5,7 @@ export const ebookCatalog = {
   siteUrl: 'https://keepkeen.github.io',
   feedPath: '/opds.xml',
   description: '面向 Kindle 与 KOReader 的离线 EPUB 版本。',
+  mathRenderer: 'mathml',
   mathScale: {
     inline: 1.6,
     display: 1.8

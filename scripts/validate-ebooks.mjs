@@ -66,9 +66,8 @@ for (const spec of ebookPilotPosts) {
 
   const xhtmlEntries = entries.filter((entry) => entry.endsWith('.xhtml'));
   const xhtml = run('unzip', ['-p', epubPath, ...xhtmlEntries]);
-  if (/<math(?:\s|>)/iu.test(xhtml) || /katex/iu.test(xhtml)) {
-    throw new Error(`${slug}: runtime math markup remains in EPUB`);
-  }
+  if (/katex/iu.test(xhtml)) throw new Error(`${slug}: KaTeX runtime markup remains in EPUB`);
+  const mathNodeCount = (xhtml.match(/<math(?:\s|>)/giu) ?? []).length;
   // Pandoc assigns OCF-safe names (file0.svg, file1.svg, …) while packaging,
   // so identify MathJax assets by their SVG internals rather than source names.
   const svgEntries = entries.filter((entry) => entry.endsWith('.svg'));
@@ -76,13 +75,27 @@ for (const spec of ebookPilotPosts) {
     .map((entry) => ({ entry, svg: run('unzip', ['-p', epubPath, entry]) }))
     .filter(({ svg }) => /(?:data-mml-node=|id="MJX-)/u.test(svg));
   const mathEntries = mathAssets.map(({ entry }) => entry);
-  if (record.formulaCount > 0 && mathEntries.length !== record.uniqueFormulaCount) {
-    throw new Error(
-      `${slug}: expected ${record.uniqueFormulaCount} unique math SVG files, found ${mathEntries.length}`
-    );
-  }
-  if (record.formulaCount === 0 && mathEntries.length !== 0) {
-    throw new Error(`${slug}: unexpected math SVG files`);
+  if (record.mathRenderer === 'mathml') {
+    if (mathNodeCount !== record.formulaCount) {
+      throw new Error(
+        `${slug}: expected ${record.formulaCount} MathML nodes, found ${mathNodeCount}`
+      );
+    }
+    if (record.uniqueFormulaCount !== 0 || mathEntries.length !== 0) {
+      throw new Error(`${slug}: MathML EPUB unexpectedly contains formula SVG files`);
+    }
+  } else if (record.mathRenderer === 'svg') {
+    if (mathNodeCount !== 0) throw new Error(`${slug}: unexpected MathML nodes in SVG EPUB`);
+    if (record.formulaCount > 0 && mathEntries.length !== record.uniqueFormulaCount) {
+      throw new Error(
+        `${slug}: expected ${record.uniqueFormulaCount} unique math SVG files, found ${mathEntries.length}`
+      );
+    }
+    if (record.formulaCount === 0 && mathEntries.length !== 0) {
+      throw new Error(`${slug}: unexpected math SVG files`);
+    }
+  } else {
+    throw new Error(`${slug}: unsupported math renderer ${record.mathRenderer}`);
   }
   for (const { entry: mathEntry, svg } of mathAssets) {
     if (!svg.includes('<svg') || !svg.includes('<path') || svg.includes('data-mjx-error')) {
@@ -94,7 +107,7 @@ for (const spec of ebookPilotPosts) {
     throw new Error(`${slug}: OPDS feed is missing acquisition or cover URL`);
   }
   console.log(
-    `Validated ${record.epubFilename}: ${record.formulaCount} formulas, ${record.sourceImageCount} source images`
+    `Validated ${record.epubFilename}: ${record.formulaCount} ${record.mathRenderer} formulas, ${record.sourceImageCount} source images`
   );
 }
 

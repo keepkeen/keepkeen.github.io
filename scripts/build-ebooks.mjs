@@ -140,6 +140,7 @@ try {
       [
         '--from=markdown+yaml_metadata_block+tex_math_dollars+raw_html',
         '--to=epub3',
+        ...(ebookCatalog.mathRenderer === 'mathml' ? ['--math-method=mathml'] : []),
         '--standalone',
         '--file-scope',
         '--toc',
@@ -161,7 +162,7 @@ try {
         EBOOK_RESOURCE_DIR: postsDirectory,
         EBOOK_SITE_URL: ebookCatalog.siteUrl,
         EBOOK_ARTICLE_URL: articleUrl,
-        EBOOK_MATH_RENDERER: 'svg',
+        EBOOK_MATH_RENDERER: ebookCatalog.mathRenderer,
         EBOOK_INLINE_MATH_SCALE: String(ebookCatalog.mathScale.inline),
         EBOOK_DISPLAY_MATH_SCALE: String(ebookCatalog.mathScale.display)
       }
