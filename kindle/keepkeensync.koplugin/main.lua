@@ -36,6 +36,65 @@ local KeepKeenSync = WidgetContainer:extend{
     is_doc_only = false,
 }
 
+local RECOMMENDED_PROFILES = {
+    ["技术博客"] = {
+        settings = {
+            name = "技术博客",
+            order = {
+                "set_font", "font_size", "font_gamma", "font_base_weight",
+                "font_hinting", "font_kerning", "h_page_margins",
+                "t_page_margin", "b_page_margin", "sync_t_b_page_margins",
+                "view_mode", "block_rendering_mode", "line_spacing",
+                "embedded_css", "embedded_fonts", "status_line",
+            },
+        },
+        set_font = "Noto Serif",
+        font_size = 25,
+        font_gamma = 25,
+        font_base_weight = 0,
+        font_hinting = 2,
+        font_kerning = 3,
+        h_page_margins = { 10, 10 },
+        t_page_margin = 15,
+        b_page_margin = 15,
+        sync_t_b_page_margins = true,
+        view_mode = "page",
+        block_rendering_mode = 2,
+        line_spacing = 125,
+        embedded_css = true,
+        embedded_fonts = true,
+        status_line = 1,
+    },
+    ["小说阅读"] = {
+        settings = {
+            name = "小说阅读",
+            order = {
+                "set_font", "font_size", "font_gamma", "font_base_weight",
+                "font_hinting", "font_kerning", "h_page_margins",
+                "t_page_margin", "b_page_margin", "sync_t_b_page_margins",
+                "view_mode", "block_rendering_mode", "line_spacing",
+                "embedded_css", "embedded_fonts", "status_line",
+            },
+        },
+        set_font = "Noto Serif",
+        font_size = 23,
+        font_gamma = 15,
+        font_base_weight = 0,
+        font_hinting = 2,
+        font_kerning = 3,
+        h_page_margins = { 5, 5 },
+        t_page_margin = 10,
+        b_page_margin = 10,
+        sync_t_b_page_margins = true,
+        view_mode = "page",
+        block_rendering_mode = 2,
+        line_spacing = 120,
+        embedded_css = true,
+        embedded_fonts = true,
+        status_line = 1,
+    },
+}
+
 local function is_file(path)
     return lfs.attributes(path, "mode") == "file"
 end
@@ -350,6 +409,22 @@ function KeepKeenSync:registerEvents()
     end
 end
 
+function KeepKeenSync:installRecommendedProfiles()
+    local profiles = self.ui.profiles
+    if not profiles or type(profiles.data) ~= "table" then
+        UIManager:show(InfoMessage:new{ text = "KOReader 配置档插件未加载，请重启 KOReader 后再试。" })
+        return
+    end
+    for name, profile in pairs(RECOMMENDED_PROFILES) do
+        profiles.data[name] = util.tableDeepCopy(profile)
+    end
+    profiles.updated = true
+    profiles:onFlushSettings()
+    UIManager:show(InfoMessage:new{
+        text = "已安装推荐配置档：\n· 技术博客\n· 小说阅读\n\n打开书籍后，在“配置档 / Profiles”中选择并执行。",
+    })
+end
+
 function KeepKeenSync:init()
     self.settings = LuaSettings:open(DataStorage:getSettingsDir() .. "/keepkeensync.lua")
     self.auto_sync = self.settings:readSetting("auto_sync", true)
@@ -379,6 +454,10 @@ function KeepKeenSync:addToMainMenu(menu_items)
                     self:registerEvents()
                     touchmenu_instance:updateItems()
                 end,
+            },
+            {
+                text = "安装 / 更新推荐阅读配置档",
+                callback = function() self:installRecommendedProfiles() end,
             },
             {
                 text_func = function()

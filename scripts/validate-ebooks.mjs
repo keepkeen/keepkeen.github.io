@@ -5,6 +5,7 @@ import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import JSZip from 'jszip';
+import sharp from 'sharp';
 import { ebookCatalog, ebookSeries } from './ebooks.config.mjs';
 import { escapeXml, slugFromPostFile } from './ebook-lib.mjs';
 
@@ -134,6 +135,17 @@ for (const record of manifest) {
   if (!existsSync(epubPath) || !existsSync(coverPath)) {
     throw new Error(`${slug}: missing EPUB or cover`);
   }
+  const coverBuffer = readFileSync(coverPath);
+  const coverSha256 = createHash('sha256').update(coverBuffer).digest('hex');
+  const coverMetadata = await sharp(coverBuffer).metadata();
+  if (
+    coverSha256 !== record.coverSha256 ||
+    coverMetadata.format !== 'png' ||
+    coverMetadata.width !== 1200 ||
+    coverMetadata.height !== 1600
+  ) {
+    throw new Error(`${slug}: cover checksum, format, or dimensions are invalid`);
+  }
   if (statSync(epubPath).size !== record.bytes) throw new Error(`${slug}: EPUB byte count changed`);
   const sha256 = createHash('sha256').update(readFileSync(epubPath)).digest('hex');
   if (sha256 !== record.sha256 || !record.epubUrl.includes(`?v=${sha256.slice(0, 16)}`)) {
@@ -173,6 +185,9 @@ for (const record of manifest) {
   }
   if (!opf.includes('group-position') || !opf.includes(String(record.seriesOrder))) {
     throw new Error(`${slug}: EPUB series position metadata is missing`);
+  }
+  if (!opf.includes('properties="cover-image"') || !opf.includes('text/cover.xhtml')) {
+    throw new Error(`${slug}: EPUB cover is not declared as the embedded cover image`);
   }
 
   const xhtmlEntries = entries.filter((entry) => entry.endsWith('.xhtml'));

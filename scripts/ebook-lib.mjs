@@ -14,6 +14,41 @@ function charUnits(char) {
   return CJK_PATTERN.test(char) ? 1 : 0.52;
 }
 
+function textUnits(value) {
+  return [...String(value)].reduce((sum, char) => sum + charUnits(char), 0);
+}
+
+function balanceCoverTitleLines(lines, minimumLastLineUnits = 4.5) {
+  if (lines.length < 2 || textUnits(lines.at(-1)) >= minimumLastLineUnits) return lines;
+
+  const balanced = [...lines];
+  const previous = [...balanced.at(-2)];
+  const last = [...balanced.at(-1)];
+  const wordCharacter = /[\p{Letter}\p{Number}_-]/u;
+  const targetUnits = Math.min(
+    minimumLastLineUnits,
+    (textUnits(previous.join('')) + textUnits(last.join(''))) / 2
+  );
+
+  while (previous.length > 1 && textUnits(last.join('')) < targetUnits) {
+    last.unshift(previous.pop());
+  }
+  // If the split now lands inside a Latin word, move the rest of that word too.
+  while (
+    previous.length > 1 &&
+    wordCharacter.test(previous.at(-1)) &&
+    wordCharacter.test(last[0]) &&
+    !CJK_PATTERN.test(previous.at(-1)) &&
+    !CJK_PATTERN.test(last[0])
+  ) {
+    last.unshift(previous.pop());
+  }
+
+  balanced[balanced.length - 2] = previous.join('').trimEnd();
+  balanced[balanced.length - 1] = last.join('').trimStart();
+  return balanced;
+}
+
 export function wrapMixedText(value, maxUnits, maxLines) {
   const tokens =
     String(value).match(
@@ -123,34 +158,40 @@ export function scaleSvgIntrinsicSize(svg, factor) {
   );
 }
 
-export function buildCoverSvg({ title, description, date, author }) {
-  const titleLines = wrapMixedText(title, 15.5, 5);
+export function buildCoverSvg({ title, description, date, author, seriesTitle, seriesOrder }) {
+  const titleFontSize = 66;
+  const titleLineHeight = 100;
+  // Leave enough room for a trailing Chinese closing punctuation mark, which
+  // wrapMixedText keeps attached to the preceding line.
+  const titleLines = balanceCoverTitleLines(wrapMixedText(title, 14.3, 5));
   const descriptionLines = wrapMixedText(description, 27, 4);
+  const seriesLabel = `${seriesTitle} · 第 ${String(seriesOrder).padStart(2, '0')} 篇`;
   const titleMarkup = titleLines
     .map(
       (line, index) =>
-        `<text x="92" y="${410 + index * 112}" font-size="74" font-weight="700">${escapeXml(line)}</text>`
+        `<text x="92" y="${410 + index * titleLineHeight}" font-size="${titleFontSize}" font-weight="700">${escapeXml(line)}</text>`
     )
     .join('\n  ');
-  const descriptionTop = 410 + titleLines.length * 112 + 42;
+  const descriptionTop = 410 + titleLines.length * titleLineHeight + 42;
   const descriptionMarkup = descriptionLines
     .map(
       (line, index) =>
-        `<text x="92" y="${descriptionTop + index * 58}" font-size="34" fill="#4d4942">${escapeXml(line)}</text>`
+        `<text x="92" y="${descriptionTop + index * 58}" font-size="34">${escapeXml(line)}</text>`
     )
     .join('\n  ');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
-  <rect width="1200" height="1600" fill="#faf8f2"/>
-  <rect width="1200" height="18" fill="#171613"/>
-  <g font-family="Noto Serif CJK SC, Noto Serif, Songti SC, serif" fill="#171613">
-    <text x="92" y="154" font-size="30" letter-spacing="7">LIULIMING · KEEPKEEN</text>
-    <rect x="92" y="205" width="88" height="7" fill="#171613"/>
+  <rect width="1200" height="1600" fill="#fff"/>
+  <rect width="1200" height="112" fill="#000"/>
+  <g font-family="Noto Serif CJK SC, Noto Serif, Songti SC, serif" fill="#000">
+    <text x="92" y="76" font-size="30" font-weight="700" letter-spacing="6" fill="#fff">KEEPKEEN · 博客电子书</text>
+    <text x="92" y="205" font-size="31" font-weight="700">${escapeXml(seriesLabel)}</text>
+    <line x1="92" y1="238" x2="1108" y2="238" stroke="#000" stroke-width="5"/>
     ${titleMarkup}
     ${descriptionMarkup}
-    <line x1="92" y1="1428" x2="1108" y2="1428" stroke="#aaa398" stroke-width="2"/>
-    <text x="92" y="1492" font-size="28" fill="#4d4942">${escapeXml(author)} · ${escapeXml(String(date).slice(0, 10))}</text>
-    <text x="92" y="1542" font-size="24" fill="#6c675f">Kindle / KOReader EPUB 版</text>
+    <line x1="92" y1="1428" x2="1108" y2="1428" stroke="#000" stroke-width="3"/>
+    <text x="92" y="1492" font-size="28" font-weight="700">${escapeXml(author)} · ${escapeXml(String(date).slice(0, 10))}</text>
+    <text x="92" y="1542" font-size="24">MathML · Kindle / KOReader EPUB</text>
   </g>
 </svg>`;
 }

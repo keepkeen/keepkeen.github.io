@@ -48,11 +48,30 @@ describe('ebook helpers', () => {
       title: 'GAE & PPO',
       description: '偏差—方差权衡',
       date: '2026-08-29',
-      author: 'Liuliming'
+      author: 'Liuliming',
+      seriesTitle: '强化学习论文精读',
+      seriesOrder: 3
     });
     expect(svg).toContain('width="1200"');
     expect(svg).toContain('height="1600"');
     expect(svg).toContain('GAE &amp; PPO');
+    expect(svg).toContain('强化学习论文精读 · 第 03 篇');
+    expect(svg).toContain('fill="#fff"');
+    const colors = [...svg.matchAll(/#[0-9a-f]{3,6}/giu)].map(([color]) => color);
+    expect(new Set(colors)).toEqual(new Set(['#fff', '#000']));
+  });
+
+  it('balances short final lines on Chinese covers', () => {
+    const svg = buildCoverSvg({
+      title: 'Voyager 精读：让 Minecraft agent 自己选课、练技能、存代码',
+      description: '摘要',
+      date: '2026-08-29',
+      author: 'Liuliming',
+      seriesTitle: '智能体论文精读',
+      seriesOrder: 11
+    });
+    expect(svg).not.toContain('>码</text>');
+    expect(svg).toContain('>能、存代码</text>');
   });
 
   it('scales only intrinsic ex dimensions on the SVG root', () => {

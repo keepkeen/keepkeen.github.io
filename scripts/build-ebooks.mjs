@@ -179,7 +179,9 @@ try {
       title: data.title,
       description: data.description,
       date: published,
-      author: ebookCatalog.author
+      author: ebookCatalog.author,
+      seriesTitle: series.title,
+      seriesOrder: series.order
     });
     await sharp(Buffer.from(coverSvg)).png({ compressionLevel: 9 }).toFile(coverWorkPath);
     await sharp(coverWorkPath).toFile(coverPath);
