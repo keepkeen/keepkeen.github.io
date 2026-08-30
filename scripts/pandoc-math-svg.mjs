@@ -11,6 +11,7 @@ const statsPath = process.env.EBOOK_MATH_STATS;
 const resourceDirectory = process.env.EBOOK_RESOURCE_DIR;
 const siteUrl = process.env.EBOOK_SITE_URL;
 const articleUrl = process.env.EBOOK_ARTICLE_URL;
+const mathRenderer = process.env.EBOOK_MATH_RENDERER ?? 'svg';
 const inlineScale = Number.parseFloat(process.env.EBOOK_INLINE_MATH_SCALE ?? '1');
 const displayScale = Number.parseFloat(process.env.EBOOK_DISPLAY_MATH_SCALE ?? '1');
 
@@ -19,22 +20,26 @@ if (!mathDirectory || !statsPath || !resourceDirectory || !siteUrl || !articleUr
     'EBOOK_MATH_DIR, EBOOK_MATH_STATS, EBOOK_RESOURCE_DIR, EBOOK_SITE_URL, and EBOOK_ARTICLE_URL are required'
   );
 }
+if (!['svg', 'mathml'].includes(mathRenderer)) {
+  throw new Error(`Unsupported EBOOK_MATH_RENDERER: ${mathRenderer}`);
+}
 
 mkdirSync(mathDirectory, { recursive: true });
 
-await MathJax.init({
-  loader: { load: ['input/tex', 'output/svg'] },
-  svg: { fontCache: 'local' }
-});
+if (mathRenderer === 'svg') {
+  await MathJax.init({
+    loader: { load: ['input/tex', 'output/svg'] },
+    svg: { fontCache: 'local' }
+  });
+}
 
-const adaptor = MathJax.startup.adaptor;
+const adaptor = mathRenderer === 'svg' ? MathJax.startup.adaptor : null;
 const cache = new Map();
 const sanitizedSvgCache = new Map();
 let formulaCount = 0;
 let sanitizedSvgCount = 0;
 
 async function renderMath(tex, display) {
-  formulaCount += 1;
   const cacheKey = `${display ? 'display' : 'inline'}\0${tex}`;
   const existing = cache.get(cacheKey);
   if (existing) return existing;
@@ -111,6 +116,8 @@ async function transform(value, context = {}) {
     if (context.inHeading) {
       return { t: 'Str', c: String(tex).replace(/\s+/gu, ' ').trim() };
     }
+    formulaCount += 1;
+    if (mathRenderer === 'mathml') return value;
     const display = mathType.t === 'DisplayMath';
     const outputPath = await renderMath(tex, display);
     return {
@@ -164,9 +171,10 @@ writeFileSync(
     formulaCount,
     uniqueFormulaCount: cache.size,
     sanitizedSvgCount,
+    mathRenderer,
     inlineScale,
     displayScale
   }, null, 2)}\n`
 );
 process.stdout.write(JSON.stringify(output));
-MathJax.done();
+if (mathRenderer === 'svg') MathJax.done();

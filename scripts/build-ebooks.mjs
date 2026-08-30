@@ -161,6 +161,7 @@ try {
         EBOOK_RESOURCE_DIR: postsDirectory,
         EBOOK_SITE_URL: ebookCatalog.siteUrl,
         EBOOK_ARTICLE_URL: articleUrl,
+        EBOOK_MATH_RENDERER: 'svg',
         EBOOK_INLINE_MATH_SCALE: String(ebookCatalog.mathScale.inline),
         EBOOK_DISPLAY_MATH_SCALE: String(ebookCatalog.mathScale.display)
       }

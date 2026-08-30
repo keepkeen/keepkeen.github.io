@@ -74,6 +74,15 @@ img.math-inline {
   vertical-align: -0.28em;
 }
 
+math {
+  font-family: "STIX Two Math", "FreeSerif", serif;
+}
+
+math[display="block"] {
+  margin: 0.8em auto;
+  font-size: 1.12em;
+}
+
 pre,
 code {
   font-family: "Noto Sans Mono CJK SC", "Noto Sans Mono", monospace;
