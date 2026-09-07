@@ -2,7 +2,7 @@
 title: "大模型强化学习岗位地图与学习入口"
 description: "从 2025—2026 公开岗位和面经出发，区分后训练、Reasoning RL、Agentic RL 与 RL 系统岗位，并给出零基础优先级。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - reinforcement-learning
   - llm

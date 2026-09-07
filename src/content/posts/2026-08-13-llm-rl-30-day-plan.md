@@ -2,7 +2,7 @@
 title: "大模型强化学习 30 天学习与项目计划"
 description: "每天安排 RL 主线、公式手写、项目、面经口述和两道 LeetCode，月底形成可展示的训练闭环。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - reinforcement-learning
   - llm
@@ -13,6 +13,8 @@ series: llm-reinforcement-learning-interview
 seriesOrder: 12
 ---
 > 适用对象：没有强化学习项目经验，但已有 Python、深度学习和 Transformer 基础。默认工作日 3～3.5 小时、周末 5～6 小时。时间不足时保留 P0 项，先删扩展论文。
+
+> **2026-09-08 续学**：8.23 起连续执行者为 D17，8.29 起连续执行者为 D11。未通过的验收优先补齐；不要因为文档更新重新从 D1 开始。与[总冲刺计划](../../计划与复盘/30天冲刺计划.md)共用力扣题、手写和口述时间：同一道题只记一次成绩。新论文属于扩展阅读，不能挤掉 PPO/DPO/GRPO、GAE 与项目失败复盘。
 
 ## 1. 每天固定四个时间块
 

@@ -169,7 +169,7 @@ for (const [index, chapter] of chapters.entries()) {
     `title: ${JSON.stringify(chapter.title)}`,
     `description: ${JSON.stringify(chapter.description)}`,
     "date: 2026-08-13",
-    "updatedDate: 2026-08-29",
+    "updatedDate: 2026-09-08",
     "tags:",
     "  - reinforcement-learning",
     "  - llm",

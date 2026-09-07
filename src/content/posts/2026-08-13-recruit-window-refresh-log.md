@@ -1,8 +1,8 @@
 ---
-title: "招聘窗口与刷新日志（2026-08-29 快照）"
+title: "招聘窗口与刷新日志（2026-09-08 快照）"
 description: "2027 届校招当前状态表：正式批新岗位、过期批次、官方入口、毕业区间、AI Coding 与下一动作。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - ai
   - llm
@@ -14,13 +14,27 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 14
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-09-08（北京时间凌晨快照）。源文件托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；历史章节保留各自证据日期，岗位状态见最新窗口日志。
 
-> 最后增量检索：2026-08-29。表内“最后核验”按公司单独记录，未在本轮重新打开官方页的行保留旧日期。
+> 最后增量检索：2026-09-08，北京时间凌晨快照，不涵盖当天尚未发生的笔试。表内“最后核验”按公司单独记录；其余行保留旧日期。
 >
 > 这是动态信息的唯一维护页。`open` 仅表示公开页面当前显示可投或明确开放；最终资格、HC 和截止时间以登录后的岗位详情及 HR 通知为准。
 
-> **8 月 29 日当天动作**：提前批旧截止已经过去，不能再按“仍可投”处理。今天优先补拼多多 2027 正式批、腾讯 8 月 27 日新增的混元 Code/Agent 岗、天猫技术 8 月 26 日新增 Agent 算法岗；随后清空测评邮件并为 9 月首轮笔面预留整块时间。
+> **9 月 8 日动作**：先查美团笔试通知，完成 vivo 选岗与测评，再核验拼多多大模型、淘宝闪购生成式方向的高匹配职位。下表新核验记录优先于旧的批次描述。
+
+## 0. 9 月 8 日复核结果
+
+| 公司/项目 | 本轮核验及来源 | 当前动作与边界 |
+|---|---|---|
+| 美团常规/北斗/LongCat | [浙大就业平台 9.01 企业公告](https://www.career.zju.edu.cn/jyxt/sczp/zpztgl/ckZpgwXq.zf?zpxxbh=5A57DBACE0D84D04E0653A68DD0E9B18)：常规网申至 10.31，招满可能提前关闭；9.08/9.12/9.15 集中笔试；北斗/LongCat 全年。`A-Relay` | **北斗和 LongCat 二选一，可与常规并投**。场次是否分配给本人以通知为准，今天先查邮件。[官网](https://zhaopin.meituan.com/web/campus) |
+| vivo 2027 | [招聘系统 FAQ](https://portal-oss.zhiye.com/612022/resource/02cf0fb4-87f9-4727-8d42-91851335ddd2.html)未标发布日期，本轮读到明确 2027 届：**9.15 12:00 网申及测评截止，15:00 研发类唯一一场笔试** | 投前检查岗位和简历；FAQ 写投递后不能修改/换岗、不能补改内推码。属于证据增强，不是新增截止 |
+| 拼多多正式批 | [官网](https://careers.pddglobalhr.com/campus/grad)当前直接显示“2027届校招正式批”，升级为 `open`；[9.03 大模型岗转载](https://campus.niuqizp.com/job-vm85aZzZN.html)涉及预训练、SFT/RL、长上下文、Agent-RL | 批次官方可核，具体岗位字段为第三方转载；日期不能当成岗位首次开放日，剩余 HC/截止需登录 |
+| 字节 Seed | [专项官网](https://seed.bytedance.com/zh/seedearlycareer)仍显示 2027 届与入口；无明确更新日/截止 | 同一候选人只能处于一个岗位流程；专项不占普通投递次数，不代表同时推进多个流程 |
+| 百度 AIDU | [官方列表](https://talent.baidu.com/jobs/list?projectType=3&recruitType=GRADUATE)仍有 J99938/J99969，页面日期 8.03，无截止 | 存量复核，不计 9 月新开岗 |
+| 淘宝闪购生成式算法 | [招聘平台职位](https://www.shixiseng.com/intern/inn_giyemkdjz11e?pcm=pc_SearchList)9.07 刷新：2027 届硕士及以上，生成式搜推与 RL 奖励，沪杭京 | `线索`；平台的 2027-03-18 截止未经官网确认，按完整岗位名回阿里官网匹配 |
+| 阿里星 | [9.01 刷新的转载](https://www.shushuqiuzhi.com/article/235790)仍声称有岗位，与旧 8.23 截止口径不一致 | `verify`；不能据此确认重开，也不再把旧截止外推为所有团队结束 |
+
+腾讯金融科技的新转载没有可复核岗位 ID；华为 9.05 校园活动不等于新开大模型岗，未据此更新开放状态。未查到新公告不等于未招聘。阿里国际 9.07 Agentic RL 公告属于实习，未计入全职增量。
 
 ## 1. 状态定义
 
@@ -37,17 +51,17 @@ seriesOrder: 14
 
 | 优先级 | 公司/项目 | cohort | stage | status | 最后核验 | 入口 | 下一动作 |
 |---:|---|---|---|---|---|---|---|
-| **P0** | 拼多多 2027 正式批 | 2027 届（2026.9–2027.8 毕业） | 正式批，公开招聘帖 2026-08-24 起 | `open-relay` | 2026-08-29 | [官方职位入口](https://careers.pddglobalhr.com/campus/grad)、[8-24 招聘帖](https://leetcode.cn/discuss/post/4016884/nei-tui-gun-pin-duo-duo-27jie-xiao-yuan-agyw7/) | 登录官方入口核验岗位 ID 后提交；提前批旧链接不再作为当前状态依据 |
+| **P0** | 拼多多 2027 正式批 | 2027 届（2026.9–2027.8 毕业） | 官网明确正式批 | `open` | 2026-09-08 | [官方职位入口](https://careers.pddglobalhr.com/campus/grad) | 本轮增强为官网批次证据；具体岗位 ID/HC 登录核验 |
 | P0 | 字节 2027 校园招聘（全序列） | 2026-09–2027-08 毕业 | 正式批，8-03 启动，全年滚动招满即止 | `open` | 2026-08-13 | [官方页](https://jobs.bytedance.com/campus) | 2026 年内仅 2 次投递机会，选岗慎重；Seed 专项/前沿技术专项/AI 产品早鸟**不占次数** |
-| P0 | 字节 Seed 大模型人才校招 | 2027 届全职；更高年级实习 | 专项 | `open` | 2026-08-13 | [官方页](https://seed.bytedance.com/zh/seedearlycareer) | 按基础模型、后训练、Agent/多模态三版 JD 选一个岗位 |
+| P0 | 字节 Seed 大模型人才校招 | 2027 届全职；更高年级实习 | 专项 | `open` | 2026-09-08 | [官方页](https://seed.bytedance.com/zh/seedearlycareer) | 选岗后只推进一个流程；当前页面未披露统一截止 |
 | P0 | 腾讯 2027 校园招聘 | 2026-01–2027-12 毕业（青云口径） | 正式批 8-11 启动；8-27 新增多条 Agent/多模态岗 | `open` | 2026-08-29 | [官网](https://join.qq.com/)、[混元 Code & Agent](https://join.qq.com/post_detail.html?postId=1289994478656307200)、[Harness/自进化](https://join.qq.com/post_detail.html?postId=1289994478656307201) | 核验官网动态 JD；Agent 岗简历补 Harness、评测、权限与长程任务证据 |
 | P0 | 阿里巴巴集团 2027 校招 | 2027 届（官方口径 2026.11–2027.10 毕业） | 正式批 8-04 启动 | `open` | 2026-08-29 | [官方页](https://campus-talent.alibaba.com/campus/gov) | 常规批继续投；登录核验 Token Foundry/通义/淘天/阿里云岗位 |
 | P0 | 天猫技术 Agent 算法工程师 | 2027 届 | 职位页 8-26 发布 | `open-relay` | 2026-08-29 | [企业职位页](https://www.nowcoder.com/jobs/detail/463570) | JD 已把 RAG/Memory/MCP/Skills、SFT/DPO/GRPO、Agentic RL、trajectory、autorater 和安全成本写在同一闭环；按真实经历逐项对齐，不虚构实操 |
 | P0 | 蚂蚁集团 2027 校招 | 2027 届 | 正式批 8-10 启动 | `open` | 2026-08-13 | [蚂蚁招聘](https://talent.antgroup.com/) | 技术岗 80% 且其中超 80% AI 相关；重点看百灵/机器智能 |
-| P0 | 美团北斗计划 + 常规校招 | 北斗：2026-01–2027-12；常规：2026-11–2027-10 毕业 | 北斗 8-05；常规正式批 **8-17** 启动 | `open` | 2026-08-23 | [北斗](https://career.meituan.com/web/beidouprogram)、[美团招聘](https://zhaopin.meituan.com/) | 北斗与常规互不冲突可同投；常规新增 10+ AI 原生岗位 |
+| P0 | 美团北斗计划 + 常规校招 | 北斗：2026-01–2027-12；常规：2026-11–2027-10 毕业 | 常规公告截止 10-31，招满提前关 | `open-relay` | 2026-09-08 | [美团招聘](https://zhaopin.meituan.com/)，9.01 高校企业公告见 §0 | 北斗/LongCat 二选一，可与常规并投；近期笔试看本人通知 |
 | P0 | 美团 LongCat | 以岗位页为准 | 校招/实习 | `open` | 2026-08-13 | [官方页](https://zhaopin.meituan.com/longcatprogram) | 核验具体岗位与流程，不抄第三方截止日 |
 | P0 | 京东 2027 校招 | 2027 届 | 正式批 8-03 启动 | `open` | 2026-08-13 | [京东招聘](https://zhaopin.jd.com/) | 技术序列筛大模型/搜推岗；TGT 专项已在 7 月启动 |
-| P0 | 百度校园招聘 | 2027 届（主口径 2026.9.1–2027.8.31） | 秋招 7-09 启动，全年开放 | `open` | 2026-08-29 | [职位入口](https://talent.baidu.com/jobs/)、[AIDU 大模型 J99938](https://talent.baidu.com/jobs/detail/GRADUATE/ab5ec82f-a8be-4b4a-8e6f-5debc34ea804)、[AIDU Agent J99969](https://talent.baidu.com/jobs/detail/GRADUATE/4f1cbc80-8332-4a92-b8fa-c0132b17d47e) | 模型岗准备 SFT/RLHF/MoE/Latent Attention/投机推理；Agent 岗准备规划、工具、反思、RAG 与成功率/延迟/成本评测 |
+| P0 | 百度校园招聘 | 2027 届（主口径 2026.9.1–2027.8.31） | AIDU 存量岗位仍列出，未披露截止 | `open` | 2026-09-08 | [AIDU 官方列表](https://talent.baidu.com/jobs/list?projectType=3&recruitType=GRADUATE) | J99938/J99969 的页面日期为 8.03，不计新开岗；准备模型训练或 Agent 评测 |
 | P0 | DeepSeek | 26/27 届校招+实习+社招 | 持续招聘（6-25 全部门扩招一倍） | `rolling` | 2026-08-13 | [官方页](https://talent.deepseek.com/) | 全部岗位接受实习；重点投模型/数据/Agent Harness |
 | P0 | MiniMax | 2027 校招、2028 转正实习、日常实习 | 校招/实习 | `open` | 2026-08-13 | [官方页](https://www.minimaxi.com/careers) | 同时看算法与模型、Agent/产品方向 |
 | P0 | 智谱 | 校招具体届别以职位页为准 | 校招 | `open` | 2026-08-13 | [官方页](https://www.zhipuai.cn/zh/joinus) | 进入算法/研发分类，核验落地岗位 |
@@ -62,12 +76,12 @@ seriesOrder: 14
 | P2 | 网易 2027 校招 | 2026.9–2027.8 毕业 | 正式批 8-20 启动 | `open` | 2026-08-23 | [官方页](https://campus.163.com/) | 网易互联网、互娱、雷火可同时投且流程不冲突；筛 AI/大模型岗 |
 | P2 | 荣耀 2027 全球校招 | 国内本硕 2026.10–2027.9；国内博士/海外 2026.1–2027.9 | 8-18 启动，9-30 截止 | `open` | 2026-08-23 | [官方页](https://www.honor.com/cn/career/) | 9 月机考/面试；部分岗位有 AI Coding，尽早投 |
 | P2 | OPPO 2027 全球校招 | 国内本硕 2027.1–12；博士/港澳台/海外 2026.1–2027.12 | 7-15 起滚动，招满即止 | `open` | 2026-08-23 | [官方职位页](https://careers.oppo.com/university/oppo/campus/post) | 当前职位页显示 2027 届且 200+ 岗；筛 Agent 记忆/检索、多模态、端侧大模型 |
-| P2 | vivo 2027 全球校招 | 2026.8–2027.7 毕业 | 8-11 启动；9-15 12:00 网申止 | `open-relay` | 2026-08-23 | [官网](https://hr.vivo.com/)、[官号转发](https://jobs.niuqizp.com/schedule-7rkrNLZZN.html) | 研发岗 9-15 15:00 统一笔试；投前在官网复核具体岗位 |
+| P0 | vivo 2027 全球校招 | 2026.8–2027.7 毕业 | 9-15 12:00 网申/测评止 | `open` | 2026-09-08 | [官网](https://hr.vivo.com/)、[招聘系统 FAQ](https://portal-oss.zhiye.com/612022/resource/02cf0fb4-87f9-4727-8d42-91851335ddd2.html) | 研发岗 9-15 15:00 唯一笔试；投后不能修改，先核对材料 |
 | P2 | 滴滴 2027 校招 | 2026.9–2027.8 毕业且毕业后无全职经历 | 8-13 启动；8 月下旬起笔面 | `open-relay` | 2026-08-23 | [官网](https://talent.didiglobal.com/campus)、[官号转发](https://campus.niuqizp.com/job-vyr5aLLNC.html) | 全渠道共 3 次主动投递，每次只能推进 1 岗；筛算法/机器人/Agent |
 | P2 | 携程/米哈游/车企及其他 | 以岗位页为准 | 校招/滚动 | `verify` | 2026-08-13 | 各官网 | 9 月前逐一补投；不拿旧批次海报判断当前开放状态 |
 | P2 | 科大讯飞 2026 届补录 | 2026 届 | 春招补录 | `ended` | 2026-07-30 | [历史高校公告](https://careercenter.hkust-gz.edu.cn/2026/05/29/%E6%A0%A1%E6%8B%9B-%E7%A7%91%E5%A4%A7%E8%AE%AF%E9%A3%9E-2026-%E5%B1%8A%E6%A0%A1%E5%9B%AD%E6%8B%9B%E8%81%98%E3%83%BB%E6%98%A5%E6%8B%9B%E8%A1%A5%E5%BD%95%E5%85%AC%E5%91%8A/) | 作为历史批次保留；另查 27 届新批 |
 | P3 | 拼多多 2027 提前批 | 2027 届 | 7-06 起，8-23 截止 | `ended` | 2026-08-29 | [官方职位入口](https://careers.pddglobalhr.com/campus/grad) | 只保留历史；当前改投正式批 |
-| P3 | 阿里星顶尖人才计划 | 2027 届 | 6-23 起，公开口径 8-23 截止 | `ended` | 2026-08-29 | [阿里校招](https://campus-talent.alibaba.com/) | 旧专项不再占当天动作；阿里常规批仍开放 |
+| P3 | 阿里星顶尖人才计划 | 2027 届 | 旧批口径 8-23 截止，新转载存在冲突 | `verify` | 2026-09-08 | [阿里校招](https://campus-talent.alibaba.com/) | 只在官网或团队确认后判断是否还能投；不认定已重开 |
 
 ## 3. 每次投递前的 90 秒核验
 
@@ -95,6 +109,8 @@ YYYY-MM-DD｜公司/项目｜old_status → new_status｜变化原因｜官方 U
 ```
 
 ## 5. 刷新日志
+
+- 2026-09-08：复核 8.30–9.08 增量；增强拼多多官网正式批与 vivo FAQ 证据，补美团高校企业公告的 9 月场次及专项互斥规则。新增淘宝闪购生成式岗位线索；阿里星旧截止与新转载冲突，改 `verify`。具体字段和未核验范围见 §0。
 
 - 2026-08-29：精确检索 8.24–8.29。拼多多 8.24 转入 2027 正式批，旧提前批改 `ended`；阿里星旧截止改历史，阿里常规批继续开放。新增天猫技术 Agent 算法职位页，以及腾讯 8.27 发布/汇总可见的混元 Code & Agent、Harness/自进化、多模态后训练岗位；腾讯职位正文为动态渲染，方向字段按官方链接与公开聚合页交叉核验，投递前仍需登录官网。
 - 2026-08-29：新增 8.25 美团大模型算法笔试样本：10 道选择 30 分、1 道算法 20 分、AI Coding/类 Kaggle ML 任务 50 分；公开记录至少存在两个算法题版本，不能合并成一套固定原题。新增百度、阿里云、淘天 8.18–8.27 Agent/Agentic RL 面经，集中追问 Context→Harness、权限安全、长程早停、trajectory 验证和多轮 reward。

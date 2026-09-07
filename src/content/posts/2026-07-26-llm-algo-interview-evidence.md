@@ -1,8 +1,8 @@
 ---
 title: "2025—2027 大模型算法岗题库与证据账本"
-description: "更新至 2026-08-29：89 组公开面经样本、23 张知识缺口卡，新增 Context/Harness、Agentic RL 与 base-policy support。"
+description: "更新至 2026-09-08：历史算法面经与 23 张知识缺口卡，附九月跨岗位样本入口和证据边界。"
 date: 2026-07-26
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - ai
   - llm
@@ -14,7 +14,7 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 2
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-09-08（北京时间凌晨快照）。源文件托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；历史章节保留各自证据日期，岗位状态见最新窗口日志。
 
 > 最后核验：2026-08-29（第六轮增量：补 8.18–8.27 百度/阿里云/淘天 Agent 面经、美团 8.25 笔试，以及 RL 可学习性与 Judge 校准）
 >
@@ -1315,6 +1315,8 @@ seriesOrder: 2
 6. 落到自己的项目数字和个人贡献。
 
 ## 7. 维护记录
+
+- 2026-09-08：新增跨岗位观察附录见[招聘面经汇总 §15](/blog/llm-recruit-interview-roundup/)，包括京东 NumPy/JSON 逻辑回归、字节 Agent 开发排障、拼多多通用机考整理与美团冲突版本线索。旧口径 89 组算法面经不与开发岗/二手笔试直接相加。主指南 §3.10 补可口述的延迟/参数/压缩回答；知识缺口卡仍为 N1–N23。
 
 - 2026-07-23：建立年份化题库；纳入 2025—2026 的模型算法公开复盘，单列华为证据缺口；新增 MoE、推理时计算、VLM、Agentic RL、GRPO normalization、训练/RL 显存、RAG 归因和 ML/数学答案卡；将 2027 明确标成预测；按个人方向删除纯推理 Infra、kernel/C++ 底层和硬件适配岗位样本。
 - 2026-07-24：第三轮检索新增京东、滴滴、网易/有道、OPPO 共 9 组 `B` 记录及智谱 1 组 `B-` 候选；华为盘古、DeepSeek、Kimi、MiniMax、小米仍维持“强证据不足”。新增 MTP、Muon、长周期数据过滤、RLVR 因果对照、Generative RM、Search-R1、Visual-RFT 七张前沿答案卡；这些论文驱动题全部与历史面经分开标注。

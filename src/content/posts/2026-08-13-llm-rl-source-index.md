@@ -2,7 +2,7 @@
 title: "大模型强化学习资料与面经来源索引"
 description: "汇总经典论文、2025—2026 新方法、官方框架、岗位页面和候选人面经，并说明证据等级与使用边界。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - reinforcement-learning
   - llm
@@ -172,6 +172,16 @@ seriesOrder: 14
 - 题目出现一次只能证明“问过”，不能证明“所有公司高频”。专题中的优先级来自多来源交集和岗位 JD，而非简单计数。
 
 ## 8. 继续更新时的模板
+
+### 2026-09-08 原始论文增量
+
+| 来源 | 版本/日期 | 用途与限制 |
+|---|---|---|
+| [Post-Training Language Models for Gold-Medal Performance in Coding Competitions](https://arxiv.org/html/2609.02849v2) | 首发 09.02，v2 09.04 | SFT/RL/GenCorrect 的阶段归因；非官方 IOI 参赛排名，本地未复现 |
+| [Catalan text simplification with RL](https://arxiv.org/html/2609.04823v1) | 首发 09.04 | SARI 代理目标、源句分组切分、单次训练与跨语言结论边界 |
+| [First Things First](https://arxiv.org/html/2609.05224v1) | 首发 09.04 | 必须条件/偏好/无解；模型评分非纯规则 RLVR，总分上涨但无解子集可能下降 |
+
+三篇对应前沿章 §7，不作为新面经计数。框架 release 的本轮检索未得到可确认的窗口内新正式版本；不把旧 release 或 main 分支提交包装成新发行版。
 
 ```markdown
 ### 公司｜岗位｜轮次

@@ -2,7 +2,7 @@
 title: "ML / AI Coding 算法岗笔试补丁"
 description: "JSON 契约、数值稳定、Viterbi、Attention、IRLS、搜索排序/NDCG、Apriori 与 MITM 的限时实现要点。"
 date: 2026-07-26
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - ai
   - algorithms
@@ -13,9 +13,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 11
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-09-08（北京时间凌晨快照）。源文件托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；历史章节保留各自证据日期，岗位状态见最新窗口日志。
 
-> 更新至 2026-08-29。对应 27 届实习/秋招公开题型：阿里 AI Coding、美团 One-Class SVM/IRLS、搜索排序与 8.25 类 Kaggle ML 半卷、蚂蚁 Viterbi、携程门控 Top-k Attention、京东 JSON 集合/折半枚举。它们多数没有精确 LeetCode 映射，考的是接口、矩阵/概率状态、数据切分、数值稳定、指标和隐藏测试。
+> 更新至 2026-09-08。最新 §13 补京东 NumPy/JSON 逻辑回归，以及通用算法与 Agent 开发相邻岗练习。历史题型仍包括 Viterbi、Attention、IRLS、排序/NDCG 等；公开题面缺失部分明确采用自拟训练契约。
 
 可执行零依赖实现：[ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/ml_ai_coding_exam.py)；自动测试：[test_ml_ai_coding_exam.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/tests/test_ml_ai_coding_exam.py)。
 
@@ -216,6 +216,31 @@ README / SCHEMA / 样例提交
 ```bash
 python3 -m unittest discover -s '笔试/AI算法/模型手写/tests' -v
 ```
+
+## 13. 9 月 8 日增量：逻辑回归完整交付
+
+[京东 9.05 亲历帖](https://www.nowcoder.com/discuss/925858764907872256)只确认 NumPy、JSON 训练/测试集输入与测试概率输出，没有公开完整字段、学习率、初始化或优化器。本节是明确约定的训练版本，不能当作完整原题答案。
+
+自拟契约：输入 `X_train[n,d]`、`y_train[n]`（0/1）、`X_test[m,d]`、`lr`、`steps`；零初始化，带 bias、无正则、全批梯度下降；不自动标准化。真实题面若规定正则、归一化或迭代条件，按题面修改。
+
+令 `z = Xw+b`、`p = sigmoid(z)`，平均二元交叉熵对参数的梯度为：
+
+$$\nabla_w L=X^T(p-y)/n,\qquad \nabla_b L=\operatorname{mean}(p-y).$$
+
+每轮先用同一组旧参数算出两个梯度，再更新 w 和 b。稳定 sigmoid 按 z 正负分支计算；不要用会同时计算两条指数分支的写法造成溢出。全零初始化在逻辑回归中可用，不能把深层网络的神经元对称性问题机械套过来。
+
+可执行入口：[logistic_json_drill.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/logistic_json_drill.py)；测试：[test_logistic_json_drill.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/tests/test_logistic_json_drill.py)。NumPy 是该练习依赖，其余旧模板仍有零依赖版本。
+
+**35 分钟训练流程**：5 分钟检查 schema 和 shape；15 分钟完成训练/预测；10 分钟测 `steps=0`、重复样本、单特征、极端 logits、非法标签/NaN；5 分钟保证 stdout 只有约定 JSON。`steps=0` 时初始预测均为 0.5，可用于检查接口。
+
+### 算法配套：构造与扫描
+
+参考实现：[september_coding_drills.py](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/templates/september_coding_drills.py)，附[独立对拍测试](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/tests/test_september_coding_drills.py)。
+
+- **受限数字构造**：训练版本允许数字重复，用给定集合构造非负整数，严格小于 n、无前导零（单独 0 除外），无解返回 `None`。从高位尽量贴近上界；某位降小后，后缀全部选最大数字；无法降小时向前回退，必要时改成短一位。`n=23121,A={2,4,9}` 应为 `22999`；`n=222,A={2}` 应为 `22`，不能返回相等的 `222`。
+- **彩门换向**：保持门的原位置；资源越多只会增加可开门集合，能开就开无需等待。继续当前方向到端点不会增加换向次数；完成一整趟后若仍有门但一个都没开，再换向也无帮助。复杂度 O(n²) 对原整理稿 n≤500 可用；规模更大时应重新分析，不能照搬。测试用允许任意位置换向的状态图最短路核对小规模最优值。
+
+两题来自[字节 Agent 开发复盘](https://www.nowcoder.com/discuss/925342611194286080)和[拼多多机考整理](https://www.nowcoder.com/discuss/926278529782747136)，均不硬配成某一道力扣原题。适合替换本周两道同类题，不增加每天总题量。
 ---
 
 原始文档：[GitHub 源文件](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/AI%E7%AE%97%E6%B3%95/%E6%A8%A1%E5%9E%8B%E6%89%8B%E5%86%99/ML-AI-Coding%E7%AC%94%E8%AF%95%E8%A1%A5%E4%B8%81.md)。

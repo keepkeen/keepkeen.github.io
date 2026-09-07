@@ -1,8 +1,8 @@
 ---
 title: "大模型算法岗面试与备战指南"
-description: "更新至 2026-08-29：从训练、后训练和 Agent 到手写、项目深挖与正式批新考点的系统指南。"
+description: "更新至 2026-09-08：训练、后训练、Agent 排障与项目深挖；新增完整 ML 提交和长任务延迟回答。"
 date: 2026-07-26
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - ai
   - llm
@@ -14,9 +14,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 1
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-09-08（北京时间凌晨快照）。源文件托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；历史章节保留各自证据日期，岗位状态见最新窗口日志。
 
-> 面向暑期实习与秋招；系统检索日期：2026-08-29
+> 面向暑期实习与秋招；最后增量检索：2026-09-08（北京时间凌晨）
 >
 > 适合画像：已经完成 Stanford CS336 或同等课程，做过模型训练，研究背景偏异常检测，希望转向大模型训练、后训练/强化学习或 Agent。
 
@@ -370,6 +370,18 @@ MiniMax、智谱、DeepSeek、月之暗面不是传统“互联网大厂”，�
 本轮逐题证据在[题库账本](/blog/llm-algo-interview-evidence/)的 BD-26-03、ALI-26-05～07；招聘状态和当前岗位仍以[窗口日志](/blog/recruit-window-refresh-log/)为准。
 
 ---
+
+### 3.10 2026-09-08：完整提交与可诊断的 Agent
+
+新样本及分级见[汇总 §15](/blog/llm-recruit-interview-roundup/)。京东算法笔试要求 NumPy 逻辑回归从 JSON 输入到概率输出；字节 Agent 开发相邻岗问长任务延迟、参数可靠性和压缩信息保留。原有训练/后训练基础优先级不变，本周增加以下三种回答能力。
+
+**“Agent 突然慢了，怎么办？”** 先对齐输入、模型/提示词版本、工具版本与环境负载，比较正常和慢请求的 trace。把端到端时延拆成排队、模型 prefill/decode、工具与重试、串行依赖；并行部分看关键路径。统计循环步数、每步 token、缓存命中、超时和重复调用，先找到增加的那一项。修复后同时验证 p50/p95、任务成功率和单位成功成本，避免只把超时阈值调小。
+
+**“怎样保证工具参数可靠？”** JSON schema 只约束语法和类型，还要做业务语义校验：ID 存在、日期可用、数值范围、权限归属。模型提议调用，执行器校验，错误以可恢复的结构返回；对写操作做幂等与明确权限检查。分别记录解析失败、语义失败、执行失败，不能把所有错误记成一个 tool error。
+
+**“上下文压缩如何少丢信息？”** 先列需要保留的状态：目标、必须条件、已确认事实及来源、未完成步骤、工具结果引用。保留原始记录可回查，摘要不是事实源。用后续任务成功率、关键事实召回、矛盾率和恢复能力评测；比较不压缩基线与相同预算方案，不能仅报告压缩百分比。
+
+三项都是可用于自测的回答框架，不代表你已做过这些实验。RL 的本周扩展阅读用于区分训练收益、搜索收益、代理奖励与真实验收，见[前沿章 §7](/blog/llm-rl-frontier-topics/)。
 
 ## 4. 第一部分：训练模型
 
@@ -2260,6 +2272,8 @@ if __name__ == "__main__":
 ---
 
 ## 8. 从异常检测转向大模型的项目方案
+
+> **2026-08-29 项目证据更新**：本节保留的是从异常检测迁移到大模型时的通用设计方法，其中“3D 工业缺陷诊断 Agent”属于可选扩展，不再作为当前简历的默认旗舰项目。Agent/后训练版现使用 **宝信工业研究 Agent + VeriAgent-RL + verl PR**；RL/RLVR 版使用 **Exact-RLVR-Dynamics + VeriAgent-RL + verl PR**。DevSpace 默认不进一页简历。总体取舍见[岗位定向项目包装手册](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E7%AE%80%E5%8E%86%E4%B8%8E%E6%9D%90%E6%96%99/%E5%B2%97%E4%BD%8D%E5%AE%9A%E5%90%91%E9%A1%B9%E7%9B%AE%E5%8C%85%E8%A3%85%E4%B8%8E%E9%9D%A2%E8%AF%95%E7%AD%94%E8%BE%A9%E6%89%8B%E5%86%8C.md)，详细做法见[宝信项目手册](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E7%AE%80%E5%8E%86%E4%B8%8E%E6%9D%90%E6%96%99/%E5%AE%9D%E4%BF%A1%E5%B7%A5%E4%B8%9A%E6%99%BA%E8%83%BD%E9%A1%B9%E7%9B%AE%E5%8C%85%E8%A3%85%E4%B8%8E%E9%9D%A2%E8%AF%95%E7%AD%94%E8%BE%A9.md)和[VeriAgent-RL 升级手册](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E6%B1%82%E8%81%8C/%E7%AE%80%E5%8E%86%E4%B8%8E%E6%9D%90%E6%96%99/VeriAgent-RL%E9%A1%B9%E7%9B%AE%E5%8D%87%E7%BA%A7%E4%B8%8E%E7%AD%94%E8%BE%A9%E6%89%8B%E5%86%8C.md)。
 
 ### 8.1 一条旗舰主线，两个按需补证据的辅线
 

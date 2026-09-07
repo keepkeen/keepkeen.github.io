@@ -2,7 +2,7 @@
 title: "大模型强化学习面经：79 张答案卡"
 description: "按 2025—2026 公开实录归纳：经典 RL、PPO/DPO/GRPO、R1 管线、MoE、Agentic RL、系统与 8 月前沿，配两轮追问与评分标准。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - reinforcement-learning
   - llm

@@ -1,8 +1,8 @@
 ---
 title: "笔试测评与 AI 面试指南"
-description: "更新至 2026-08-29：行测、性格与 AI 面试规则，以及美团 8.25 AI Coding 半卷、计时策略和诚信边界。"
+description: "更新至 2026-09-08：近期笔试场次、测评要求、NumPy/JSON 完整交付与 AI Coding 计时策略。"
 date: 2026-08-13
-updatedDate: 2026-08-29
+updatedDate: 2026-09-08
 tags:
   - ai
   - llm
@@ -14,7 +14,9 @@ lang: zh-CN
 series: llm-algo-job-hunt
 seriesOrder: 18
 ---
-> 本文是个人求职工作区文档的发布版，更新于 2026-08-29。源文件与后续动态更新托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；公开面经与招聘信息均按正文证据等级使用，投递前请重新打开官方页面。
+> 本文是个人求职工作区文档的发布版，更新于 2026-09-08（北京时间凌晨快照）。源文件托管在 GitHub 仓库 [llm-algo-job-notes](https://github.com/keepkeen/llm-algo-job-notes)；历史章节保留各自证据日期，岗位状态见最新窗口日志。
+
+> 2026-09-08 增量：美团高校企业公告列出 9.08/9.12/9.15 场次，vivo FAQ 列出 9.15 12:00 网申/测评截止、15:00 研发岗唯一笔试。来源与适用范围见[窗口日志 §0](/blog/recruit-window-refresh-log/)，是否获邀以本人通知为准。京东 9.05 亲历帖明确 NumPy 逻辑回归与 JSON 输入输出，可按[补丁 §13](/blog/ml-ai-coding-patch/)限时练习。
 
 > 核验日期：2026-08-29。本文管"非算法的关卡"：行测/认知测评、性格测评、游戏化测评、AI 视频面试，以及技术笔试的平台机制与监考规则。算法与模型题的训练在 [笔试/](https://github.com/keepkeen/llm-algo-job-notes/blob/main/%E7%AC%94%E8%AF%95/README.md)，两边不重复。
 >
